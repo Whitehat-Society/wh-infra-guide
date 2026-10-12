@@ -1,48 +1,55 @@
-# Discord & GitHub
+# Discord and GitHub
 
-<span class="time">⏱ 10 min</span>
+<span class="time">Time: about 10 minutes</span>
 
 ## Discord webhooks
 
-The stack posts to Discord in two places, so it needs two webhook URLs:
+A **webhook** is a secret web address that lets a program post messages into one Discord channel. The system posts in two places, so you need two webhooks:
 
-| Secret name | Who posts | Suggested channel |
+| Name used later | What posts there | Suggested channel |
 |---|---|---|
-| `discord_webhook_url` | CTFd: first-blood announcements (first 3 solves per challenge) | `#announcements` (public) |
-| `discord_alert_webhook_url` | CloudWatch alarms and the 5-minute challenge health check | `#infra-alerts` (staff only) |
+| `discord_webhook_url` | CTFd, announcing the first three solves of each challenge | a public announcements channel |
+| `discord_alert_webhook_url` | Alarms and the health check, when something breaks | a staff-only channel such as `#infra-alerts` |
 
 --8<-- "rec-pending.md"
 
-For each channel:
+Do these steps once for each channel:
 
-1. In Discord, hover over the channel → ⚙️ **Edit Channel**
-2. **Integrations** → **Webhooks** → **New Webhook**
-3. Click the new webhook, name it `CTFd` or `Infra alerts`, then **Copy Webhook URL**
-4. Paste it somewhere temporary. You'll store it as a secret in [Config files & secrets](../code/config.md)
+1. In Discord, hover over the channel and click the gear icon (**Edit Channel**).
+2. Open **Integrations**, then **Webhooks**, then **New Webhook**.
+3. Click the new webhook, give it a name such as `CTFd` or `Infra alerts`, and click **Copy Webhook URL**.
+4. Paste the address into a temporary note. [Settings and secrets](../code/config.md) stores it properly.
 
-You need the **Manage Webhooks** permission on the server. Ask a server admin if the **Integrations** tab is missing.
+You need the **Manage Webhooks** permission on the server. If **Integrations** is missing, ask a server admin.
 
-**Check it worked:** send a test message (replace the URL):
+**Check it worked:** send a test message. Paste your webhook address in place of the example:
 
 ```bash
 curl -sS -H 'Content-Type: application/json' -d '{"content":"webhook test"}' "https://discord.com/api/webhooks/..."
 ```
 
-Expected: no output from `curl`, and "webhook test" appears in the channel.
+The command prints nothing, and "webhook test" appears in the channel.
 
-!!! danger "A webhook URL is a password"
-    Anyone who has it can post to the channel. Never commit it to git or paste it in public chat.
+!!! danger "Treat a webhook address like a password"
+    Anyone who has it can post in the channel. Never paste it into the code or a public chat.
 
 ## GitHub
 
-1. Make a GitHub account if you don't have one: <https://github.com/signup>
-2. Send your username to the current infra lead and ask for access to **Whitehat-Society/wh-2026**
-3. Accept the invite from the email, or at <https://github.com/Whitehat-Society>
-4. Sign the CLI in, so `git clone` works for private repos:
+**GitHub** is the website that stores the club's code. **Git** is the program that downloads it and records changes. The code is in a private repository, a project folder on GitHub, called `Whitehat-Society/wh-2026`.
+
+1. Create a GitHub account at <https://github.com/signup> if you don't have one.
+2. Send your GitHub username to the current infra lead and ask for access to `Whitehat-Society/wh-2026`.
+3. Accept the invitation from the email, or from <https://github.com/Whitehat-Society>.
+4. Install GitHub's command-line tool, `gh`, and sign in. It lets `git` download private code:
     ```bash
-    # Linux/WSL: sudo apt-get install -y gh     macOS: brew install gh
+    # Linux and Windows (Ubuntu):
+    sudo apt-get install -y gh
+    # macOS:
+    brew install gh
+
     gh auth login --git-protocol https --web
     ```
+    Follow the prompts. It shows a code and opens a browser where you enter it.
 
 **Check it worked:**
 
@@ -50,6 +57,6 @@ Expected: no output from `curl`, and "webhook test" appears in the channel.
 gh repo view Whitehat-Society/wh-2026 --json name -q .name
 ```
 
-Expected: `wh-2026`.
+The output is `wh-2026`.
 
 **Next:** [Get the code](../code/clone.md).

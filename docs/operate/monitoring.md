@@ -1,46 +1,53 @@
 # Watching the system
 
-<span class="time">⏱ 10 min setup on event morning · then glance every 15 min</span>
+<span class="time">Time: 10 minutes to set up on the morning of the event, then a glance every 15 minutes</span>
 
-Keep three things open during the event:
+During the event, keep three things open. Together they tell you within minutes when something breaks.
 
-1. **Discord `#infra-alerts`**: the 5-minute health check and CloudWatch alarms post here
-2. **A terminal** running:
+1. **The Discord alerts channel.** The health check posts here when a challenge stops answering, and CloudWatch alarms post here when a measurement crosses a limit.
+2. **A terminal that refreshes every 30 seconds:**
     ```bash
     watch -n 30 'kubectl get pods -A | grep -v -e Running -e Completed; kubectl get nodes'
     ```
-    Anything listed above the node table is a problem pod
-3. **The CloudWatch dashboard** `<event>-eks-ops`. Print its link:
+    `watch` reruns a command on a timer. The top part lists every pod that isn't running normally, so it should show only its header. The bottom part lists the nodes, which should all be `Ready`. On macOS, install `watch` first with `brew install watch`. Press Ctrl+C to stop.
+3. **The CloudWatch dashboard**, a page of graphs of memory, processor use and node count. Print its address and open it in a browser:
     ```bash
     EVENT=$(jq -r .event_name ~/wh/wh-2026/utils/eks/terraform.tfvars.json)
     echo "https://ap-southeast-1.console.aws.amazon.com/cloudwatch/home?region=ap-southeast-1#dashboards/dashboard/$EVENT-eks-ops"
     ```
 
-## What alerts you
+## What raises an alert
 
-<div class="wh">
---8<-- "ops-table.html"
-</div>
+| Alert | Raised when | Where it goes |
+|---|---|---|
+| Health check `FAIL` | A challenge doesn't answer, checked every 5 minutes | Discord |
+| `<event>-ingress-nginx-pod-down` | An NGINX pod stops. Every web page, CTFd included, goes through NGINX | Email and Discord |
+| `<event>-eks-node-count-low` | Fewer nodes are running than the minimum | Email and Discord |
+| `<event>-mariadb-memory-high` | The database uses more than 80% of its memory allowance | Email and Discord |
+| `<event>-node-memory-high` | A node uses more than 85% of its memory | Email and Discord |
+| `<event>-node-filesystem-high` | A node's disk is more than 85% full | Email and Discord |
 
-The "Proven during the event?" column is from WH-2026's review afterwards. Since then the guide adds the `healthcheck-webhook` Secret ([page 4](../deploy/day2.md)), so the health check now has its webhook.
-
-Check alarms from the CLI:
+To list every alarm that is active right now:
 
 ```bash
 aws cloudwatch describe-alarms --state-value ALARM --query 'MetricAlarms[].[AlarmName,StateReason]' --output text
 ```
 
+An empty result means none are active.
+
 ## When an alert fires
 
-| Alert / symptom | First command | Usual fix |
-|---|---|---|
-| Health check: web challenge `FAIL` | `kubectl get pods -n challenges-web` then `kubectl logs -n challenges-web deploy/<name> --tail=50` | `kubectl rollout restart deploy/<name> -n challenges-web` |
-| Health check: pwn challenge `FAIL` | `kubectl get pods,svc -n challenges-tcp` | Restart as above (namespace `challenges-tcp`). If the Service has no `EXTERNAL-IP`, see [Troubleshooting](../reference/troubleshooting.md) |
-| `ingress-nginx-pod-down` | `kubectl get pods -n ingress-nginx` | Every web URL and CTFd go through it. `kubectl rollout restart deploy/ingress-nginx-controller -n ingress-nginx` |
-| `mariadb-memory-high` | `kubectl top` doesn't exist here; check the dashboard | Plan a quiet moment to raise the MariaDB memory limit in `utils/ctfd/main.go`, then `make deploy-ctfd`. That restarts CTFd (~1 min downtime) |
-| `node-memory-high` / `node-filesystem-high` | `kubectl describe node <name>` | Add a node: see [Scaling up](scaling.md) |
-| Players report "503" on a web challenge | — | It's the rate limit (20 req/s per address). See [Known weak spots](risks.md) |
-| CTFd slow or erroring | `kubectl logs -n ctfd deploy/ctfd --tail=100` | Take a [backup](backups.md) first, then `kubectl rollout restart deploy/ctfd -n ctfd` |
+Most fixes are a **restart**: Kubernetes replaces a Deployment's pods with fresh ones, which clears most stuck programs. `kubectl rollout restart` does it without downtime when there is more than one copy, and with a few seconds of downtime when there is only one.
 
-!!! danger "Never restart MariaDB during the event without a fresh backup"
-    It's a single pod on a single disk. Run `make backup-ctfd` and check the file in S3 first.
+| Alert or report | Look first | Usual fix |
+|---|---|---|
+| Health check: a web challenge fails | `kubectl logs -n challenges-web deploy/<name> --tail=50` | `kubectl rollout restart deploy/<name> -n challenges-web` |
+| Health check: a pwn challenge fails | `kubectl get pods,svc -n challenges-tcp` | `kubectl rollout restart deploy/<name> -n challenges-tcp`. If its Service has no `EXTERNAL-IP`, see [Troubleshooting](../reference/troubleshooting.md) |
+| NGINX pod down | `kubectl get pods -n ingress-nginx` | `kubectl rollout restart deploy/ingress-nginx-controller -n ingress-nginx` |
+| Database memory high | The dashboard's MariaDB graph | At a quiet moment, raise MariaDB's memory limit in `utils/ctfd/main.go` and run `make deploy-ctfd`. CTFd is down for about a minute |
+| Node memory or disk high | `kubectl describe node <name>` | Add a node: see [Adding capacity](scaling.md) |
+| Players see "503" on a web challenge | Nothing to check | That challenge limits each address to 20 requests per second. See [Rate limits](risks.md#rate-limits) |
+| CTFd is slow or shows errors | `kubectl logs -n ctfd deploy/ctfd --tail=100` | [Take a backup](backups.md), then `kubectl rollout restart deploy/ctfd -n ctfd` |
+
+!!! danger "Back up before you touch the database"
+    MariaDB is a single pod on a single disk. Before you restart it or change it, run `make backup-ctfd` and check that the new file is in S3.

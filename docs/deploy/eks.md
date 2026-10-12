@@ -1,26 +1,28 @@
-# 1. Cluster (EKS)
+# 1. The cluster
 
-<span class="time">⏱ ~25 min, of which ~20 min waiting</span>
+<span class="time">Time: about 25 minutes, of which 20 are waiting</span>
 
-`make deploy-eks` runs Terraform in `utils/eks/`. It applies twice: first the network, the cluster and the Pulumi state bucket, then everything that runs *inside* the cluster. The split exists because Terraform can't plan Helm charts for a cluster that doesn't exist yet.
+This stage builds the foundation everything else runs on: the private network, the three rented computers, the Kubernetes cluster that manages them, and the helper programs listed in [Containers and Kubernetes](../concepts/containers-and-kubernetes.md#helper-programs-inside-the-cluster). It also creates the backup bucket, the alarms, and the bucket where Pulumi keeps its records.
 
-1. Download the Terraform providers:
+`make deploy-eks` runs Terraform on the files in `utils/eks/` in two rounds. The first round creates the network and the cluster. The second installs the programs that run inside the cluster, which Terraform can only plan once the cluster exists.
+
+1. Let Terraform download its **providers**, the plug-ins it uses to talk to AWS, Kubernetes and Helm:
     ```bash
     cd ~/wh/wh-2026/utils
     terraform -chdir=eks init
     ```
-    Expected: `Terraform has been successfully initialized!`
-2. Deploy:
+    The last line is `Terraform has been successfully initialized!`
+2. Build everything:
     ```bash
     make deploy-eks
     ```
-    The first thing it does is import the secret you created into Terraform's state (`[restore-secrets] Importing: <event>/config`). Then it builds everything without asking for confirmation. Leave it running. The longest waits are `module.eks.aws_eks_cluster.this[0]: Still creating...` (~10 min) and the node group (~3 min)
-3. Point `kubectl` at the new cluster:
+    The command first hands the secret you created over to Terraform (`[restore-secrets] Importing: <event>/config`). Then it creates about 70 resources without asking for confirmation. It prints lines like `Still creating... [5m0s elapsed]` while it waits. The cluster takes about 10 minutes and the computers about 3. Let it run until the prompt returns.
+3. Tell `kubectl` how to reach the new cluster. The command saves the cluster's address and login method in a file `kubectl` reads:
     ```bash
     make kubeconfig
     ```
-4. Click the **Confirm subscription** link in the *AWS Notification* email sent to each address in `alarm_notification_emails`. Without the click, alarms don't email you
-5. Silence the chall-manager alarm. This stack doesn't run chall-manager, so that alarm would fire non-stop:
+4. Each address in `alarm_notification_emails` receives an email titled *AWS Notification - Subscription Confirmation*. Click **Confirm subscription** in each one. Until you do, alarms don't reach that address.
+5. Switch off one alarm that doesn't apply. It watches chall-manager, an optional part this deploy leaves out, so it would report a problem constantly:
     ```bash
     EVENT=$(jq -r .event_name eks/terraform.tfvars.json)
     aws cloudwatch disable-alarm-actions --alarm-names "$EVENT-chall-manager-pod-down"
@@ -35,24 +37,24 @@ kubectl get svc -n ingress-nginx ingress-nginx-controller
 kubectl get certificate -A
 ```
 
-Expected:
+What each command should show:
 
-- `kubectl get nodes`: 3 nodes, all `Ready`
-- The second command prints **only** its header line, which means every pod is `Running` or `Completed`
-- `ingress-nginx-controller`: the `EXTERNAL-IP` column shows a hostname ending in `.elb.ap-southeast-1.amazonaws.com`
-- `wildcard-challenges` shows `READY True`. It can take up to 5 minutes after the deploy ends
+1. **Nodes:** three lines, each with `STATUS` `Ready`. These are the three rented computers.
+2. **Pods that aren't running:** only the header line. `-A` lists pods in every namespace, and `grep -v` hides the healthy ones, so an empty list means everything is up.
+3. **The NGINX service:** under `EXTERNAL-IP`, a long name ending in `.elb.ap-southeast-1.amazonaws.com`. That is the web load balancer's address.
+4. **Certificates:** `wildcard-challenges` with `READY` `True`. Let's Encrypt can take up to 5 minutes after the deploy ends; rerun the command until it shows `True`.
 
 ## If it fails
 
-| Symptom | Fix |
+| Message | Fix |
 |---|---|
-| `context deadline exceeded` during a `helm_release` | A Helm chart was slow to start. Rerun `make deploy-eks` |
-| `creating EKS Cluster ... AccessDenied` or `OptInRequired` | The account is still activating, or you aren't on the admin profile. Check `aws sts get-caller-identity`, wait an hour, rerun |
-| `BucketAlreadyExists` | Someone in the world already owns that bucket name. Pick a new `event_name`, then redo [Make it yours](../code/make-it-yours.md) and [Config](../code/config.md) |
-| `ResourceExistsException` for the secret | The import didn't happen. Run `terraform -chdir=eks init`, then `make deploy-eks` again |
-| Nodes stay `NotReady` | `kubectl describe node <name>` and read `Conditions`. Usually it's still starting; wait 3 min |
-| Certificate stuck `False` | `kubectl describe certificate -A`. Usually DNS for your domain isn't pointing at Route 53 yet; see [Domain name](../accounts/domain.md#check-it-worked) |
+| `context deadline exceeded` next to `helm_release` | One helper program was slow to start. Rerun `make deploy-eks` |
+| `AccessDenied` or `OptInRequired` while creating the cluster | Either the new account is still being switched on, or you aren't signed in as your admin login. Check `aws sts get-caller-identity`, wait an hour, and rerun |
+| `BucketAlreadyExists` | Another AWS customer owns that bucket name. Choose a new event name, then redo [Make it yours](../code/make-it-yours.md) and [Settings and secrets](../code/config.md) |
+| `ResourceExistsException` for the secret | Terraform didn't take over the secret. Run `terraform -chdir=eks init`, then `make deploy-eks` again |
+| A node stays `NotReady` | Wait 3 minutes. If it's still not ready, `kubectl describe node <name>` and read the `Conditions` section |
+| Certificate stays `False` | Your domain's DNS doesn't point at Route 53 yet. Redo the checks on [Domain name](../accounts/domain.md#check-it-worked). `kubectl describe certificate -A` shows the exact reason |
 
-More in [Troubleshooting](../reference/troubleshooting.md).
+[Troubleshooting](../reference/troubleshooting.md) covers more errors.
 
-**Next:** [2. Scoreboard (CTFd)](ctfd.md).
+**Next:** [2. The scoreboard](ctfd.md).

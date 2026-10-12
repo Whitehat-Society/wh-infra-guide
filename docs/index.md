@@ -1,77 +1,61 @@
 # Start here
 
-**First action:** open [1 · Your PC → Install the tools](setup/pc.md) and start the installs. They run in the background while you read the rest of this page.
+This guide shows you how to put the Whitehacks CTF online and take it down again. It assumes you have a computer and an internet connection, and nothing else: no cloud account, no tools installed, and no experience with servers.
 
-This guide takes you from a blank computer with no AWS account to a live CTF:
-a scoreboard at `ctf.<your-domain>`, web challenges at `<name>.challenges.<your-domain>`, and pwn challenges reachable over `nc`. You don't need any cloud experience. Every step tells you what to type, how long it takes and how to check that it worked.
+A CTF ("capture the flag") is a security competition. Teams solve challenges, each challenge hides a secret string called a *flag*, and teams score points by submitting flags. To run one, the club needs three things on the internet:
+
+- **A scoreboard website**, where players register, read challenges, submit flags and see rankings. We use free software called **CTFd**.
+- **Web challenges**: small, deliberately vulnerable websites that players attack in a browser.
+- **Pwn challenges**: vulnerable programs that players connect to from their own terminal.
+
+Some challenges (crypto, forensics, OSINT, misc) are only a description, a file and a flag. They live inside CTFd and need nothing else.
+
+## How the guide is organised
+
+Work through the sections in order the first time. Later, use the sidebar to jump to what you need.
 
 <div class="wh">
 <div class="layers">
-  <div class="layer l-node"><b>1 · Your PC</b><span>Install about 10 command-line tools</span><span class="pill p-mute">~45 min</span></div>
-  <div class="layer l-node"><b>2 · Accounts</b><span>AWS account, CLI sign-in, budget alert, domain, Discord webhook</span><span class="pill p-mute">~1 h + up to 1 day for domain DNS</span></div>
-  <div class="layer l-node"><b>3 · Code & config</b><span>Clone the repos, swap in your account ID and domain, store the secrets</span><span class="pill p-mute">~30 min</span></div>
-  <div class="layer l-node"><b>4 · Deploy</b><span>Cluster, scoreboard, challenges, backups, final checks</span><span class="pill p-mute">~1.5 h, mostly waiting</span></div>
-  <div class="layer l-man"><b>5 · Run the event</b><span>Watch alarms, scale up, back up the database</span><span class="pill p-warn">event day</span></div>
-  <div class="layer l-none"><b>6 · Tear down</b><span>Delete everything and confirm the bill stops</span><span class="pill p-crit">must do</span></div>
-</div>
-</div>
-
-## What you're building
-
-<div class="wh">
-<div class="facts" style="display:flex;flex-wrap:wrap;gap:8px 22px;font:13px/1.4 var(--f-mono);color:var(--muted)">
-  <span>region <b>ap-southeast-1 (Singapore)</b></span>
-  <span>cluster <b>&lt;event&gt;-eks</b></span>
-  <span>nodes <b>t3.medium · 2–6</b></span>
-  <span>IaC <b>Terraform + Pulumi (Go)</b></span>
-  <span>WH-2026 load <b>106 teams · 39 challenges · 9,316 submissions</b></span>
-</div>
-</div>
-
-One Kubernetes cluster on AWS (EKS) runs everything:
-
-- **CTFd**, the scoreboard, plus its MariaDB database and Redis cache. One pod each.
-- **Web challenges**: one Deployment per challenge behind a shared NGINX ingress, at `https://<name>.challenges.<your-domain>`.
-- **Pwn challenges**: one Deployment per challenge, each with its own Network Load Balancer, reached with `nc <hostname> <port>`.
-- **Static challenges** (crypto, forensics, OSINT, misc) are only files and flags inside CTFd. They need no infrastructure of their own.
-
-Every player shares the same challenge instance. Click around the live map below, or open it full size in [Architecture explorer](reference/architecture.md).
-
-<div class="wh">
-<div class="explorer">
-  <div class="tabs" id="tabs" role="tablist"></div>
-  <div class="figure" style="min-width:0">
-    <div><h3 id="vtitle"></h3><p class="tag" id="vdesc"></p></div>
-    <div class="scroll"><svg id="map" role="img" aria-label="Interactive architecture diagram"></svg></div>
-    <div class="legend" id="legend"></div>
-    <div class="flows" id="flows"></div>
-    <div id="walk" aria-live="polite"></div>
-  </div>
-  <aside class="card" id="inspect" aria-live="polite"></aside>
+  <div class="layer l-node"><b>1 · How the system works</b><span>Plain-language explanations of every part. Read this before you touch anything</span><span class="pill p-mute">about 40 min</span></div>
+  <div class="layer l-node"><b>2 · Your computer</b><span>Open a terminal, learn the few commands you need, install the tools</span><span class="pill p-mute">about 1 hour</span></div>
+  <div class="layer l-node"><b>3 · Accounts</b><span>Amazon Web Services, a spending alert, a domain name, Discord and GitHub</span><span class="pill p-mute">about 1 hour, plus up to a day for the domain</span></div>
+  <div class="layer l-node"><b>4 · Code and settings</b><span>Download the club's code and fill in your own details</span><span class="pill p-mute">about 30 min</span></div>
+  <div class="layer l-node"><b>5 · Deploy</b><span>Build the system, one part at a time, checking each part works</span><span class="pill p-mute">about 1.5 hours, mostly waiting</span></div>
+  <div class="layer l-man"><b>6 · Run the event</b><span>What to watch on event day and what to do when something breaks</span><span class="pill p-warn">event day</span></div>
+  <div class="layer l-none"><b>7 · Tear down</b><span>Delete everything so the club stops paying</span><span class="pill p-crit">always do this</span></div>
 </div>
 </div>
 
 ## What it costs
 
-!!! warning "AWS bills by the hour while the cluster exists"
-    A running stack costs roughly **US$0.45 per hour (about US$11 per day)**: EKS control plane $0.10/h, 3 × t3.medium nodes ~$0.16/h, NAT gateway ~$0.06/h, and load balancers ~$0.12/h. These are rough figures; check current AWS pricing. Nothing costs money once you finish [6 · Tear down](teardown.md), apart from the domain (~US$15 per year) and a few cents of S3 storage for backups.
+The system runs on rented computers from Amazon Web Services (AWS). AWS charges by the hour for as long as the system exists, whether or not anyone is playing.
 
-    Set up the [budget alert](accounts/budget.md) **before** you deploy anything.
+| Item | Cost |
+|---|---|
+| The running system | about US$0.45 per hour, or US$11 per day |
+| The domain name, e.g. `example-ctf.com` | about US$15 per year |
+| Database backups kept after the event | a few cents per month |
 
-## How each page works
+These are estimates from WH-2026. Check current AWS prices before you budget. A typical event needs the system for two or three days: one for a test run, and one or two for the event itself.
 
-Every task page has the same shape:
+!!! warning "The bill keeps growing until you tear down"
+    A forgotten system costs about US$330 a month. Section 3 sets up an email alert, and section 7 deletes everything. Do both.
 
-1. A time estimate, like <span class="time">⏱ 20 min</span>
-2. Numbered steps, each one starting with the command
-3. **Check it worked**: a command and the output you should see
-4. **If it fails**: the common errors and their fixes
+## How each task page works
 
-Some steps can only be done in a web browser, such as creating the AWS account. Those pages have a screen recording, with the same steps written out underneath it.
+Every page that asks you to do something has the same parts:
 
-!!! tip "Where commands run"
-    Unless a step says otherwise, run commands in a terminal **inside the `wh-2026/utils` folder**. On Windows that terminal is Ubuntu (WSL), not PowerShell.
+1. **A time estimate** at the top, like <span class="time">Time: about 20 minutes</span>.
+2. **Numbered steps.** Each step starts with what to type or click.
+3. **Check it worked.** A command to run and the output you should see. Don't move on until it matches.
+4. **If it fails.** The usual errors and what fixes them.
 
-## Who to ask
+Commands appear in grey boxes. Click the copy icon at the right edge of a box to copy its contents, then paste them into your terminal. Text in angle brackets, like `<your-domain>`, is a placeholder: replace the whole thing, brackets included, with your own value.
 
-Post in the tech & infra channel with: the page you're on, the step number, the command you ran, and the first error line. That's usually enough for someone to help you.
+Steps that can only be done in a web browser, such as creating the AWS account, have a screen recording above the written steps.
+
+## Getting help
+
+Post in the club's tech and infra channel. Include the page you're on, the step number, the command you ran and the first line of the error. Those four things are usually enough for someone to help.
+
+**Next:** [The big picture](concepts/big-picture.md).

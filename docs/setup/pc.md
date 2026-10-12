@@ -1,78 +1,82 @@
 # Install the tools
 
-<span class="time">⏱ ~45 min, mostly downloads</span>
+<span class="time">Time: about 45 minutes, mostly waiting for downloads</span>
 
-You need about ten command-line tools. Pick your operating system tab and run the blocks in order. Each block is safe to run again if something gets interrupted.
+The guide uses about a dozen command-line programs. This page installs all of them. Each block is safe to run again if a download gets interrupted.
 
-| Tool | What it does here |
+| Program | What it does in this guide |
 |---|---|
-| `git` | Downloads the code |
-| `aws` (AWS CLI v2) | Talks to your AWS account |
-| `terraform` ≥ 1.9 | Builds the AWS side: network, cluster, add-ons |
+| `git` | Downloads the club's code and records your changes to it |
+| `aws` | The AWS CLI: controls the AWS account from the terminal |
+| `terraform` (version 1.9 or newer) | Builds the network and the cluster from the files in `utils/eks/` |
 | `kubectl` | Talks to the Kubernetes cluster |
-| `pulumi` v3 | Deploys CTFd and the challenges onto the cluster |
-| `go` ≥ 1.25 | Pulumi programs in this repo are written in Go |
-| `docker` | Builds the challenge images |
-| `python3` + `ctfcli` | Runs `builder.py` and loads challenges into CTFd |
-| `make`, `jq`, `nc`, `curl` | Glue used by the Makefile and the checks |
+| `pulumi` (version 3) | Puts CTFd and the challenges onto the cluster |
+| `go` (version 1.25 or newer) | The language the Pulumi programs are written in. Pulumi needs it to run them |
+| `docker` | Builds the container images |
+| `python3` and `ctfcli` | Run `builder.py` and load challenges into CTFd |
+| `make`, `jq`, `nc`, `curl`, `dig` | Small helpers. `make` runs Makefile targets, `jq` reads JSON output, `nc` opens plain connections, `curl` fetches web pages, `dig` looks up DNS records |
 
-## 1. Get a Linux-style terminal
+## 1. Install Docker
 
 === "Windows"
 
-    Everything in this guide runs inside **WSL** (Windows Subsystem for Linux), an Ubuntu system that runs inside Windows.
+    Docker on Windows comes as an app, **Docker Desktop**, that WSL can use.
 
-    1. Open **PowerShell as Administrator** (Start menu → type `PowerShell` → right-click → *Run as administrator*)
-    2. Run:
-        ```powershell
-        wsl --install -d Ubuntu-24.04
-        ```
-    3. Restart the PC when asked
-    4. Open **Ubuntu** from the Start menu. Choose a username and password (the password is for `sudo`, so remember it)
-    5. Install Docker Desktop from PowerShell:
+    1. Open **PowerShell** (not Ubuntu) and run:
         ```powershell
         winget install -e --id Docker.DockerDesktop
         ```
-    6. Start Docker Desktop once, then go to **Settings → Resources → WSL integration** and switch on **Ubuntu-24.04**
+    2. Start **Docker Desktop** from the Start menu and accept its terms.
+    3. In Docker Desktop, open **Settings → Resources → WSL integration**, switch on **Ubuntu-24.04**, and click **Apply & restart**.
 
-    From here on, follow the **Linux (Ubuntu)** tab inside the Ubuntu window, but **skip the Docker block** there because Docker Desktop already provides it.
+    Do everything after this inside the Ubuntu window.
 
 === "macOS"
 
-    1. Open **Terminal** (⌘ Space → `Terminal`)
-    2. Install Homebrew, the macOS package manager:
+    1. Install **Homebrew**, the usual way to install command-line programs on macOS:
         ```bash
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         ```
-    3. Follow the two `echo ... >> ~/.zprofile` lines it prints at the end, then close and reopen Terminal
+    2. At the end, Homebrew prints two commands under **Next steps**. Run them, then close and reopen Terminal.
+    3. Install Docker Desktop and start it once:
+        ```bash
+        brew install --cask docker
+        open -a Docker
+        ```
 
-=== "Linux (Ubuntu)"
+=== "Linux"
 
-    You already have a terminal. These steps assume Ubuntu 22.04 or 24.04.
+    ```bash
+    sudo apt-get update && sudo apt-get install -y curl
+    curl -fsSL https://get.docker.com | sudo sh
+    sudo usermod -aG docker "$USER"
+    ```
 
-## 2. Install the tools
+    The last command lets you use Docker without `sudo`. It takes effect after you log out and back in.
+
+## 2. Install the other programs
 
 === "Windows"
 
-    Use the **Linux (Ubuntu)** tab, inside the Ubuntu window. Skip its Docker block.
+    Follow the **Linux** tab, typing the commands into the Ubuntu window.
 
 === "macOS"
 
     ```bash
     brew install git make jq netcat awscli hashicorp/tap/terraform kubectl pulumi/tap/pulumi go python@3.12
-    brew install --cask docker
-    open -a Docker      # start Docker once and accept the prompts
     ```
 
-=== "Linux (Ubuntu)"
+=== "Linux"
 
-    **Basics**
+    Run each block in turn.
+
+    **Basic tools**
     ```bash
     sudo apt-get update
-    sudo apt-get install -y git make jq unzip curl gnupg netcat-openbsd dnsutils python3 python3-venv python3-pip
+    sudo apt-get install -y git make jq unzip curl gnupg netcat-openbsd dnsutils perl python3 python3-venv python3-pip
     ```
 
-    **AWS CLI v2**
+    **AWS CLI**
     ```bash
     cd /tmp
     curl -sSLo awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip"
@@ -108,26 +112,24 @@ You need about ten command-line tools. Pick your operating system tab and run th
     curl -fsSL https://get.pulumi.com | sh
     ```
 
-    **Docker** (skip on Windows/WSL)
-    ```bash
-    curl -fsSL https://get.docker.com | sudo sh
-    sudo usermod -aG docker "$USER"
-    ```
+    Close the terminal and open a new one. The new window picks up the programs you just installed.
 
-    Close and reopen the terminal so the new `PATH` and the `docker` group take effect.
+## 3. Install the Python programs
 
-## 3. Python packages
-
-The repo's scripts need a few Python libraries plus `ctfcli`. Put them in one virtual environment so they don't clash with system Python:
+Python programs are installed into a **virtual environment**, a private folder of Python libraries. It keeps this guide's libraries from clashing with anything else on your computer.
 
 ```bash
 python3 -m venv ~/.venvs/wh
-echo 'source ~/.venvs/wh/bin/activate' >> ~/.bashrc   # macOS: ~/.zshrc
+echo 'source ~/.venvs/wh/bin/activate' >> ~/.bashrc
 source ~/.venvs/wh/bin/activate
 pip install boto3 docker PyYAML requests pytest ctfcli
 ```
 
+On macOS, replace `~/.bashrc` with `~/.zshrc`. Your prompt now starts with `(wh)`, which shows the environment is active. The `echo` line activates it in every new window.
+
 ## 4. Tell git who you are
+
+Git labels every change you save with a name and an email:
 
 ```bash
 git config --global user.name  "Your Name"
@@ -136,29 +138,33 @@ git config --global user.email "you@example.com"
 
 ## Check it worked
 
-Paste this whole block. Every line should print a version, and none should print `MISSING`:
+Paste this whole block. It prints one line per program:
 
 ```bash
-for t in git aws terraform kubectl pulumi go docker python3 ctf make jq nc curl; do
+for t in git aws terraform kubectl pulumi go docker python3 ctf make jq nc curl dig; do
   printf '%-10s ' "$t"; command -v "$t" >/dev/null || { echo MISSING; continue; }
   case $t in
     go) go version ;; kubectl) kubectl version --client 2>&1 | head -1 ;;
-    nc|make) echo ok ;; ctf) ctf version 2>/dev/null || echo ok ;;
+    nc|make|dig) echo ok ;; ctf) ctf version 2>/dev/null || echo ok ;;
     *) "$t" --version 2>&1 | head -1 ;;
   esac
 done
 docker run --rm hello-world | grep -m1 'Hello from Docker'
 ```
 
-Expected: `terraform` shows `v1.9` or newer, `go` shows `go1.25` or newer, and the last line prints `Hello from Docker!`.
+You should see:
+
+- no line that says `MISSING`
+- `terraform` at `v1.9` or newer, and `go` at `go1.25` or newer
+- `Hello from Docker!` on the last line, which means Docker can download and run a container
 
 ## If it fails
 
-| Symptom | Fix |
+| Message | Fix |
 |---|---|
-| `command not found` right after installing | Close and reopen the terminal, or run `source ~/.bashrc` |
-| `permission denied ... docker.sock` | Linux: log out and back in (the `docker` group applies at login). WSL: make sure Docker Desktop is running and WSL integration is on |
-| `wsl --install` says virtualization is disabled | Turn on *Intel VT-x* / *AMD-V* (sometimes called *SVM*) in the BIOS, then retry |
-| `go version` shows something older than 1.25 | An older Go is earlier on `PATH`. Run `which -a go` and remove the old one |
+| `MISSING` or `command not found` right after installing | Close and reopen the terminal. If it's still missing, rerun that program's install block |
+| `permission denied ... docker.sock` | Linux: log out and back in. Windows: check that Docker Desktop is running and its WSL integration is on |
+| `go` older than 1.25 | An older Go is installed elsewhere. `which -a go` lists every copy; remove the old one |
+| `ctf` is MISSING | The virtual environment isn't active. Run `source ~/.venvs/wh/bin/activate` |
 
 **Next:** [Create the AWS account](../accounts/aws.md).

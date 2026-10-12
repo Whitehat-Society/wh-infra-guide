@@ -1,45 +1,54 @@
 # Troubleshooting
 
-**First action:** run the three commands below and read the first line that looks wrong. Most problems show up here.
+When something is wrong and you don't know where, start with these three commands. Most problems show up in one of them.
 
 ```bash
-kubectl get pods -A | grep -v -e Running -e Completed      # broken pods
-kubectl get events -A --sort-by=.lastTimestamp | tail -20  # what Kubernetes tried last
-aws sts get-caller-identity                                # still signed in?
+kubectl get pods -A | grep -v -e Running -e Completed
+kubectl get events -A --sort-by=.lastTimestamp | tail -20
+aws sts get-caller-identity
 ```
 
-## By symptom
+1. The first lists every pod that isn't running normally. Its `STATUS` column names the problem, and the table below explains each status.
+2. The second shows the last 20 things Kubernetes did or tried to do, newest last. Failures appear with a reason.
+3. The third checks that your AWS login still works.
 
-| Symptom | Likely cause | Fix |
+## Pod states
+
+| Status | What it means | What to do |
 |---|---|---|
-| `ExpiredToken`, `SSO session ... expired` | 8-hour sign-in ended | `aws sso login`, then rerun the command |
-| `Unable to connect to the server` from `kubectl` | kubeconfig missing or cluster gone | `cd ~/wh/wh-2026/utils && make kubeconfig` |
-| Pod `Pending` | No node has room, or a disk can't attach | `kubectl describe pod <pod> -n <ns>` → read `Events`. "Insufficient cpu/memory": wait ~5 min for the autoscaler, or [add nodes](../operate/scaling.md) |
-| Pod `ImagePullBackOff` | Image not in ECR, or a typo in the account ID | `kubectl describe pod` shows the image URL. Check it matches `aws ecr describe-images --repository-name <repo>` |
-| Pod `CrashLoopBackOff` | The app itself exits | `kubectl logs <pod> -n <ns> --previous` |
-| Pod `OOMKilled` | Over its memory limit (512Mi for challenges) | Raise the limit in `utils/web-shared/main.go` or `utils/shared-tcp/main.go`, then `make build-images` |
-| Service `EXTERNAL-IP <pending>` | Load balancer controller can't create the NLB | `kubectl logs -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller --tail=50`. An IAM error means `make deploy-eks` didn't finish; rerun it |
-| Hostname doesn't resolve | ExternalDNS hasn't written the record, or the domain isn't on Route 53 | `kubectl logs -n external-dns -l app.kubernetes.io/name=external-dns --tail=30`, and `dig +short NS <domain>` |
-| Browser certificate warning | cert-manager hasn't issued yet, or hit Let's Encrypt's limit (5 identical certs per week) | `kubectl describe certificate -A`, then `kubectl logs -n cert-manager deploy/cert-manager --tail=50` |
-| Web challenge returns 503 | Rate limit (20 req/s per address) | See [Rate limits](../operate/risks.md#rate-limits) |
-| Pulumi: `the stack is currently locked` | A previous run was interrupted | `pulumi -C <dir> cancel --yes` (with the [Pulumi variables](#pulumi-variables) set) |
-| Pulumi: `incorrect passphrase` | Wrong `pulumi_passphrase`, or an old `Pulumi.<stack>.yaml` from WH-2026 | Delete that file if it's from the old event; never change the passphrase of a live stack |
-| Terraform: `Error acquiring the state lock` | Another Terraform is running, or one crashed | Make sure nobody else is deploying, then `terraform -chdir=eks force-unlock <LOCK_ID>` |
-| Terraform: `secret ... scheduled for deletion` | Teardown less than 7 days ago | `make restore-secrets`, then rerun `make deploy-eks` |
+| `Pending` | Kubernetes can't find room for the pod, or can't attach its disk | `kubectl describe pod <pod> -n <namespace>` and read **Events** at the bottom. If it says `Insufficient cpu` or `Insufficient memory`, wait 5 minutes for a new computer, or [add one now](../operate/scaling.md) |
+| `ImagePullBackOff` | Kubernetes can't download the pod's image | `kubectl describe pod` shows the image address. Check the account ID in it is yours, and that the image exists: `aws ecr describe-images --repository-name <repository>` |
+| `CrashLoopBackOff` | The program starts and then exits, over and over | `kubectl logs <pod> -n <namespace> --previous` shows the output of the last failed start |
+| `OOMKilled` | The program used more memory than allowed (512 MB for challenges), so Kubernetes stopped it | Raise the memory limit in `utils/web-shared/main.go` or `utils/shared-tcp/main.go`, then `make build-images` |
+
+## By message
+
+| Message or symptom | Cause | Fix |
+|---|---|---|
+| `ExpiredToken` or `SSO session ... expired` | Your 8-hour AWS login ended | `aws sso login`, then rerun the command |
+| `Unable to connect to the server` from `kubectl` | `kubectl` doesn't know the cluster's address, or the cluster was deleted | `cd ~/wh/wh-2026/utils && make kubeconfig` |
+| A Service's `EXTERNAL-IP` stays `<pending>` | The load balancer controller can't create the load balancer | `kubectl logs -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller --tail=50`. A permissions error means `make deploy-eks` didn't finish; rerun it |
+| A name doesn't resolve (`dig` prints nothing) | ExternalDNS hasn't created the record, or your domain doesn't point at Route 53 | `kubectl logs -n external-dns -l app.kubernetes.io/name=external-dns --tail=30`, and check `dig +short NS <your-domain>` |
+| The browser warns about the certificate | cert-manager hasn't got the certificate yet, or Let's Encrypt refused because it issued the same certificate 5 times this week | `kubectl describe certificate -A` gives the reason. `kubectl logs -n cert-manager deploy/cert-manager --tail=50` gives detail |
+| A web challenge answers `503` | The request limit, 20 a second per address | See [Rate limits](../operate/risks.md#rate-limits) |
+| Pulumi: `the stack is currently locked` | An earlier Pulumi run was interrupted and left a lock | Set the [Pulumi variables](#pulumi-variables), then `pulumi -C <folder> cancel --yes` |
+| Pulumi: `incorrect passphrase` | The passphrase is wrong, or a settings file from WH-2026 is still present | Delete any `Pulumi.wh-2026.yaml`. Never change the passphrase of a running system |
+| Terraform: `Error acquiring the state lock` | Another Terraform run is going, or one crashed and left a lock | Make sure nobody else is deploying, then `terraform -chdir=eks force-unlock <LOCK_ID>` with the ID from the message |
+| Terraform: `secret ... scheduled for deletion` | A teardown less than 7 days ago deleted the secret | `make restore-secrets`, then rerun `make deploy-eks` |
 
 ## Pulumi variables
 
-Any manual `pulumi` command needs these first:
+Every Pulumi command you run by hand needs these variables first:
 
 --8<-- "pulumi-env.md"
 
-## Getting help
+## Asking for help
 
-Post in the tech & infra channel with:
+Post in the tech and infra channel with:
 
-1. The page and step number you're on
-2. The exact command
-3. The first error line (not a screenshot of the whole terminal)
-4. The output of `kubectl get pods -A | grep -v Running` if the cluster is involved
+1. the page and step number you're on
+2. the exact command you ran
+3. the first line of the error, as text rather than a screenshot
+4. if the cluster is involved, the output of `kubectl get pods -A | grep -v Running`
 
-The original, more detailed runbooks are in the wh-2026 repo under `docs/ops/`.
+The original runbooks, with more technical detail, are in the wh-2026 repository under `docs/ops/`.

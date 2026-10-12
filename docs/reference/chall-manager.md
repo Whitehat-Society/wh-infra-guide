@@ -1,36 +1,36 @@
-# Appendix: chall-manager (optional)
+# Appendix: chall-manager
 
-**Skip this unless you need per-player challenge instances.** The rest of the guide works without it.
+**This appendix is optional.** The rest of the guide works without it.
 
-## What it is
+## What it does
 
-[chall-manager](https://github.com/ctfer-io/chall-manager) starts a **separate copy of a challenge for each team**, on demand, and deletes it after a timeout. Players click "Boot" in CTFd and get their own URL. It fixes the shared-state problems in [Known weak spots](../operate/risks.md#many-players-on-one-challenge), at the cost of a lot more moving parts.
+In the main system, every player shares one running copy of each challenge. [chall-manager](https://github.com/ctfer-io/chall-manager) instead starts a **separate copy for each team**, when the team asks for one, and deletes it after a set time. Players click a button in CTFd and receive their own address. That removes the shared-data problems described in [Known weak spots](../operate/risks.md#many-players-on-one-challenge), at the cost of many more parts that can fail.
 
-At WH-2026 it ran for one challenge, `filelocker`, and it served no players. Every other challenge used the shared model described in this guide.
+At WH-2026, chall-manager ran for one challenge, `filelocker`, and no player used it. Every other challenge used the shared approach this guide describes.
 
 ## What it adds
 
-| Piece | Where |
+| Part | Where it comes from |
 |---|---|
-| chall-manager + janitor pods (namespace `chall-manager`) | `utils/chall-manager/` (Pulumi Go) → `make deploy-chall-manager` |
-| A "scenario" per challenge: a small Pulumi program that creates one player's pod, Service and Ingress | `web/filelocker/src/scenario/` |
-| Scenario images in ECR | repo `<event>-scenarios`, created by `make deploy-eks` |
-| The CTFd plugin that shows the Boot button | `ctfd-chall-manager` plugin in `CTFd/CTFd/plugins/`, CTFd 3.8+ |
-| Extra tools on your PC | `oras`, `chall-manager-cli` |
+| The chall-manager program, and a "janitor" that deletes expired copies, in the namespace `chall-manager` | The Pulumi program in `utils/chall-manager/`, deployed with `make deploy-chall-manager` |
+| A *scenario* for each challenge: a small Pulumi program that creates one team's copy, with its Service and Ingress | e.g. `web/filelocker/src/scenario/` |
+| A registry for scenarios | The ECR registry `<event>-scenarios`, which `make deploy-eks` already creates |
+| The button in CTFd | The `ctfd-chall-manager` plugin, added to `CTFd/CTFd/plugins/` |
+| Two more tools on your computer | `oras`, which uploads scenarios, and `chall-manager-cli`, which talks to chall-manager |
 
-## How to turn it on
+## How to set it up
 
-Follow these in the wh-2026 repo, after finishing [Deploy](../deploy/index.md):
+Do this after finishing [Deploy](../deploy/index.md). The steps are in the wh-2026 repository:
 
-1. `docs/ops/deploy-live-infra.md`, **Step 2** (deploy chall-manager) through **Step 5** (check two teams get separate instances)
-2. `docs/ops/event-runbook.md`, **Phase E** (load test with `make load-test TEAMS=30`)
-3. Re-enable the alarm you silenced in [1. Cluster](../deploy/eks.md):
+1. `docs/ops/deploy-live-infra.md`, from **Step 2** (deploy chall-manager) to **Step 5** (check that two teams get separate copies).
+2. `docs/ops/event-runbook.md`, **Phase E**: a test with 30 teams at once, `make load-test TEAMS=30`.
+3. Switch the chall-manager alarm back on. [1. The cluster](../deploy/eks.md) switched it off:
     ```bash
     aws cloudwatch enable-alarm-actions --alarm-names "$EVENT-chall-manager-pod-down"
     ```
 
-## Known problems from WH-2026
+## Problems found at WH-2026
 
-- chall-manager keeps its database in `/tmp` inside the pod. **A pod restart forgets every challenge.** Rerun `make build-images` after any restart
-- The gRPC endpoint sits behind an NLB with a 30-second idle timeout, so CLI calls that create instances get cut off. Use `kubectl port-forward -n chall-manager svc/chall-manager 18081:8080` and `--url localhost:18081`
-- HTTP scenarios must set the annotation `kubernetes.io/ingress.class: nginx`, or instance creation hangs forever
+- **chall-manager forgets everything when it restarts.** It keeps its records inside its own pod. After any restart, run `make build-images` to register the challenges again.
+- **Commands that create a copy get cut off.** The load balancer in front of chall-manager drops connections that are silent for 30 seconds, and creating a copy takes longer. Connect directly instead: `kubectl port-forward -n chall-manager svc/chall-manager 18081:8080`, then use `--url localhost:18081`.
+- **Web scenarios must name NGINX.** Each scenario's Ingress needs the annotation `kubernetes.io/ingress.class: nginx`. Without it, NGINX ignores the Ingress, and creating a copy never finishes.

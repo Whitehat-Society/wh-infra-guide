@@ -1,37 +1,40 @@
-# 3. Challenges
+# 3. The challenges
 
-<span class="time">⏱ ~20 min, longer on the first run (no Docker cache)</span>
+<span class="time">Time: about 20 minutes, longer on the first run</span>
 
-`make build-images` does everything for the challenges in one go:
+This stage builds every challenge, starts the web and pwn challenges on the cluster, and loads every challenge into CTFd. One command, `make build-images`, does it all:
 
-1. `terraform apply` in `utils/ecr/` creates the ECR repository for challenge images, and writes its URI into `config.ini`
-2. `builder.py` reads every `challenge.yml` and sorts challenges by `challenge_type`:
-    - `shared-web`: build, push to ECR, then one Pulumi run deploys all web challenges (`utils/web-shared`)
-    - `shared-tcp`: build, push, then one Pulumi run deploys all pwn challenges, each with its own load balancer (`utils/shared-tcp`)
-    - `text`: nothing to build
-3. `ctf challenge install` loads every challenge, its files and flags into CTFd
-4. It writes each challenge's URL or `nc` command into CTFd's `connection_info`
+1. Terraform creates the ECR registry for challenge images, from the files in `utils/ecr/`.
+2. `builder.py` reads each challenge's `challenge.yml` and acts on its `challenge_type`:
+    - `shared-web`: builds the image, uploads it, and adds the challenge to the web list.
+    - `shared-tcp`: builds the image, uploads it, and adds the challenge to the pwn list.
+    - `text`: nothing to build. The challenge only has files and a flag.
+3. Pulumi starts every challenge on the web list (`utils/web-shared/`) and every challenge on the pwn list (`utils/shared-tcp/`). Each pwn challenge gets its own load balancer.
+4. ctfcli loads every challenge's text, files and flag into CTFd.
+5. `builder.py` fills in each challenge's **connection info**, the web address or `nc` command that players see in CTFd.
+
+The first run takes longest. Docker keeps parts of each image it builds, its **cache**, so later runs only rebuild what changed.
 
 ## Run it
 
-1. Log Docker in to ECR. The login lasts 12 hours:
+1. Log Docker in to ECR, so it may upload images there. The login lasts 12 hours:
     ```bash
     cd ~/wh/wh-2026/utils
     ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
     aws ecr get-login-password | docker login --username AWS --password-stdin "$ACCOUNT.dkr.ecr.ap-southeast-1.amazonaws.com"
     ```
-    Expected: `Login Succeeded`
+    The last line is `Login Succeeded`.
 2. Build and deploy:
     ```bash
     make build-images
     ```
-    Terraform stops once to ask `Do you want to perform these actions?`. Type `yes`.
-3. While it runs, look for these lines:
+    Near the start, Terraform asks `Do you want to perform these actions?`. Type `yes` and press Enter.
+3. While it runs, watch for these two lines. They mean the web and pwn challenges are up:
     - `[shared-web] Pulumi deploy complete.`
     - `[shared-tcp] Pulumi deploy complete.`
 
-!!! note "Expected error: filelocker"
-    `filelocker` is the one challenge that needs per-player instances (`challenge_type: chall-manager`). The event-day stack doesn't run chall-manager, so its build step prints an error, and the builder moves on to the next challenge. Leave it hidden in CTFd, or follow the [chall-manager appendix](../reference/chall-manager.md).
+!!! note "One error is expected: filelocker"
+    `filelocker` gives each team its own copy of the challenge, which needs the optional chall-manager. This deploy leaves chall-manager out, so the builder prints an error for `filelocker` and moves on to the next challenge. Keep `filelocker` hidden in CTFd, or set it up with the [chall-manager appendix](../reference/chall-manager.md).
 
 ## Check it worked
 
@@ -43,15 +46,20 @@ curl -s -H "Authorization: Token $(python3 secrets.py get ctfd_admin_token)" -H 
   "https://ctf.$(jq -r .domain_name eks/terraform.tfvars.json)/api/v1/challenges?view=admin" | jq ".data | length"
 ```
 
-Expected: 1 `Running` pod per web challenge and 3 per pwn challenge. The last command prints the number of challenges in CTFd. Each pwn Service has an `EXTERNAL-IP` ending in `.elb.ap-southeast-1.amazonaws.com`. Load balancers take ~3 min to get one.
+What each command should show:
 
-In the browser, **Admin → Challenges** lists every challenge. They're all hidden, so players can't see them yet.
+1. **Web challenges:** one `Running` pod per web challenge.
+2. **Pwn challenges:** three `Running` pods per pwn challenge. Each pwn challenge runs three copies, and its load balancer spreads players across them.
+3. **Pwn load balancers:** each line has an `EXTERNAL-IP` ending in `.elb.ap-southeast-1.amazonaws.com`. A new load balancer takes about 3 minutes to get one.
+4. **CTFd:** the number of challenges loaded into the scoreboard.
 
-## Showing challenges on event day
+In the browser, **Admin → Challenges** lists every challenge. All of them are hidden, so players can't see them yet.
 
-Every `challenge.yml` has `state: hidden`. When the CTF starts:
+## Showing the challenges on event day
 
-=== "All at once (CLI)"
+Each `challenge.yml` contains `state: hidden`. When the CTF starts, make them visible:
+
+=== "All at once, from the terminal"
 
     ```bash
     cd ~/wh/wh-2026
@@ -59,25 +67,27 @@ Every `challenge.yml` has `state: hidden`. When the CTF starts:
     ctf challenge sync
     ```
 
-=== "One by one (browser)"
+    The first command changes `hidden` to `visible` in every file except `filelocker`'s. `ctf challenge sync` sends the change to CTFd.
 
-    **Admin → Challenges →** a challenge **→ State: Visible → Update**.
+=== "One at a time, in the browser"
+
+    Go to **Admin → Challenges**, open a challenge, set **State** to **Visible**, and click **Update**.
 
 ## Changing a challenge later
 
-Edit its folder, then:
+Edit the files in the challenge's folder, then:
 
-- Only text, flags or files changed: `cd ~/wh/wh-2026 && ctf challenge sync <folder>`
-- Code or Dockerfile changed: rerun `make build-images`. Unchanged images build from cache
+- If you changed only text, flags or attached files: `cd ~/wh/wh-2026 && ctf challenge sync <category>/<challenge-folder>`
+- If you changed the challenge's code or Dockerfile: rerun `make build-images`. Unchanged challenges rebuild quickly from the cache.
 
 ## If it fails
 
-| Symptom | Fix |
+| Message | Fix |
 |---|---|
-| `denied: Your authorization token has expired` | Redo step 1 |
-| `JSONDecodeError` at the very end | The CTFd setup wizard isn't finished, or `.ctf/config` is wrong. Fix that, then `cd ~/wh/wh-2026 && ctf challenge install` |
-| `error: passphrase must be set` / `incorrect passphrase` | The `pulumi_passphrase` secret is missing, or an old `Pulumi.<stack>.yaml` is still there. See [Make it yours](../code/make-it-yours.md) step 4 |
-| Web pod `CrashLoopBackOff` | `kubectl logs -n challenges-web deploy/<name>`. It's usually the challenge's own code, not the infrastructure |
-| pwn `EXTERNAL-IP` stays `<pending>` | `kubectl logs -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller --tail=50` |
+| `denied: Your authorization token has expired` | The ECR login expired. Redo step 1 |
+| `JSONDecodeError` at the very end | CTFd's setup isn't finished, or `.ctf/config` is wrong. Fix it, then run `cd ~/wh/wh-2026 && ctf challenge install` |
+| `passphrase must be set` or `incorrect passphrase` | The `pulumi_passphrase` secret is missing, or WH-2026's old settings file is still there. See step 4 of [Make it yours](../code/make-it-yours.md) |
+| A web pod shows `CrashLoopBackOff` | The challenge program keeps crashing. `kubectl logs -n challenges-web deploy/<name>` shows its last output. The cause is usually in the challenge's own code |
+| A pwn `EXTERNAL-IP` stays `<pending>` | The load balancer controller couldn't create it. `kubectl logs -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller --tail=50` shows why |
 
-**Next:** [4. Backups & health checks](day2.md).
+**Next:** [4. Backups and health checks](day2.md).

@@ -1,45 +1,46 @@
-# Destroy & check the bill
+# Delete everything
 
-<span class="time">⏱ ~30 min, mostly waiting</span>
+<span class="time">Time: about 30 minutes, mostly waiting</span>
 
-Do this the day after the event, or any time the stack sits idle for more than a day. It deletes everything except the domain and its DNS zone. You can rebuild it all by rerunning [Deploy](deploy/index.md).
+AWS bills for the system until it no longer exists. Delete it the day after the event, or whenever it will sit unused for more than a day. This page deletes everything except the domain and its DNS records. Rebuilding later takes about 1.5 hours with [Deploy](deploy/index.md).
 
 !!! danger "This can't be undone"
-    The database, every uploaded file and every pushed image are deleted. Do step 1 first.
+    Deleting the system deletes the database, every uploaded file and every challenge image. Do step 1 first.
 
-## The order matters
+## Why the order matters
 
-The cluster's controllers created some AWS resources (load balancers, DNS records, disks) themselves, so Terraform doesn't know about them. Delete the Pulumi stacks **first**, while the controllers are still running to clean up after themselves. Then destroy the cluster.
+Some AWS resources were created by the helper programs inside the cluster rather than by Terraform: the challenges' load balancers, their DNS records and the database disk. Terraform doesn't know about them, so it can't delete them. Instead, you delete the Pulumi stacks first. Kubernetes then tells the helper programs, which delete the resources they made. Only after that do you delete the cluster with Terraform.
 
-1. **Keep the final database backup.** Follow [Keep a copy after the event](operate/backups.md#keep-a-copy-after-the-event)
-2. **Set up Pulumi:**
+1. **Keep the final backup.** Follow [Keep a copy after the event](operate/backups.md#keep-a-copy-after-the-event).
+2. **Set the variables Pulumi needs:**
     --8<-- "pulumi-env.md"
-3. **Delete the challenges and CTFd** (~5 min each):
+3. **Delete the challenges and CTFd.** Each stack takes about 5 minutes:
     ```bash
     for s in shared-tcp web-shared ctfd; do
       pulumi -C "$s" stack select "$EVENT" && pulumi -C "$s" destroy --yes
     done
     ```
-    Expected: each ends with `Resources: N deleted`
-4. **Wait for the load balancers to disappear** (~2 min):
+    Each one ends with `Resources:` and a count of deleted resources.
+4. **Wait for the challenges' load balancers to go.** About 2 minutes:
     ```bash
     aws elbv2 describe-load-balancers --query 'LoadBalancers[].LoadBalancerName' --output text
     ```
-    Repeat until only `<event>-tcp` and the `k8s-ingressn-…` one are left. Terraform deletes those two itself
-5. **Destroy the cluster and everything Terraform made** (~20 min):
+    Repeat until only two names are left: `<event>-tcp` and one starting with `k8s-ingressn`. Terraform deletes those two in the next step.
+5. **Delete the cluster and everything else Terraform made.** About 20 minutes:
     ```bash
-    terraform -chdir=eks apply -var-file=terraform.tfvars.json -auto-approve   # sync state first if code changed
+    terraform -chdir=eks apply -var-file=terraform.tfvars.json -auto-approve
     terraform -chdir=eks destroy -var-file=terraform.tfvars.json
     ```
-    Type `yes` when asked. `module.vpc.aws_vpc.this[0]: Still destroying...` can last 10 minutes. **Don't interrupt it**
-6. **Delete the challenge image repository:**
+    The first command makes Terraform's records match the current code, in case the code changed since the deploy. The second asks for confirmation: type `yes`. Lines like `module.vpc.aws_vpc.this[0]: Still destroying...` can continue for 10 minutes. Don't interrupt them.
+6. **Delete the challenge image registry:**
     ```bash
     terraform -chdir=ecr destroy -var-file=terraform.tfvars
     ```
+    Type `yes` when asked.
 
 ## Check the bill has stopped
 
-Run the whole block. Every line should print nothing, `[]`, or `None`:
+Run the whole block. Each line checks for one kind of resource that costs money, and each should print `[]` or nothing:
 
 ```bash
 R=ap-southeast-1
@@ -53,28 +54,30 @@ aws ecr describe-repositories --region $R --query 'repositories[].repositoryName
 aws s3 ls
 ```
 
-Then check the bill itself the next day: anything above ~US$0.10/day after teardown is a leftover.
+The lines check, in order: clusters, rented computers, NAT gateways, load balancers, disks, fixed public addresses, image registries and storage buckets.
+
+The next day, check the actual charges for the last three days:
 
 ```bash
 aws ce get-cost-and-usage --time-period Start=$(date -d '-3 days' +%F),End=$(date +%F) \
   --granularity DAILY --metrics UnblendedCost --query 'ResultsByTime[].[TimePeriod.Start,Total.UnblendedCost.Amount]' --output text
 ```
 
-(macOS: replace `date -d '-3 days' +%F` with `date -v-3d +%F`.)
+On macOS, replace `date -d '-3 days' +%F` with `date -v-3d +%F`. After teardown, each day should cost less than US$0.10. Anything more is a leftover resource.
 
-## What stays (on purpose)
+## What stays, on purpose
 
-| Kept | Why | Cost |
+| What | Why | Cost |
 |---|---|---|
-| Domain + Route 53 hosted zone | Next year reuses them | ~US$15/year + US$0.50/month |
-| Secret `<event>/config` | Terraform schedules it for deletion with a 7-day recovery window. `make deploy-eks` restores it if you redeploy within 7 days | US$0.40/month until deleted |
-| Budget alert | Free | — |
+| The domain and its hosted zone | Next year's event reuses them | about US$15 a year, plus US$0.50 a month |
+| The secret `<event>/config` | AWS keeps a deleted secret for 7 days in case you need it back. `make deploy-eks` restores it if you deploy again within that time | US$0.40 a month until it's gone |
+| The budget alert | It costs nothing | none |
 
 ## If it fails
 
-| Symptom | Fix |
+| Message | Fix |
 |---|---|
-| Pulumi: `error: ... passphrase` | `PULUMI_CONFIG_PASSPHRASE` isn't set in this terminal. Redo step 2 |
-| `DependencyViolation` deleting the VPC or a subnet | Something the controllers made is still there. Rerun step 4's check, delete leftover load balancers with `aws elbv2 delete-load-balancer --load-balancer-arn <arn>`, then rerun step 5 |
-| Destroy was interrupted and the cluster still exists | Follow *Recovery: EKS cluster orphaned from Terraform state* in `docs/ops/deploy-live-infra.md` in the wh-2026 repo |
-| Something is still billing after all checks are empty | Open **Billing → Bills** in the console. It lists charges by service and region |
+| Pulumi mentions the `passphrase` | This terminal doesn't have the Pulumi variables. Redo step 2 |
+| `DependencyViolation` while deleting the network | A load balancer made by the cluster still exists. Rerun the check in step 4, delete leftovers with `aws elbv2 delete-load-balancer --load-balancer-arn <arn>`, then rerun step 5 |
+| The deletion was interrupted, and the cluster still exists | Follow *Recovery: EKS cluster orphaned from Terraform state* in `docs/ops/deploy-live-infra.md` in the wh-2026 repository |
+| All checks are empty, but charges continue | In the AWS console, open **Billing and Cost Management → Bills**. It lists each charge by service and region |

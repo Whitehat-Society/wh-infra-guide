@@ -1,64 +1,68 @@
 # AWS account
 
-<span class="time">⏱ ~30 min</span>
+<span class="time">Time: about 30 minutes</span>
 
-These steps only work in a web browser. Each part has a screen recording, with the same steps written out underneath it.
+This page creates the club's AWS account, locks down its master login, and gives you an everyday login. All three parts happen in a web browser, so each has a screen recording followed by the same steps in writing.
 
-You need: an email address the club controls (not your personal one; e.g. `infra@<club-domain>` or a shared Gmail), a credit or debit card, and a phone that can receive SMS.
+You need:
 
-!!! danger "The root user is the master key"
-    The email and password you sign up with become the **root user**, which can do anything, including closing the account. After part 3 you won't use it for daily work. Store the password in the club's password manager, not in chat.
+- **An email address the club controls**, such as `infra@<club-domain>` or a shared Gmail. Don't use a personal address: the account must outlive your time on the committee.
+- **A credit or debit card.** AWS bills it monthly.
+- **A phone that can receive text messages**, for identity checks.
 
-## Part 1 · Sign up
+!!! danger "The root user can do anything"
+    The email and password you sign up with become the account's **root user**. It can spend money, delete everything and close the account. After part 3 you won't use it day to day. Keep its password in the club's password manager, never in chat.
 
---8<-- "rec-pending.md"
-
-1. Open <https://signin.aws.amazon.com/signup?request_type=register>
-2. Enter the **root email** and an **account name** like `whitehacks-2027`, then click **Verify email address**
-3. Type the code from the email, then set a strong root password
-4. Pick the **Paid plan**. *Why:* the Free plan can block services this stack needs and closes the account after 6 months. You still get the sign-up credits, and the [budget alert](budget.md) protects you from surprise bills
-5. **Contact information:** choose *Personal*, and fill in your name, phone and address
-6. **Billing:** enter the card. AWS may place a ~US$1 temporary hold to check it
-7. **Identity check:** choose SMS, enter the code you receive
-8. **Support plan:** choose **Basic support – Free**, then **Complete sign up**
-
-**Check it worked:** within a few minutes you get an email titled *Welcome to Amazon Web Services*. Some services can take up to 24 h to activate. If later commands say `SubscriptionRequiredException` or `OptInRequired`, wait and retry.
-
-## Part 2 · Protect the root user with MFA
-
-<span class="time">⏱ 5 min</span>
-
-MFA (multi-factor authentication) means a stolen password isn't enough to get in.
+## Part 1: Sign up
 
 --8<-- "rec-pending.md"
 
-1. Sign in at <https://console.aws.amazon.com/> as **Root user** with the root email and password
-2. Click the account name (top right) → **Security credentials**
-3. Under **Multi-factor authentication (MFA)** click **Assign MFA device**
-4. Name it `root-<your-name>`. Choose **Passkey or security key**, or **Authenticator app** if you'd rather use the Google/Microsoft Authenticator app on a phone
-5. Follow the prompts. For an authenticator app: scan the QR code, then type two codes in a row
+1. Open <https://signin.aws.amazon.com/signup?request_type=register>.
+2. Enter the club email and an account name, such as `whitehacks-2027`. Click **Verify email address**.
+3. Enter the code AWS emails you, then choose a strong password.
+4. Choose the **Paid plan**. The Free plan can block services this system needs, and it closes the account after six months. You still receive the sign-up credits.
+5. Under **Contact information**, choose **Personal** and fill in your name, phone number and address.
+6. Enter the card. AWS may place a temporary hold of about US$1 to check it.
+7. Choose **Text message (SMS)** and enter the code you receive.
+8. Choose **Basic support – Free**, then **Complete sign up**.
 
-**Check it worked:** the MFA table shows one device. Sign out and back in: you're asked for the second factor.
+**Check it worked:** within a few minutes you receive an email titled *Welcome to Amazon Web Services*. Some services take up to a day to switch on. If a later command fails with `SubscriptionRequiredException` or `OptInRequired`, wait an hour and retry.
 
-## Part 3 · Create your everyday admin user
+## Part 2: Protect the root user with a second factor
 
-<span class="time">⏱ 10 min</span>
+<span class="time">Time: about 5 minutes</span>
 
-You'll create a separate login with **IAM Identity Center**, so the CLI never needs root keys. The CLI then gets short-lived credentials that expire on their own.
+A second factor means a stolen password alone can't open the account. You'll use a phone app or a security key alongside the password.
 
 --8<-- "rec-pending.md"
 
-1. Still signed in as root, check that the region selector (top right) says **Asia Pacific (Singapore) ap-southeast-1**
-2. Search **IAM Identity Center** in the top bar and open it → **Enable**. If it asks, choose **Enable with AWS Organizations**
-3. Left menu → **Users** → **Add user**. Username: your first name. Email: **your own** email. Click through to **Add user**
-4. Left menu → **Permission sets** → **Create permission set** → **Predefined** → **AdministratorAccess** → set **Session duration** to **8 hours** → **Create**
-5. Left menu → **AWS accounts** → tick your account → **Assign users or groups** → **Users** tab → tick your user → **Next** → tick **AdministratorAccess** → **Submit**
-6. Left menu → **Settings** → copy the **AWS access portal URL** (looks like `https://d-xxxxxxxxxx.awsapps.com/start`). You need it on the next page
-7. Open the invitation email sent to your own address → **Accept invitation** → set a password → set up MFA when asked
+1. Sign in at <https://console.aws.amazon.com/>. Choose **Root user** and enter the club email and password.
+2. Click the account name at the top right, then **Security credentials**.
+3. Under **Multi-factor authentication (MFA)**, click **Assign MFA device**.
+4. Name the device, e.g. `root-alex`. Choose **Authenticator app** to use an app such as Google Authenticator or Microsoft Authenticator, or **Passkey or security key** if you have one.
+5. For an app: scan the QR code with it, then type two codes from the app in a row.
 
-**Check it worked:** open the access portal URL and sign in as your new user. You see the account with **AdministratorAccess** under it.
+**Check it worked:** the MFA table lists one device. Sign out and sign in again: AWS now asks for a code after the password.
 
-!!! tip "Adding more team members later"
-    Repeat steps 3 and 5 for each person. Everyone gets their own login and can be removed without changing anyone else's password.
+## Part 3: Create your everyday login
 
-**Next:** [Sign in from the CLI](cli-login.md).
+<span class="time">Time: about 10 minutes</span>
+
+You'll create a personal login through **IAM Identity Center**, the AWS service that manages people's logins. It gives the terminal temporary passwords that expire after a few hours, so a leaked one stops working by itself.
+
+--8<-- "rec-pending.md"
+
+1. Still signed in as root, check the region name at the top right. It must say **Asia Pacific (Singapore)**. If not, click it and choose Singapore.
+2. Type **IAM Identity Center** in the search bar at the top, open it, and click **Enable**. If asked, choose **Enable with AWS Organizations**.
+3. In the left menu, click **Users**, then **Add user**. Use your first name as the username and your own email address. Click through to **Add user**.
+4. In the left menu, click **Permission sets**, then **Create permission set**. Choose **Predefined permission set → AdministratorAccess**. Set **Session duration** to **8 hours** and click **Create**. A *permission set* is a named list of things a user may do. AdministratorAccess allows everything except closing the account.
+5. In the left menu, click **AWS accounts**. Tick the club account, click **Assign users or groups**, open the **Users** tab, tick your user and click **Next**. Tick **AdministratorAccess** and click **Submit**.
+6. In the left menu, click **Settings** and copy the **AWS access portal URL**. It looks like `https://d-xxxxxxxxxx.awsapps.com/start`. You need it on the next page.
+7. Open the invitation email in your own inbox, click **Accept invitation**, choose a password, and set up a second factor when asked.
+
+**Check it worked:** open the access portal URL and sign in with your new login. The page lists the club account with **AdministratorAccess** under it.
+
+!!! tip "Adding teammates"
+    Repeat steps 3 and 5 for each person. Everyone gets their own login, and removing one person doesn't affect anyone else.
+
+**Next:** [Sign in from the terminal](cli-login.md).

@@ -1,26 +1,27 @@
-# 4. Backups & health checks
+# 4. Backups and health checks
 
-<span class="time">⏱ ~10 min</span>
+<span class="time">Time: about 10 minutes</span>
 
-Two Kubernetes CronJobs, both in the `ctfd` namespace:
+This stage sets up two jobs that run on a schedule. Kubernetes calls a scheduled job a **CronJob**. Both run in the `ctfd` namespace:
 
-| Job | Schedule | What it does |
+| Job | When it runs | What it does |
 |---|---|---|
-| `ctfd-backup` | every hour, minute 0 | `mysqldump` of the CTFd database → gzip → `s3://<event>-ctfd-backups/`. Kept 30 days |
-| `challenge-healthcheck` | every 5 min | `curl` each web challenge and `nc` each pwn challenge. Posts to `#infra-alerts` when something fails |
+| `ctfd-backup` | every hour, on the hour | Copies the whole CTFd database into a compressed file and uploads it to the S3 bucket `<event>-ctfd-backups`. Files are kept for 30 days |
+| `challenge-healthcheck` | every 5 minutes | Opens each web challenge and connects to each pwn challenge. If one doesn't answer, it posts to the alerts channel in Discord |
 
 ## Backups
 
-1. Deploy the CronJob:
+1. Create the backup schedule:
     ```bash
     cd ~/wh/wh-2026/utils
     make deploy-ctfd-backup-cronjob
     ```
-2. Run one backup now instead of waiting for the hour:
+2. Run one backup now, instead of waiting for the hour:
     ```bash
     make backup-ctfd
-    kubectl get jobs -n ctfd -w      # Ctrl+C once COMPLETIONS shows 1/1
+    kubectl get jobs -n ctfd -w
     ```
+    When the new job's `COMPLETIONS` column shows `1/1`, press Ctrl+C.
 
 **Check it worked:**
 
@@ -29,20 +30,21 @@ EVENT=$(jq -r .event_name eks/terraform.tfvars.json)
 aws s3 ls "s3://$EVENT-ctfd-backups/"
 ```
 
-Expected: one `ctfd-YYYYMMDD-HHMMSS.sql.gz` file, bigger than 0 bytes.
+The output lists one file named like `ctfd-20270628-120000.sql.gz`, with a size greater than 0.
 
 ## Health checks
 
-The health check needs two things the repo doesn't set up for you: the Discord alert webhook as a Kubernetes Secret, and the current pwn load balancer hostnames.
+The health check needs two things the code doesn't set up by itself: the Discord alert address, stored where the job can read it, and the current addresses of the pwn load balancers.
 
-1. Store the alert webhook in the cluster:
+1. Give the cluster the alert address. The command copies it from Secrets Manager into a Kubernetes Secret named `healthcheck-webhook`:
     ```bash
     kubectl create secret generic healthcheck-webhook -n ctfd \
       --from-literal=url="$(python3 secrets.py get discord_alert_webhook_url)" \
       --dry-run=client -o yaml | kubectl apply -f -
     ```
-2. Write the pwn hostnames into the CronJob file. They change every time the pwn stack is recreated, so rerun this block after each fresh deploy:
+2. Write the pwn load balancer addresses into the job's settings file, `ctfd/healthcheck-cronjob.yaml`. The addresses change whenever the pwn challenges are rebuilt from nothing, so rerun this step after every fresh deploy. First set the variables Pulumi needs:
     --8<-- "pulumi-env.md"
+    Then copy each address from Pulumi's records into the file:
     ```bash
     pulumi -C shared-tcp stack select "$EVENT"
     for n in loop library xoph-dark-embers; do
@@ -52,31 +54,39 @@ The health check needs two things the repo doesn't set up for you: the Discord a
       echo "$VAR=$HOST"
     done
     ```
-    Expected: three lines, each with a hostname ending in `.elb.ap-southeast-1.amazonaws.com`
-3. Deploy it and run it once:
+    The block prints three lines, each ending in `.elb.ap-southeast-1.amazonaws.com`.
+3. Create the schedule, then run the check once and read its results:
     ```bash
     make deploy-healthcheck-cronjob
     make run-healthcheck
     sleep 60; kubectl logs -n ctfd -l job-name --tail=30 --prefix | grep -i -e pass -e fail
     ```
 
-**Check it worked:** every challenge shows `PASS`, and nothing is posted to `#infra-alerts`. Then test the alert path: scale one challenge down, wait for the next 5-minute run, and check that Discord gets an alert:
+**Check it worked:** every challenge shows `PASS`, and nothing appears in the alerts channel.
+
+Then check that alerts reach Discord. Stop one challenge, wait for the next 5-minute run, and look for the alert:
 
 ```bash
 kubectl scale deploy/base64converter -n challenges-web --replicas=0
-# … wait for the alert in Discord …
+```
+
+When the alert arrives, start the challenge again:
+
+```bash
 kubectl scale deploy/base64converter -n challenges-web --replicas=1
 ```
 
-!!! tip "If you change the pwn challenge list"
-    The health check has the pwn names and ports in `utils/healthcheck.py` (`SHARED_TCP_CHALLENGES`) and the hostnames in `ctfd/healthcheck-cronjob.yaml`. Update both, then rerun `make deploy-healthcheck-cronjob`.
+`kubectl scale` changes how many copies of a challenge run. Zero stops it.
+
+!!! tip "If you add or remove a pwn challenge"
+    The health check lists the pwn challenges in two places: names and ports in `utils/healthcheck.py` (`SHARED_TCP_CHALLENGES`), and addresses in `ctfd/healthcheck-cronjob.yaml`. Update both, then rerun `make deploy-healthcheck-cronjob`.
 
 ## If it fails
 
-| Symptom | Fix |
+| Message | Fix |
 |---|---|
-| Backup job `Error`, log says `AccessDenied` | The `ctfd-backup` service account's IAM role doesn't match. Check that [Make it yours](../code/make-it-yours.md) replaced the account ID in `ctfd/main.go`, then rerun `make deploy-ctfd` |
-| `NoSuchBucket` | The bucket is created by `make deploy-eks`. Check `BACKUP_BUCKET` in the Makefile matches `<event>-ctfd-backups` |
-| Health check says `FAIL` for a pwn challenge | The hostname is stale. Redo step 2, then step 3 |
+| The backup job shows `Error`, and its log says `AccessDenied` | The job isn't allowed to write to the bucket, usually because the old account ID is still in `utils/ctfd/main.go`. Redo [Make it yours](../code/make-it-yours.md), then rerun `make deploy-ctfd` |
+| `NoSuchBucket` | The bucket name in the Makefile (`BACKUP_BUCKET`) doesn't match `<event>-ctfd-backups`. Redo [Make it yours](../code/make-it-yours.md) |
+| A pwn challenge shows `FAIL` | The address in the settings file is out of date. Redo step 2, then step 3 |
 
 **Next:** [5. Final checks](verify.md).

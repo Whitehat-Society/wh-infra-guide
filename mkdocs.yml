@@ -51,32 +51,39 @@ markdown_extensions:
 
 nav:
   - Start here: index.md
-  - 1 · Your PC:
+  - 1 · How the system works:
+      - The big picture: concepts/big-picture.md
+      - Cloud, networks and names: concepts/cloud-and-networks.md
+      - Containers and Kubernetes: concepts/containers-and-kubernetes.md
+      - Infrastructure as code: concepts/infrastructure-as-code.md
+  - 2 · Your computer:
+      - Open a terminal: setup/terminal.md
+      - Terminal basics: setup/terminal-basics.md
       - Install the tools: setup/pc.md
-  - 2 · Accounts:
+  - 3 · Accounts:
       - AWS account: accounts/aws.md
-      - Sign in from the CLI: accounts/cli-login.md
+      - Sign in from the terminal: accounts/cli-login.md
       - Budget alert: accounts/budget.md
       - Domain name: accounts/domain.md
-      - Discord & GitHub: accounts/discord-github.md
-  - 3 · Code & config:
+      - Discord and GitHub: accounts/discord-github.md
+  - 4 · Code and settings:
       - Get the code: code/clone.md
       - Make it yours: code/make-it-yours.md
-      - Config files & secrets: code/config.md
-  - 4 · Deploy:
+      - Settings and secrets: code/config.md
+  - 5 · Deploy:
       - Overview: deploy/index.md
-      - 1. Cluster (EKS): deploy/eks.md
-      - 2. Scoreboard (CTFd): deploy/ctfd.md
-      - 3. Challenges: deploy/challenges.md
-      - 4. Backups & health checks: deploy/day2.md
+      - 1. The cluster: deploy/eks.md
+      - 2. The scoreboard: deploy/ctfd.md
+      - 3. The challenges: deploy/challenges.md
+      - 4. Backups and health checks: deploy/day2.md
       - 5. Final checks: deploy/verify.md
-  - 5 · Run the event:
+  - 6 · Run the event:
       - Watching the system: operate/monitoring.md
-      - Scaling up: operate/scaling.md
-      - Backup & restore: operate/backups.md
+      - Adding capacity: operate/scaling.md
+      - Backup and restore: operate/backups.md
       - Known weak spots: operate/risks.md
-  - 6 · Tear down:
-      - Destroy & check the bill: teardown.md
+  - 7 · Tear down:
+      - Delete everything: teardown.md
   - Reference:
       - Architecture explorer: reference/architecture.md
       - Glossary: reference/glossary.md

@@ -1,2 +1,2 @@
-!!! example "🎥 Screen recording"
-    The recording for this step is added after the recording session. Until then, follow the written steps below. They are complete without it.
+!!! example "Screen recording"
+    A recording of this step will be added here. The written steps below are complete without it.
