@@ -1,0 +1,5 @@
+src: acct/17-region-list.png
+out: accounts/scp-region-list.webp
+crop: [470, 255, 920, 680]
+marks:
+  - {box: [583, 700, 135, 20], n: 3}

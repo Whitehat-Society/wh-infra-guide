@@ -28,14 +28,16 @@ You need:
 
 ## Which kind of account you have
 
-AWS now creates some new accounts as a **Free-plan project**: an account that AWS manages for you inside its own small organisation. This guide was tested on one. It works, with four limits:
+AWS now creates some new accounts as a **Free-plan project**: an account that AWS manages for you inside its own small organisation. This guide was tested on one. As it comes, it can't run the system:
 
-| Limit | Effect on this guide | What to do |
-|---|---|---|
-| **One region only**, chosen by AWS | Commands in any other region fail with `explicit deny in a service control policy` | Use that region everywhere. [Make it yours](../code/make-it-yours.md) has a step for it |
-| **Only "Free Tier eligible" computer sizes** | The cluster's computers never start: `The specified instance type is not eligible for Free Tier` | In [Settings and secrets](../code/config.md), set `node_instance_type` to `c7i-flex.large`, which has the same 2 cores and 4 GB as `t3.medium` |
-| **No domain purchases** in Route 53 | [Domain name](domain.md) Option A fails | Use Option B, with a domain from another registrar |
-| **Ends after six months**, or when the credits run out | The account stops working | Fine for a test. For the real event, upgrade to the Paid plan |
+| Limit | What fails |
+|---|---|
+| **One region only**, chosen by AWS | Commands in any other region: `explicit deny in a service control policy` |
+| **No OIDC provider** | `make deploy-eks`: `not authorized to perform: iam:CreateOpenIDConnectProvider` |
+| **Only "Free Tier eligible" computer sizes** | The cluster's computers never start: `not eligible for Free Tier` |
+| **No domain purchases** in Route 53 | [Domain name](domain.md) Option A |
+
+[Prepare the account](prepare.md) lifts all four in about 15 minutes. Do it before anything else.
 
 To check, open the console. A Free-plan project shows **Manage projects** and **Upgrade plan**:
 
@@ -68,6 +70,9 @@ A second factor means a stolen password alone can't open the account. You'll use
 **Check it worked:** the MFA table lists one device. Sign out and sign in again: AWS now asks for a code after the password.
 
 ## Part 3: Create your everyday login
+
+!!! note "Skip this part after [Prepare the account](prepare.md)"
+    Activation already set up logins through your AWS Builder ID. Go straight to [Prepare the account](prepare.md), then use `aws login` on [Sign in from the terminal](cli-login.md#accounts-prepared-through-aws-settings).
 
 You'll create a personal login through **IAM Identity Center**, the AWS service that manages people's logins. It gives the terminal temporary passwords that expire after a few hours, so a leaked one stops working by itself.
 

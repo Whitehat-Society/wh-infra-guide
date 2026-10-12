@@ -1,0 +1,9 @@
+src: acct/19-payment.png
+out: accounts/payment-methods.webp
+crop: [290, 240, 1300, 620]
+marks:
+  - {blur: [320, 360, 160, 70]}
+  - {blur: [640, 360, 240, 90]}
+  - {blur: [958, 360, 160, 75]}
+  - {blur: [318, 735, 160, 75]}
+  - {box: [1367, 615, 188, 32], n: 1}

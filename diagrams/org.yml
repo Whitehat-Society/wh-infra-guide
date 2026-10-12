@@ -1,0 +1,12 @@
+title: The three accounts AWS creates when you activate advanced features
+w: 1180
+h: 300
+groups:
+  - {x: 10, y: 10, w: 1160, h: 280, label: "Your AWS organization", style: aws}
+nodes:
+  - {id: mgmt, x: 40, y: 60, w: 330, title: "Management account", sub: "card, bills, the rules (SCPs)", glyph: ORG, cat: mgmt}
+  - {id: idc, x: 40, y: 190, w: 330, title: "Identity account", sub: "logins: IAM Identity Center", glyph: IAM, cat: sec}
+  - {id: proj, x: 800, y: 125, w: 340, title: "Project account", sub: "the CTF runs here", glyph: AWS, cat: net}
+edges:
+  - {from: mgmt, to: proj, label: "rules limit what it may do", pts: [[370, 92], [700, 92], [700, 145], [800, 145]], lx: 535, ly: 92}
+  - {from: idc, to: proj, label: "lets your login in", pts: [[370, 222], [700, 222], [700, 170], [800, 170]], lx: 535, ly: 222}

@@ -1,0 +1,5 @@
+src: acct/12-scps.png
+out: accounts/scp-list.webp
+crop: [600, 100, 940, 495]
+marks:
+  - {box: [693, 308, 348, 20], n: 1}

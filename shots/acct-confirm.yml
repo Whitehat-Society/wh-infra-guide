@@ -1,0 +1,7 @@
+src: acct/08-review.png
+out: accounts/activate-confirm.webp
+crop: [575, 333, 452, 336]
+marks:
+  - {blur: [805, 541, 112, 16]}
+  - {box: [590, 590, 420, 24], n: 5}
+  - {box: [951, 635, 60, 22], n: 6}

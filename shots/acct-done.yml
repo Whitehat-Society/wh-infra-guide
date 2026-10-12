@@ -1,0 +1,5 @@
+src: acct/10-done.png
+out: accounts/activate-done.webp
+crop: [210, 0, 1380, 525]
+marks:
+  - {box: [1410, 5, 138, 23], n: 7}

@@ -36,13 +36,35 @@ The AWS CLI needs to know who you are before it will change anything. This page 
     ```
     On macOS, use `~/.zshrc` instead of `~/.bashrc`.
 
+## Accounts prepared through AWS Settings
+
+If you followed [Prepare the account](prepare.md), you already sign in to AWS with an **AWS Builder ID**, and the steps above aren't needed. Use `aws login` instead. It opens the browser, you pick your project, and the terminal receives keys.
+
+1. Sign in, under a profile named `wh-login`:
+    ```bash
+    aws login --profile wh-login --region ap-southeast-1
+    ```
+    In the browser, choose your project under **Add session** (or **Active sessions**).
+2. Terraform and the club's Python scripts can't read `aws login` keys directly. Add a second profile, `wh`, that hands them over:
+    ```bash
+    cat >> ~/.aws/config <<'EOF'
+
+    [profile wh]
+    region = ap-southeast-1
+    credential_process = aws configure export-credentials --profile wh-login --format process
+    EOF
+    echo 'export AWS_PROFILE=wh' >> ~/.bashrc
+    export AWS_PROFILE=wh
+    ```
+3. When a command later says the session expired, run step 1 again.
+
 ## Check it worked
 
 ```bash
 aws sts get-caller-identity
 ```
 
-The output shows three fields. `Account` is a 12-digit number: the club's **account ID**. `Arn` contains `AWSReservedSSO_AdministratorAccess`. Note the account ID; [Make it yours](../code/make-it-yours.md) uses it.
+The output shows three fields. `Account` is a 12-digit number: the club's **account ID**. `Arn` contains `AWSReservedSSO_AdministratorAccess`, or `AccountFullAccessRole` if you used `aws login`. Note the account ID; [Make it yours](../code/make-it-yours.md) uses it.
 
 ## Signing in again
 

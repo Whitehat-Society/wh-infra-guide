@@ -62,6 +62,7 @@ nav:
       - Install the tools: setup/pc.md
   - 3 · Accounts:
       - AWS account: accounts/aws.md
+      - Prepare the account: accounts/prepare.md
       - Sign in from the terminal: accounts/cli-login.md
       - Budget alert: accounts/budget.md
       - Domain name: accounts/domain.md
