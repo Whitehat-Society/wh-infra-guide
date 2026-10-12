@@ -40,8 +40,8 @@ Do these in order, as soon as the CTF ends.
 
 4. **Optional: CTFd's own export.** **Admin → Config → Import & Export → Export** downloads a `.zip` of everything, including uploaded files, which CTFd can import again. The **Download CSV** tab next to it downloads single tables. Both need you logged in to the browser as admin.
 
-!!! warning "Addresses in the data are not players' addresses"
-    The `ip` column in `submissions.csv` shows the load balancer's internal address, such as `10.100.1.7`, for every player; see [Rate limits](risks.md#rate-limits). Don't use it to look for players sharing an account.
+!!! warning "Check the addresses before you trust them"
+    The `ip` column in `submissions.csv` holds each player's address only if the load balancer passes it on; see [Rate limits](risks.md#rate-limits). If every row shows the same `10.100.…` address, the addresses are the load balancer's, and can't show players sharing an account.
 
 ## After the event: system statistics
 

@@ -56,7 +56,14 @@ If you followed [Prepare the account](prepare.md), you already sign in to AWS wi
     echo 'export AWS_PROFILE=wh' >> ~/.bashrc
     export AWS_PROFILE=wh
     ```
-3. When a command later says the session expired, run step 1 again.
+3. When a command later says the session expired, run step 1 again. The keys last only as long as your browser session for that project: a session signed in 11 hours ago expires within the hour. Before a long job, such as a deploy or a teardown, sign out of the project in the browser, sign in again, then run step 1.
+
+!!! tip "If the browser page stops after you pick the project"
+    `aws login` hands the keys back through an address on your own computer (`127.0.0.1`), and Chrome may block or ask about that. Use the copy-and-paste version instead:
+    ```bash
+    aws login --profile wh-login --region ap-southeast-1 --remote
+    ```
+    It prints an address. Open it, pick your project, click **Copy verification code**, and paste the code into the terminal.
 
 ## Check it worked
 

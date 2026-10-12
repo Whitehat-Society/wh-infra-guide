@@ -7,7 +7,7 @@ When players report slow challenges, the fix is usually more copies of a program
 <div class="wh">
 <div class="layers">
   <div class="layer l-auto"><b>DNS and load balancers</b><span>AWS adds capacity to these by itself. There is nothing to set</span><span class="pill p-ok">automatic</span></div>
-  <div class="layer l-auto"><b>Rented computers (nodes): 2 to 6</b><span>Added when a new pod can't fit, returned after 10 quiet minutes</span><span class="pill p-ok">automatic</span></div>
+  <div class="layer l-auto"><b>Rented computers (nodes): 3 to 6</b><span>One to two in each of three zones. Added when a new pod can't fit, returned after 10 quiet minutes</span><span class="pill p-ok">automatic</span></div>
   <div class="layer l-man"><b>NGINX: 2 copies</b><span>Change the number in <code>utils/eks/helm.tf</code>, then run Terraform</span><span class="pill p-warn">you change it</span></div>
   <div class="layer l-man"><b>Web challenges: 1 copy each</b><span>Change the number in <code>builder.py</code>, then <code>make build-images</code></span><span class="pill p-warn">you change it</span></div>
   <div class="layer l-man"><b>Pwn challenges: 3 copies each</b><span>Change <code>shared_tcp_replicas</code> in <code>config.ini</code>, then <code>make build-images</code></span><span class="pill p-warn">you change it</span></div>
@@ -60,12 +60,13 @@ Busy pods alone never trigger a new computer. A new computer is rented only when
     ```bash
     cd ~/wh/wh-2026/utils
     EVENT=$(jq -r .event_name eks/terraform.tfvars.json)
-    NG=$(aws eks list-nodegroups --cluster-name "$EVENT-eks" --query 'nodegroups[0]' --output text)
-    aws eks update-nodegroup-config --cluster-name "$EVENT-eks" --nodegroup-name "$NG" \
-      --scaling-config minSize=4,maxSize=6,desiredSize=4
+    for NG in $(aws eks list-nodegroups --cluster-name "$EVENT-eks" --query 'nodegroups[]' --output text); do
+      aws eks update-nodegroup-config --cluster-name "$EVENT-eks" --nodegroup-name "$NG" \
+        --scaling-config minSize=2,maxSize=2,desiredSize=2 --query 'update.status' --output text
+    done
     ```
 
-    This keeps at least four computers running. Afterwards, set `minSize=2,desiredSize=3` again with the same command, or [delete everything](../teardown.md).
+    There is one group of computers per availability zone, so this keeps two computers in each zone, six in all. It prints `InProgress` once per group. Afterwards, run it again with `minSize=1,maxSize=2,desiredSize=1`, or [delete everything](../teardown.md).
 
 ## What happens under load
 

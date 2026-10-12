@@ -26,7 +26,7 @@ Every command on this page runs in `~/wh/wh-2026/utils`.
     | `hosted_zone_id` | the ID starting with `Z` from [Domain name](../accounts/domain.md#check-it-worked) |
     | `acme_email` | an email address. Let's Encrypt writes to it if a certificate is about to expire |
     | `alarm_notification_emails` | the addresses that receive alarm emails, e.g. `["you@example.com"]` |
-    | `node_min_size`, `node_desired_size`, `node_max_size` | `2`, `3` and `6`: the fewest, usual and most rented computers. Enough for about 100 teams |
+    | `node_min_size`, `node_desired_size`, `node_max_size` | `2`, `3` and `6`: the fewest, usual and most rented computers. They are split over three availability zones with at least one in each, so the fewest is in practice 3. Enough for about 100 teams |
     | `pulumi_state_bucket` | `<event>-pulumi-state`, e.g. `wh-2027-pulumi-state` |
     | `scenarios_ecr_repo_name` | `<event>-scenarios`. Only the optional [chall-manager](../reference/chall-manager.md) uses it, but the field is required |
 

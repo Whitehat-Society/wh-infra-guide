@@ -44,7 +44,7 @@ kubectl get nodes
 2. A line containing `Let's Encrypt`: the certificate was issued by Let's Encrypt.
 3. `200`: the web challenge answered normally.
 4. Only the header line: every pod is running.
-5. Between two and six nodes, all `Ready`. The cluster adds a node by itself when pods need room, so a fourth one after the builds is normal.
+5. Between three and six nodes, at least one in each of the three zones, all `Ready`. The cluster adds a node by itself when pods need room.
 
 ## Checks in the browser
 

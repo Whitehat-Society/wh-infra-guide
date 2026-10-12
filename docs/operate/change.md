@@ -62,7 +62,7 @@ What `sync` does in CTFd:
     make build-images
     ```
     A new challenge is installed in CTFd as hidden.
-3. For a web or pwn challenge, add it to the health check. In `utils/healthcheck.py`, add the name, as it appears in its address, to `WEB_CHALLENGES`, or add `"<name>": <port>` to `SHARED_TCP_CHALLENGES`. For a pwn challenge, also redo step 2 of [Health checks](../deploy/day2.md#health-checks), adding the name to the `for` line. Then copy the new list into the cluster:
+3. For a web or pwn challenge, give the health check the new list of challenges. It is read from the `challenge.yml` files, so this is one command:
     ```bash
     make deploy-healthcheck-cronjob
     ```
@@ -94,7 +94,7 @@ Removing deletes its solves, and every team that solved it loses those points.
     make build-images
     ```
     Pulumi deletes its pods and Service, and for pwn its load balancer. ExternalDNS deletes its address within a few minutes. A warning ending in `DependencyViolation: resource sg-… has a dependent object` is harmless: the load balancer controller retries, and the leftover security group is gone a minute later.
-4. Remove it from `utils/healthcheck.py` and from the `for` line in step 2 of [Health checks](../deploy/day2.md#health-checks), then `make deploy-healthcheck-cronjob`.
+4. Give the health check the new list: `make deploy-healthcheck-cronjob`.
 5. Optional: delete its image, which otherwise stays in ECR until teardown:
     ```bash
     aws ecr batch-delete-image --repository-name "$(jq -r .event_name eks/terraform.tfvars.json)" --image-ids imageTag=<name>

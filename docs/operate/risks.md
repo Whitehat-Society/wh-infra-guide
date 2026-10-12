@@ -4,36 +4,38 @@ WH-2026's review after the event found these weak spots. They are ranked by how 
 
 ## Parts with no backup copy
 
-1. **The scoreboard has one copy of everything.** CTFd, its database and its cache each run as one pod, with data on a disk that sits in one availability zone. If the computer holding one of them fails, the pod can only restart on another computer **in the same zone**, and the cluster doesn't add one there by itself. A test took the only zone-`1b` computer out of service: CTFd was down for 13 minutes, until someone added a computer by hand. See [When a computer fails](#when-a-computer-fails). The lasting fix is to move the database and cache to AWS's managed services (RDS and ElastiCache), and uploaded files to S3, so CTFd can run several copies.
-2. **Request limits count all players as one.** Each web challenge allows 20 requests a second per address, but the load balancer doesn't pass on players' real addresses. A test confirmed that NGINX and CTFd see every player as the same internal address. See [Rate limits](#rate-limits) for the check and the fix.
+1. **The scoreboard has one copy of everything.** CTFd, its database and its cache each run as one pod, with data on a disk that sits in one availability zone. If the computer holding one of them fails, the pod can only restart on another computer in the same zone. The cluster keeps at least one computer in every zone and adds one there when needed, so CTFd is back within a few minutes; see [When a computer fails](#when-a-computer-fails). The lasting fix is to move the database and cache to AWS's managed services (RDS and ElastiCache), and uploaded files to S3, so CTFd can run several copies.
+2. **Request limits depend on players' real addresses.** Each web challenge allows 20 requests a second per address. Older versions of the code hid players' addresses, so all players shared one limit; [Rate limits](#rate-limits) shows how to check that yours are passed through.
 3. **Copies of a web challenge don't share data.** Each copy has its own logins and data. Keep such challenges at one copy, make NGINX send each player to the same copy every time (*sticky sessions*), or move their data out of the pod.
 4. **Nothing adds pods by itself.** Copy counts only change when someone edits them. The fix is a Kubernetes add-on that adds pods when they get busy (a *HorizontalPodAutoscaler*), for the challenges that can safely have several copies.
 5. **One NAT gateway for the whole network.** It sits in one availability zone. If that zone fails, no computer can download images, renew certificates or upload backups.
 
 ## When a computer fails
 
-**Symptoms:** CTFd doesn't load, or answers very slowly. `kubectl get pods -n ctfd` shows `ctfd`, `redis` or `mariadb` as `Pending`, and `kubectl describe pod -n ctfd <pod>` ends with `volume node affinity conflict` or `didn't match PersistentVolume's node affinity`.
+The cluster has one group of computers per availability zone, each with at least one computer. When a computer fails, AWS replaces it in the same zone, and pods that keep data on a disk in that zone (CTFd, MariaDB, Redis) start again there. Expect CTFd to be unreachable for 2 to 5 minutes.
 
-**Cause:** the pod's disk is in one zone, no working computer is left in that zone, and the cluster's automatic scaling won't add one there (`pod didn't trigger scale-up`).
+**Symptoms that it didn't recover:** after 10 minutes CTFd still doesn't load, `kubectl get pods -n ctfd` shows `ctfd`, `redis` or `mariadb` as `Pending`, and `kubectl describe pod -n ctfd <pod>` ends with `volume node affinity conflict` or `didn't match PersistentVolume's node affinity`.
 
-**Fix:** ask AWS for one more computer. AWS spreads new computers across zones, so it lands in the empty zone. In the test it was ready in under a minute, and CTFd answered 20 seconds later.
+**Fix:** add a computer to that zone's group by hand. First find the zone of the stuck pod's disk, and the groups:
 
 ```bash
 cd ~/wh/wh-2026/utils
 EVENT=$(jq -r .event_name eks/terraform.tfvars.json)
-NG=$(aws eks list-nodegroups --cluster-name "$EVENT-eks" --query 'nodegroups[0]' --output text)
-aws eks describe-nodegroup --cluster-name "$EVENT-eks" --nodegroup-name "$NG" --query 'nodegroup.scalingConfig'
+kubectl get pv -o custom-columns='CLAIM:.spec.claimRef.name,ZONE:.spec.nodeAffinity.required.nodeSelectorTerms[0].matchExpressions[0].values[0]'
+aws eks list-nodegroups --cluster-name "$EVENT-eks" --output text
 ```
 
-Add 1 to the `desiredSize` it prints, and use the result here, e.g. `desiredSize=5`:
+Each group's name starts with `zone-` and the zone's last letter, e.g. `zone-b-…` for `ap-southeast-1b`. Raise that group's size by one:
 
 ```bash
+NG=<the zone-b-… name>
+aws eks describe-nodegroup --cluster-name "$EVENT-eks" --nodegroup-name "$NG" --query 'nodegroup.scalingConfig'
 aws eks update-nodegroup-config --cluster-name "$EVENT-eks" --nodegroup-name "$NG" \
-  --scaling-config minSize=2,maxSize=6,desiredSize=5
+  --scaling-config minSize=1,maxSize=2,desiredSize=2
 kubectl get nodes -L topology.kubernetes.io/zone -w
 ```
 
-When a new line shows the empty zone and `Ready`, press Ctrl+C. Within a minute `kubectl get pods -n ctfd` shows every pod `Running`.
+When a new line shows that zone and `Ready`, press Ctrl+C. Within a minute `kubectl get pods -n ctfd` shows every pod `Running`.
 
 **Planned replacements are blocked.** CTFd and MariaDB have a rule that none of their pods may be stopped on purpose (a *PodDisruptionBudget* with `MAX UNAVAILABLE 0`). `kubectl drain` on their computer waits forever and stops with `global timeout reached`. That protects them from accidental restarts; to move them on purpose, at a quiet moment, delete the pod instead: `kubectl delete pod -n ctfd <pod>`.
 
@@ -82,10 +84,8 @@ A **rate limit** caps how many requests one address may send. NGINX enforces the
 | CTFd | none. A limit of 100 a second was tried at WH-2026 and removed | — |
 | Pwn challenges | none. They don't go through NGINX | — |
 
-!!! danger "In this setup, every player shares one address"
-    The load balancer in front of NGINX doesn't pass on the player's own address. NGINX sees every request as coming from the load balancer's internal address, such as `10.100.1.7`. A test deploy logged 773 requests from players, health checks and smoke tests, all from that one address. So "20 a second per address" is in practice 20 a second for everyone reaching a challenge through the same load balancer node, and a busy challenge answers `503` to players who sent only a few requests.
-
-    To check on your system, count requests by address over the last hour:
+!!! warning "Check that players' addresses reach NGINX"
+    The limits only work per player if NGINX sees each player's own address. The load balancer passes it on through the setting `preserve_client_ip.enabled=true` in `utils/eks/helm.tf`. Without it, as in WH-2026's code, every request seems to come from the load balancer's internal address, such as `10.100.1.7`, and all players share one limit. Count requests by address over the last hour:
 
     ```bash
     G=/aws/containerinsights/$EVENT-eks/application
@@ -95,7 +95,7 @@ A **rate limit** caps how many requests one address may send. NGINX enforces the
     sleep 15; aws logs get-query-results --query-id "$ID" --query 'results[*][*].value' --output text
     ```
 
-    One `10.100.…` address with nearly all the requests means the limits are shared. The fix belongs in `utils/eks/helm.tf`: have the load balancer keep the player's address (`preserve_client_ip.enabled=true` on its target group, or *proxy protocol* with NGINX's `use-proxy-protocol`). Until that is done, lift the limit on a challenge that players report as `503`.
+    Public addresses, such as your own, mean it works. A single `10.100.…` address with nearly all the requests means the setting is missing.
 
 To lift the limit on one web challenge during the event, without restarting anything:
 
