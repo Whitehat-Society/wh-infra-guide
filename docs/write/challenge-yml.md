@@ -1,8 +1,8 @@
 # challenge.yml
 
-`challenge.yml` is a **YAML** file: plain text where each line is `field: value`, and indented lines belong to the field above them. Indent with spaces, never tabs. Put quotes around any value containing `:`, `#`, `{` or a leading `*`.
+`challenge.yml` is a **YAML** file, which is plain text where each line reads `field: value` and indented lines belong to the field above them. Always indent with spaces rather than tabs, and put quotes around any value that contains `:`, `#` or `{`, or that starts with `*`.
 
-Copy the template for your type, then change the values.
+The easiest way to start is to copy the template for your type below and change its values.
 
 ## Templates
 
@@ -99,35 +99,37 @@ Copy the template for your type, then change the values.
 
 | Field | Required | What it means |
 |---|---|---|
-| `name` | Yes | The title players see. It must differ from every other challenge's name. See [Choosing the name](#choosing-the-name) |
-| `author` | Yes | Your name, shown to the infra team |
-| `category` | Yes | The heading CTFd lists the challenge under, e.g. `Web`, `Pwn`, `Crypto`. Use the same spelling as the other challenges in your folder's category |
-| `description` | Yes | The text players read. It may use Markdown, e.g. `**bold**` and `[a link](https://…)`. Start it with `|` on the first line, as in the templates, to write several lines |
-| `attribution` | No | A credit line shown under the description |
-| `value`, `type`, `extra` | Yes | Scoring. Keep the template's values: every challenge starts at 1000 points and loses value as more teams solve it, down to 100 after 31 solves. This is CTFd's **dynamic** scoring |
-| `challenge_type` | Yes | `text`, `shared-web` or `shared-tcp`; see [Pick a type](index.md#pick-a-type) |
-| `port_number` | Web and pwn | The port your program listens on inside the container |
-| `exposed_port_number` | Web and pwn | Set it to the same number as `port_number` |
-| `protocol` | Web and pwn | `http` for `shared-web`, `tcp` for `shared-tcp`. Use `http` even though players see `https`: the cluster adds the encryption |
-| `flags` | Yes | One or more accepted answers; see [Flags](#flags) |
-| `files` | No | Files players download, as paths inside your folder |
-| `hints` | No | A plain string is a free hint. `{content: "…", cost: 10}` costs the team 10 points to open |
-| `requirements` | No | Names of challenges a team must solve before this one appears |
-| `tags` | No | Short public labels, e.g. `beginner` |
-| `state` | Yes | Always `hidden`. The infra team makes challenges visible when the CTF starts |
-| `version` | Yes | Always `"0.1"`, the version of this file format |
+| `name` | Yes | The title players see, which has to differ from every other challenge's name. See [Choosing the name](#choosing-the-name). |
+| `author` | Yes | Your name, which the infra team sees. |
+| `category` | Yes | The heading CTFd lists the challenge under, such as `Web`, `Pwn` or `Crypto`. Use the same spelling as the other challenges in your folder's category. |
+| `description` | Yes | The text players read. It may use Markdown, such as `**bold**` and `[a link](https://…)`. To write several lines, start it with `|` on the first line, as the templates do. |
+| `attribution` | No | A credit line shown under the description. |
+| `value`, `type`, `extra` | Yes | The scoring. Keep the template's values, under which every challenge starts at 1000 points and loses value as more teams solve it, down to 100 after 31 solves. CTFd calls this **dynamic** scoring. |
+| `challenge_type` | Yes | `text`, `shared-web` or `shared-tcp`, as described in [Pick a type](index.md#pick-a-type). |
+| `port_number` | Web and pwn | The port your program listens on inside the container. |
+| `exposed_port_number` | Web and pwn | The same number as `port_number`. |
+| `protocol` | Web and pwn | `http` for `shared-web` and `tcp` for `shared-tcp`. Use `http` even though players see `https`, because the cluster adds the encryption. |
+| `flags` | Yes | One or more accepted answers, as described in [Flags](#flags). |
+| `files` | No | The files players download, given as paths inside your folder. |
+| `hints` | No | A plain string is a free hint, while `{content: "…", cost: 10}` costs the team 10 points to open. |
+| `requirements` | No | The names of challenges a team has to solve before this one appears. |
+| `tags` | No | Short public labels, such as `beginner`. |
+| `state` | Yes | Always `hidden`, because the infra team makes challenges visible when the CTF starts. |
+| `version` | Yes | Always `"0.1"`, which is the version of this file format. |
 
-Leave out `connection_info`, `image`, `host` and `healthcheck`. The deploy tools fill in the address themselves and don't use the others.
+Leave out `connection_info`, `image`, `host` and `healthcheck`. The deploy tools fill in the address themselves and don't use the other three fields.
 
 ### Choosing the name
 
-- CTFd finds an existing challenge by its name. **Renaming a challenge after it is deployed creates a second copy**, and the old one keeps its solves. To rename one that is already deployed, ask the infra team; they follow [Rename a challenge](../operate/change.md#rename-a-challenge).
-- For `shared-web` and `shared-tcp`, the name also becomes the challenge's address. Capitals become lowercase, and every run of characters other than letters and digits becomes one hyphen. `Xoph, Dark Embers` becomes `xoph-dark-embers`, so players open `https://xoph-dark-embers.challenges.<domain>`. Two names that give the same address, such as `Base64 Converter` and `base64-converter`, clash.
-- Keep it under 50 characters.
+CTFd finds an existing challenge by its name, so **renaming a challenge after it is deployed creates a second copy**, and the old copy keeps its solves. If you need to rename a challenge that is already deployed, ask the infra team, who will follow [Rename a challenge](../operate/change.md#rename-a-challenge).
+
+For `shared-web` and `shared-tcp` challenges, the name also becomes the challenge's address. Capitals become lowercase, and every run of characters other than letters and digits becomes a single hyphen. `Xoph, Dark Embers` therefore becomes `xoph-dark-embers`, and players open `https://xoph-dark-embers.challenges.<domain>`. Two names that give the same address, such as `Base64 Converter` and `base64-converter`, clash with each other.
+
+Keep the name under 50 characters.
 
 ### Flags
 
-The flag format is `WH<year>{...}`, e.g. `WH2027{...}`. Use only letters, digits and `_` inside the braces, so players can't mistype it.
+The flag format is `WH<year>{...}`, for example `WH2027{...}`. Use only letters, digits and `_` inside the braces, so that players can't mistype the flag.
 
 ```yaml
 flags:
@@ -136,10 +138,10 @@ flags:
   - {type: regex,  content: "WH2027\\{team_[0-9]+\\}", data: case_insensitive}
 ```
 
-A **regex** flag accepts any answer matching a pattern. Use it only when the answer really varies, and test the pattern before you hand it in.
+A **regex** flag accepts any answer that matches a pattern. Only use one when the answer really does vary, and test the pattern before you hand the challenge in.
 
 ## What the build changes in your file
 
-`make build-images` writes into `challenge.yml` for `shared-web` and `shared-tcp` challenges: it adds or replaces the `connection_info:` line with the real address. Expect this line to change after each deploy, and don't edit it by hand.
+For `shared-web` and `shared-tcp` challenges, `make build-images` writes into `challenge.yml` by adding or replacing the `connection_info:` line with the real address. Expect this line to change after each deploy, and don't edit it by hand.
 
 **Next:** [Write the Dockerfile and test it](server.md), or for a `text` challenge, [check it and hand it in](submit.md).

@@ -1,23 +1,23 @@
 # Challenges with a server
 
-A `shared-web` or `shared-tcp` challenge needs a **Dockerfile** in its folder: a recipe that builds your program into an image. The cluster runs that image unchanged, so if it works on your computer with the commands below, it works on the cluster.
+A `shared-web` or `shared-tcp` challenge needs a **Dockerfile** in its folder, which is the recipe that builds your program into an image. The cluster runs that image unchanged, so if it works on your computer with the commands on this page, it will work on the cluster too.
 
 ## Rules for the Dockerfile
 
 | Rule | Why |
 |---|---|
-| The program listens on `port_number`, on every address (`0.0.0.0`), not only `127.0.0.1` | Connections arrive from outside the container |
-| A web challenge speaks plain `http` | The cluster adds `https` in front of it |
-| A pwn challenge serves its program with `socat`, and installs `socat` in the **final** stage of the Dockerfile | In a multi-stage Dockerfile only the last stage ends up in the image. A missing `socat` stops the pod with `executable file not found` |
-| For a 32-bit program, leave `stdbuf -i0 -o0 -e0` out of the `socat` line, and turn off output buffering in the program itself with `setvbuf(stdout, NULL, _IONBF, 0);` | `stdbuf` only works with 64-bit programs. With a 32-bit one, every player first sees `ERROR: ld.so: object '…libstdbuf.so' … cannot be preloaded` |
-| `CMD` starts the program in the foreground, and it never exits | Kubernetes restarts a container whose main program exits, and players see the challenge go down |
-| The image needs nothing outside itself: no second container, no `docker-compose.yml`, no database server | The cluster starts exactly one container from your Dockerfile. `docker-compose.yml` is ignored. Use SQLite or files inside the image for data |
-| The program runs as a normal user, not `root` | A player who breaks in shouldn't control the container |
-| It fits in 512 MB of memory and half a processor core | Those are the cluster's limits per copy. A container that uses more memory is stopped and restarted |
-| Start from a fixed version, e.g. `FROM python:3.12-slim` or `FROM ubuntu:24.04`, not `:latest` | A `:latest` image changes without warning, and the next deploy may break |
+| The program listens on `port_number` on every address (`0.0.0.0`), not only on `127.0.0.1`. | Connections arrive from outside the container. |
+| A web challenge speaks plain `http`. | The cluster adds `https` in front of it. |
+| A pwn challenge serves its program with `socat`, and installs `socat` in the **final** stage of the Dockerfile. | In a multi-stage Dockerfile only the last stage ends up in the image, and a missing `socat` stops the pod with `executable file not found`. |
+| For a 32-bit program, leave `stdbuf -i0 -o0 -e0` out of the `socat` line and turn off output buffering in the program itself with `setvbuf(stdout, NULL, _IONBF, 0);`. | `stdbuf` only works with 64-bit programs. With a 32-bit program, every player first sees `ERROR: ld.so: object '…libstdbuf.so' … cannot be preloaded`. |
+| `CMD` starts the program in the foreground, and the program never exits. | Kubernetes restarts a container whose main program exits, and players see the challenge go down while it does. |
+| The image needs nothing outside itself, so no second container, no `docker-compose.yml` and no database server. | The cluster starts exactly one container from your Dockerfile and ignores `docker-compose.yml`. Use SQLite or files inside the image for data. |
+| The program runs as a normal user rather than `root`. | A player who breaks in shouldn't gain control of the container. |
+| The program fits in 512 MB of memory and half a processor core. | Those are the cluster's limits for each copy, and a container that uses more memory is stopped and restarted. |
+| The Dockerfile starts from a fixed version, such as `FROM python:3.12-slim` or `FROM ubuntu:24.04`, rather than `:latest`. | A `:latest` image changes without warning, and the next deploy may break because of it. |
 
 !!! warning "Don't use `pwn.red/jail` as the base image"
-    It needs special permissions that the cluster doesn't give, and it has no `socat`. Use `ubuntu` or `debian` with `socat`, as in the example below.
+    It needs special permissions that the cluster doesn't grant, and it doesn't include `socat`. Use `ubuntu` or `debian` with `socat` instead, as in the example below.
 
 ## Examples
 
@@ -46,7 +46,7 @@ A `shared-web` or `shared-tcp` challenge needs a **Dockerfile** in its folder: a
     CMD ["socat", "-T60", "TCP-LISTEN:1337,reuseaddr,fork", "EXEC:stdbuf -i0 -o0 -e0 /chal/chal,pty,stderr,setsid,sane,rawer,echo=0"]
     ```
 
-    `socat` waits for connections on port 1337 and starts a fresh copy of `/chal/chal` for each one, so players never share a running program. `-T60` closes a connection after 60 idle seconds.
+    `socat` waits for connections on port 1337 and starts a fresh copy of `/chal/chal` for each one, so players never share a running program, and `-T60` closes a connection after 60 idle seconds.
 
 === "shared-web"
 
@@ -62,9 +62,9 @@ A `shared-web` or `shared-tcp` challenge needs a **Dockerfile** in its folder: a
     CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "2", "app:app"]
     ```
 
-    The program listens on 8080, so set `port_number` and `exposed_port_number` to `8080`. A normal user may not open ports below 1024 on every system; Docker on your computer allows it, so a mistake wouldn't show until the deploy.
+    The program listens on 8080, so set `port_number` and `exposed_port_number` to `8080`. A normal user can't open ports below 1024 on every system, and because Docker on your computer allows it, a mistake there wouldn't show up until the deploy.
 
-Add a `.dockerignore` file next to the Dockerfile so your solution and notes stay out of the image:
+Add a `.dockerignore` file next to the Dockerfile so that your solution and notes stay out of the image:
 
 ```
 solution/
@@ -74,7 +74,7 @@ README.md
 
 ## Test it on your computer
 
-Run these from inside your challenge folder. Replace `1337` with your `port_number`.
+Run these commands from inside your challenge folder, replacing `1337` with your `port_number`.
 
 === "shared-tcp"
 
@@ -82,7 +82,7 @@ Run these from inside your challenge folder. Replace `1337` with your `port_numb
     docker build -t mychal .
     docker run --rm -p 1337:1337 --memory 512m --cpus 0.5 mychal
     ```
-    In a second terminal:
+    Then, in a second terminal, connect to it:
     ```bash
     nc localhost 1337
     ```
@@ -93,25 +93,25 @@ Run these from inside your challenge folder. Replace `1337` with your `port_numb
     docker build -t mychal .
     docker run --rm -p 8080:8080 --memory 512m --cpus 0.5 mychal
     ```
-    Open `http://localhost:8080` in a browser. In `-p 8080:8080`, the first number is the port on your computer and the second is `port_number`.
+    Then open `http://localhost:8080` in a browser. In `-p 8080:8080`, the first number is the port on your computer and the second is `port_number`.
 
-`--memory` and `--cpus` apply the cluster's limits, so problems show up now rather than during the CTF. Press Ctrl+C in the first terminal to stop the container.
+The `--memory` and `--cpus` options apply the cluster's limits, so problems show up now rather than during the CTF. Press Ctrl+C in the first terminal to stop the container.
 
 **Check it worked:**
 
-- [ ] The challenge answers, and your solve script gets the flag from it
-- [ ] It accepts 20 connections at once: `for i in $(seq 20); do nc -z -w 2 localhost 1337 && echo ok & done; wait` prints `ok` 20 times
-- [ ] `docker run --rm mychal id` prints a user other than `uid=0(root)`
+- [ ] The challenge answers, and your solve script gets the flag from it.
+- [ ] It accepts 20 connections at once, so `for i in $(seq 20); do nc -z -w 2 localhost 1337 && echo ok & done; wait` prints `ok` 20 times.
+- [ ] `docker run --rm mychal id` prints a user other than `uid=0(root)`.
 
 ## Shared by every player
 
-All players use the same copies of your server. Ask yourself what happens when one player:
+All players use the same copies of your server, so think through what happens in each of these situations.
 
-- **Changes stored data**, such as a profile or a database row. Other players see the change. Reset the data per session, or keep it per player.
-- **Crashes the program.** For pwn, `socat` starts a fresh program for each connection, so a crash affects only that player. For web, the whole site restarts and everyone waits a few seconds.
-- **Sends thousands of requests.** The cluster limits each address to 20 requests per second to a web challenge, and answers `503` beyond that. Design the intended solution to need fewer.
-- **Logs in on one copy, then reaches another.** During a rush the infra team may run two copies of a web challenge, each with its own memory. Keep logins in a signed cookie, not only in the program's memory, or say in your README that the challenge must stay at one copy.
+- **A player changes stored data**, such as a profile or a database row. Every other player sees the change, so reset the data for each session, or keep it separate for each player.
+- **A player crashes the program.** For a pwn challenge, `socat` starts a fresh program for each connection, so a crash only affects that one player. For a web challenge, the whole site restarts and everyone waits a few seconds.
+- **A player sends thousands of requests.** The cluster limits each address to 20 requests per second to a web challenge and answers `503` beyond that, so design the intended solution to need fewer requests than that.
+- **A player logs in on one copy and then reaches another.** During a rush the infra team may run two copies of a web challenge, each with its own memory. Keep logins in a signed cookie rather than only in the program's memory, or say in your README that the challenge has to stay at one copy.
 
-Write the answers in your README, so the infra team knows the limits.
+Write your answers in the README, so that the infra team knows the challenge's limits.
 
 **Next:** [Check it and hand it in](submit.md).

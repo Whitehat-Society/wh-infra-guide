@@ -1,8 +1,8 @@
 # Budget alert
 
-A **budget** in AWS is a spending limit that emails you as spending approaches it. It does not stop spending; it only warns you. This page creates a monthly budget that emails you twice: when actual spending passes half the limit, and when AWS predicts you'll pass the whole limit by the end of the month.
+A **budget** in AWS is a spending limit that emails you as your spending approaches it. It doesn't stop any spending, but it does warn you in time to act. This page creates a monthly budget that emails you twice, first when actual spending passes half the limit, and again when AWS predicts that you'll pass the whole limit by the end of the month.
 
-1. Set your email and the monthly limit, in US dollars. Replace the example email with yours:
+1. Set your email address and the monthly limit in US dollars, replacing the example address with your own:
     ```bash
     EMAIL="you@example.com"
     LIMIT=50
@@ -18,7 +18,7 @@ A **budget** in AWS is a spending limit that emails you as spending approaches i
         {\"Notification\":{\"NotificationType\":\"FORECASTED\",\"ComparisonOperator\":\"GREATER_THAN\",\"Threshold\":100,\"ThresholdType\":\"PERCENTAGE\"},
          \"Subscribers\":[{\"SubscriptionType\":\"EMAIL\",\"Address\":\"$EMAIL\"}]}]"
     ```
-    The command prints nothing when it succeeds.
+    When it succeeds, the command prints nothing.
 
 ## Check it worked
 
@@ -26,15 +26,15 @@ A **budget** in AWS is a spending limit that emails you as spending approaches i
 aws budgets describe-budgets --account-id "$ACCOUNT" --query 'Budgets[].[BudgetName,BudgetLimit.Amount]' --output text
 ```
 
-The output is `wh-monthly	50.0`.
+The output should be `wh-monthly	50.0`.
 
 ## If it fails
 
 | Message | Fix |
 |---|---|
-| `AccessDeniedException` | You're not signed in with the AdministratorAccess login. Run `aws sts get-caller-identity` and check the `Arn` |
-| `DuplicateRecordException` | The budget already exists. Nothing to do |
+| `AccessDeniedException` | You aren't signed in with the AdministratorAccess login. Run `aws sts get-caller-identity` and check the `Arn`. |
+| `DuplicateRecordException` | The budget already exists, so there is nothing more to do. |
 
-US$50 covers a test run and a two-day event with some to spare. The real protection is still [deleting everything](../teardown.md) after the event.
+A limit of US$50 covers a test run and a two-day event with some to spare. The real protection, though, is still [deleting everything](../teardown.md) after the event.
 
 **Next:** [Domain name](domain.md).

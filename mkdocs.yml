@@ -19,7 +19,6 @@ theme:
       toggle: { icon: material/weather-sunny, name: Light mode }
   features:
     - toc.integrate
-    - navigation.sections
     - navigation.footer
     - navigation.top
     - content.code.copy
@@ -33,6 +32,7 @@ extra_javascript:
   - javascripts/explorer.js
   - javascripts/sequences.js
   - javascripts/glossary.js
+  - javascripts/sidebar.js
 
 markdown_extensions:
   - admonition

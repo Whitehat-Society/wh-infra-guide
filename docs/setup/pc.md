@@ -1,17 +1,17 @@
 # Install the tools
 
-The guide uses about a dozen command-line programs. This page installs all of them. Each block is safe to run again if a download gets interrupted.
+The guide uses about a dozen command-line programs, and this page installs all of them. Every command box on the page is safe to run again, so if a download is interrupted you can simply repeat it.
 
 <figure class="diagram">
 --8<-- "diagrams/tools.svg"
-<figcaption>Every tool on the left runs on your computer and reaches one part of the system over the internet. Versions needed: Terraform 1.9 or newer, Pulumi 3, Go 1.25 or newer.</figcaption>
+<figcaption>Every tool on the left runs on your computer and reaches one part of the system over the internet. You need Terraform 1.9 or newer, Pulumi 3, and Go 1.25 or newer.</figcaption>
 </figure>
 
 ## 1. Install Docker
 
 === "Windows"
 
-    Docker on Windows comes as an app, **Docker Desktop**, that WSL can use.
+    On Windows, Docker comes as an app called Docker Desktop, which the Ubuntu window can use once you connect the two.
 
     1. Open **PowerShell** (not Ubuntu) and run:
         ```powershell
@@ -20,7 +20,7 @@ The guide uses about a dozen command-line programs. This page installs all of th
     2. Start **Docker Desktop** from the Start menu and accept its terms.
     3. In Docker Desktop, open **Settings → Resources → WSL integration**, switch on **Ubuntu-24.04**, and click **Apply & restart**.
 
-    Do everything after this inside the Ubuntu window.
+    From here on, do everything inside the Ubuntu window.
 
 === "macOS"
 
@@ -28,7 +28,7 @@ The guide uses about a dozen command-line programs. This page installs all of th
         ```bash
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         ```
-    2. At the end, Homebrew prints two commands under **Next steps**. Run them, then close and reopen Terminal.
+    2. When it finishes, Homebrew prints two commands under *Next steps*. Run both of them, and then close and reopen Terminal.
     3. Install Docker Desktop and start it once:
         ```bash
         brew install --cask docker
@@ -43,13 +43,13 @@ The guide uses about a dozen command-line programs. This page installs all of th
     sudo usermod -aG docker "$USER"
     ```
 
-    The last command lets you use Docker without `sudo`. It takes effect after you log out and back in.
+    The last command lets you use Docker without typing `sudo`, and it takes effect once you log out and back in.
 
 ## 2. Install the other programs
 
 === "Windows"
 
-    Follow the **Linux** tab, typing the commands into the Ubuntu window.
+    Follow the Linux tab, and type its commands into the Ubuntu window.
 
 === "macOS"
 
@@ -59,7 +59,7 @@ The guide uses about a dozen command-line programs. This page installs all of th
 
 === "Linux"
 
-    Run each block in turn.
+    Run the boxes below one at a time, in order.
 
     **Basic tools**
     ```bash
@@ -103,18 +103,18 @@ The guide uses about a dozen command-line programs. This page installs all of th
     curl -fsSL https://get.pulumi.com | sh
     ```
 
-    **oras**, which `make build-images` uses to sign in to the image registry
+    **oras** (`make build-images` uses it to sign in to the image registry)
     ```bash
     ORV=$(curl -sSL https://api.github.com/repos/oras-project/oras/releases/latest | jq -r .tag_name | tr -d v)
     curl -sSL "https://github.com/oras-project/oras/releases/download/v${ORV}/oras_${ORV}_linux_$(dpkg --print-architecture).tar.gz" \
       | sudo tar -xz -C /usr/local/bin oras
     ```
 
-    Close the terminal and open a new one. The new window picks up the programs you just installed.
+    When you've run every box, close the terminal and open a new one, so that the new window picks up the programs you just installed.
 
 ## 3. Install the Python programs
 
-Python programs are installed into a **virtual environment**, a private folder of Python libraries. It keeps this guide's libraries from clashing with anything else on your computer.
+The Python programs go into a **virtual environment**, which is a private folder of Python libraries. Keeping them there stops this guide's libraries from clashing with anything else on your computer.
 
 ```bash
 python3 -m venv ~/.venvs/wh
@@ -123,11 +123,11 @@ source ~/.venvs/wh/bin/activate
 pip install boto3 docker PyYAML requests pytest ctfcli
 ```
 
-On macOS, replace `~/.bashrc` with `~/.zshrc`. Your prompt now starts with `(wh)`, which shows the environment is active. The `echo` line activates it in every new window.
+On macOS, replace `~/.bashrc` with `~/.zshrc`. Your prompt now starts with `(wh)`, which shows that the environment is active, and the `echo` line makes sure it is activated in every new window too.
 
 ## 4. Tell git who you are
 
-Git labels every change you save with a name and an email:
+Git labels every change you save with your name and email address, so set them once:
 
 ```bash
 git config --global user.name  "Your Name"
@@ -136,7 +136,7 @@ git config --global user.email "you@example.com"
 
 ## Check it worked
 
-Paste this whole block. It prints one line per program:
+Paste this whole box into the terminal. It prints one line for each program:
 
 ```bash
 for t in git aws terraform kubectl pulumi go oras docker python3 ctf make jq nc curl dig; do
@@ -150,21 +150,17 @@ done
 docker run --rm hello-world | grep -m1 'Hello from Docker'
 ```
 
-You should see:
-
-- no line that says `MISSING`
-- `terraform` at `v1.9` or newer, and `go` at `go1.25` or newer
-- `Hello from Docker!` on the last line, which means Docker can download and run a container
+No line should say `MISSING`, `terraform` should be at `v1.9` or newer, and `go` should be at `go1.25` or newer. The last line should read `Hello from Docker!`, which shows that Docker can download and run a container.
 
 ## If it fails
 
 | Message | Fix |
 |---|---|
-| `MISSING` or `command not found` right after installing | Close and reopen the terminal. If it's still missing, rerun that program's install block |
-| `error getting credentials` … `logon session does not exist` | Windows: remove the line `"credsStore": "desktop.exe"` from `~/.docker/config.json` |
-| `Cannot connect to the Docker daemon` | Start Docker Desktop and wait for *Engine running*. On Windows, also check step 1.3, WSL integration |
-| `permission denied ... docker.sock` | Linux: log out and back in. Windows: check that Docker Desktop is running and its WSL integration is on |
-| `go` older than 1.25 | An older Go is installed elsewhere. `which -a go` lists every copy; remove the old one |
-| `ctf` is MISSING | The virtual environment isn't active. Run `source ~/.venvs/wh/bin/activate` |
+| `MISSING` or `command not found` right after installing | Close and reopen the terminal. If the program is still missing, run its install box again. |
+| `error getting credentials` … `logon session does not exist` | This happens on Windows. Remove the line `"credsStore": "desktop.exe"` from `~/.docker/config.json`. |
+| `Cannot connect to the Docker daemon` | Start Docker Desktop and wait until it says *Engine running*. On Windows, also check that you switched on WSL integration in step 1.3. |
+| `permission denied ... docker.sock` | On Linux, log out and back in. On Windows, check that Docker Desktop is running and that its WSL integration is on. |
+| `go` older than 1.25 | An older copy of Go is installed somewhere else. `which -a go` lists every copy, so you can remove the old one. |
+| `ctf` is MISSING | The virtual environment isn't active. Run `source ~/.venvs/wh/bin/activate`. |
 
 **Next:** [Create the AWS account](../accounts/aws.md).

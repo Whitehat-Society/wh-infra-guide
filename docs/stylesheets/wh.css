@@ -28,9 +28,23 @@
 .md-typeset h1,.md-typeset h2,.md-typeset h3{font-family:var(--f-display);font-weight:700;color:var(--ink)}
 .md-typeset h1{font-weight:800;letter-spacing:-.01em}
 .md-header{background:var(--md-primary-fg-color)}
-/* Readable prose width, but figures/tables/videos may use the full width */
-.md-typeset>p,.md-typeset>ul,.md-typeset>ol,.md-typeset>.admonition,.md-typeset>details{max-width:80ch}
-.md-typeset video{width:100%;max-width:1100px;border:1px solid var(--line);border-radius:10px;background:#000}
+/* One column width for everything on the page: prose, tables, diagrams and videos
+   share the same left and right edges. Wider diagrams and tables scroll inside it. */
+.md-content__inner{max-width:1080px}
+.md-typeset video{width:100%;border:1px solid var(--line);border-radius:10px;background:#000}
+.md-typeset .md-typeset__table{display:block;max-width:100%}
+.md-typeset .md-typeset__table table:not([class]){display:table;width:100%}
+/* Bold alone is hard to spot on screen, so emphasis is bold and underlined */
+.md-typeset strong{font-weight:700;text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:3px}
+.md-typeset a strong{text-decoration-color:currentColor}
+/* Sidebar toggle (javascripts/sidebar.js). Below 76.25em Material already uses a drawer. */
+.wh-navtoggle{display:none;margin:0 .2rem 0 .4rem;padding:.4rem;border:0;background:none;color:inherit;cursor:pointer;border-radius:.2rem}
+.wh-navtoggle:hover{background:rgba(255,255,255,.12)}
+.wh-navtoggle svg{width:1.2rem;height:1.2rem;fill:currentColor;display:block}
+@media screen and (min-width:76.25em){
+  .wh-navtoggle{display:inline-block}
+  body.wh-nav-hidden .md-sidebar--primary{display:none}
+}
 .wh{color:var(--ink);font-family:var(--f-body);display:grid;gap:16px;margin:1em 0}
 .wh p{margin:0}
 .wh h2,.wh h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
