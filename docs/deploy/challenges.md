@@ -18,12 +18,17 @@ The first run takes longest. Docker keeps parts of each image it builds, its **c
     aws ecr get-login-password | docker login --username AWS --password-stdin "$ACCOUNT.dkr.ecr.$(aws configure get region).amazonaws.com"
     ```
     The last line is `Login Succeeded`.
-2. Build and deploy:
+2. Prepare Terraform for the image registry. Run this once; `make build-images` doesn't do it for you:
+    ```bash
+    terraform -chdir=ecr init
+    ```
+    It ends with `Terraform has been successfully initialized!`
+3. Build and deploy:
     ```bash
     make build-images
     ```
     Near the start, Terraform asks `Do you want to perform these actions?`. Type `yes` and press Enter.
-3. While it runs, watch for these two lines. They mean the web and pwn challenges are up:
+4. While it runs, watch for these two lines. They mean the web and pwn challenges are up:
     - `[shared-web] Pulumi deploy complete.`
     - `[shared-tcp] Pulumi deploy complete.`
 
@@ -78,6 +83,7 @@ Edit the files in the challenge's folder, then:
 
 | Message | Fix |
 |---|---|
+| `Required plugins are not installed` | Step 2 was skipped. Run `terraform -chdir=ecr init`, then `make build-images` again |
 | `denied: Your authorization token has expired` | The ECR login expired. Redo step 1 |
 | `JSONDecodeError` at the very end | CTFd's setup isn't finished, or `.ctf/config` is wrong. Fix it, then run `cd ~/wh/wh-2026 && ctf challenge install` |
 | `passphrase must be set` or `incorrect passphrase` | The `pulumi_passphrase` secret is missing, or WH-2026's old settings file is still there. See step 4 of [Make it yours](../code/make-it-yours.md) |
