@@ -47,7 +47,7 @@ markdown_extensions:
   - pymdownx.tabbed: { alternate_style: true }
   - pymdownx.tasklist: { custom_checkbox: true }
   - pymdownx.keys
-  - pymdownx.snippets: { base_path: [snippets], check_paths: true }
+  - pymdownx.snippets: { base_path: [snippets, docs/assets/scripts], check_paths: true }
 
 nav:
   - Start here: index.md
@@ -81,10 +81,18 @@ nav:
   - 6 · Run the event:
       - Watching the system: operate/monitoring.md
       - Adding capacity: operate/scaling.md
+      - Change a challenge: operate/change.md
+      - Where data is kept: operate/data.md
       - Backup and restore: operate/backups.md
+      - Collect the results: operate/results.md
       - Known weak spots: operate/risks.md
   - 7 · Tear down:
       - Delete everything: teardown.md
+  - Write a challenge:
+      - Your challenge folder: write/index.md
+      - challenge.yml: write/challenge-yml.md
+      - Challenges with a server: write/server.md
+      - Hand it in: write/submit.md
   - Reference:
       - Architecture explorer: reference/architecture.md
       - Glossary: reference/glossary.md

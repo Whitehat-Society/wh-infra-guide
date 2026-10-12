@@ -55,6 +55,21 @@ A **rate limit** caps how many requests one address may send. NGINX enforces the
 | CTFd | none. A limit of 100 a second was tried at WH-2026 and removed | — |
 | Pwn challenges | none. They don't go through NGINX | — |
 
+!!! danger "In this setup, every player shares one address"
+    The load balancer in front of NGINX doesn't pass on the player's own address. NGINX sees every request as coming from the load balancer's internal address, such as `10.100.1.7`. A test deploy logged 773 requests from players, health checks and smoke tests, all from that one address. So "20 a second per address" is in practice 20 a second for everyone reaching a challenge through the same load balancer node, and a busy challenge answers `503` to players who sent only a few requests.
+
+    To check on your system, count requests by address over the last hour:
+
+    ```bash
+    G=/aws/containerinsights/$EVENT-eks/application
+    ID=$(aws logs start-query --log-group-name "$G" --start-time $(( $(date +%s) - 3600 )) --end-time $(date +%s) \
+      --query-string 'filter kubernetes.container_name = "controller" | parse log /^(?<ip>\S+) - / | filter ispresent(ip) | stats count(*) as n by ip | sort n desc | limit 5' \
+      --query queryId --output text)
+    sleep 15; aws logs get-query-results --query-id "$ID" --query 'results[*][*].value' --output text
+    ```
+
+    One `10.100.…` address with nearly all the requests means the limits are shared. The fix belongs in `utils/eks/helm.tf`: have the load balancer keep the player's address (`preserve_client_ip.enabled=true` on its target group, or *proxy protocol* with NGINX's `use-proxy-protocol`). Until that is done, lift the limit on a challenge that players report as `503`.
+
 To lift the limit on one web challenge during the event, without restarting anything:
 
 ```bash

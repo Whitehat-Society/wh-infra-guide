@@ -1,0 +1,15 @@
+title: How a challenge folder reaches players
+w: 1180
+h: 230
+nodes:
+  - {id: you, x: 20, y: 95, w: 230, title: "Your folder", sub: "challenge.yml, Dockerfile", glyph: DIR, cat: you}
+  - {id: img, x: 360, y: 50, w: 360, title: "Image in ECR", sub: "only if challenge_type is shared-*", glyph: ECR, cat: compute}
+  - {id: ctf, x: 360, y: 150, w: 360, title: "ctfcli", sub: "every challenge", glyph: CLI, cat: tool}
+  - {id: pods, x: 880, y: 50, w: 280, title: "Pods on the cluster", sub: "web or pwn address", glyph: POD, cat: k8s}
+  - {id: ctfd, x: 880, y: 150, w: 280, title: "CTFd", sub: "text, flags, files", glyph: APP, cat: app}
+edges:
+  - {from: you, to: img, pts: [[250, 115], [300, 115], [300, 75], [360, 75]], n: 1}
+  - {from: you, to: ctf, pts: [[250, 140], [300, 140], [300, 175], [360, 175]], n: 2}
+  - {from: img, to: pods, label: "Pulumi"}
+  - {from: ctf, to: ctfd, label: "install / sync"}
+  - {from: pods, to: ctfd, style: dash, label: "address", x: 1020}

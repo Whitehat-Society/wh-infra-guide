@@ -76,6 +76,11 @@ kubectl scale deploy/base64converter -n challenges-web --replicas=1
 
 `kubectl scale` changes how many copies of a challenge run. Zero stops it.
 
+The alert looks like `Challenge Health Check FAILED … base64converter unreachable`. Expect several copies of it a minute or so apart: when a check fails, the job ends with an error, and Kubernetes reruns it up to 6 times. While those reruns go on, the regular 5-minute checks are skipped.
+
+!!! warning "Two pwn challenges aren't checked"
+    The health check's own list, `SHARED_TCP_CHALLENGES` in `utils/healthcheck.py`, names only `loop`, `library` and `xoph-dark-embers`. `another` and `postman` are deployed but never checked. To add them, follow step 3 of [Add a challenge](../operate/change.md#add-a-challenge).
+
 !!! tip "If you add or remove a pwn challenge"
     The health check lists the pwn challenges in two places: names and ports in `utils/healthcheck.py` (`SHARED_TCP_CHALLENGES`), and addresses in `ctfd/healthcheck-cronjob.yaml`. Update both, then rerun `make deploy-healthcheck-cronjob`.
 

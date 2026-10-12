@@ -1,0 +1,24 @@
+title: Where copies of data are kept
+w: 1220
+h: 500
+groups:
+  - {x: 10, y: 10, w: 330, h: 480, label: "Your computer", style: computer}
+  - {x: 370, y: 10, w: 400, h: 480, label: "AWS account", style: aws}
+  - {x: 800, y: 10, w: 410, h: 480, label: "Cluster", style: cluster}
+nodes:
+  - {id: repo, x: 30, y: 50, w: 290, title: "wh-2026 folder", sub: "challenge.yml, settings files", glyph: DIR, cat: you}
+  - {id: dcache, x: 30, y: 140, w: 290, title: "Docker build cache", sub: "image layers", glyph: IMG, cat: tool}
+  - {id: logins, x: 30, y: 230, w: 290, title: "Sign-ins", sub: "AWS, Docker to ECR, kubeconfig", glyph: KEY, cat: sec}
+  - {id: tfstate, x: 30, y: 320, w: 290, title: "Terraform state", sub: "only on this computer", glyph: TF, cat: tool}
+  - {id: dns, x: 30, y: 395, w: 290, title: "DNS answers", sub: "computer, browser, router", glyph: DNS, cat: net}
+  - {id: ecr, x: 390, y: 50, w: 360, title: "ECR images", sub: "one tag per challenge, overwritten", glyph: ECR, cat: compute}
+  - {id: pstate, x: 390, y: 140, w: 360, title: "Pulumi state (S3)", sub: "what Pulumi built, its settings", glyph: PUL, cat: store}
+  - {id: sm, x: 390, y: 230, w: 360, title: "Secrets Manager", sub: "kept 7 days after deletion", glyph: SEC, cat: sec}
+  - {id: bk, x: 390, y: 320, w: 360, title: "Backups (S3)", sub: "database only, kept 30 days", glyph: S3, cat: store}
+  - {id: r53, x: 390, y: 395, w: 360, title: "Route 53 and CloudWatch logs", sub: "records, logs that never expire", glyph: DNS, cat: net}
+  - {id: node, x: 820, y: 50, w: 370, title: "Node image cache", sub: "images each computer downloaded", glyph: EC2, cat: compute}
+  - {id: db, x: 820, y: 140, w: 370, title: "MariaDB disk", sub: "teams, solves, challenges", glyph: DB, cat: db}
+  - {id: redis, x: 820, y: 230, w: 370, title: "Redis disk", sub: "CTFd's cache and logins", glyph: RDS, cat: db}
+  - {id: up, x: 820, y: 320, w: 370, title: "Uploads disk", sub: "files players download", glyph: EBS, cat: store}
+  - {id: cert, x: 820, y: 395, w: 370, title: "Certificates", sub: "5 identical per week at most", glyph: SEC, cat: sec}
+edges: []

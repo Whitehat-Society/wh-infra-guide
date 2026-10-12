@@ -68,6 +68,9 @@ Use this if the club bought the domain from another company, such as Namecheap o
 
 For a test, a name from a free service such as [DigitalPlat FreeDomain](https://github.com/DigitalPlatDev/FreeDomain) (for example `yourclub.dpdns.org`) works, and the change took about a minute. For the real event, buy a domain the club owns; a `.xyz` costs about US$2 for the first year.
 
+!!! warning "Some home and school networks block free domains"
+    Some internet providers refuse to look up every name under a free domain service. With Singtel home broadband, every `dpdns.org` name, `dpdns.org` itself included, came back as "doesn't exist", while Google's DNS found it. Players on such a network can't reach the CTF at all, which is one more reason to buy a domain for the event. To test whether your network does this, run `nslookup <your-domain>` in Windows PowerShell, or `nslookup <your-domain>` on macOS or Linux: `Non-existent domain` for a name that `dig +short @8.8.8.8 <your-domain>` finds means your network blocks it. The fix for your own computer is in [Troubleshooting](../reference/troubleshooting.md#names-and-addresses).
+
 ## Check it worked
 
 1. Print the **hosted zone ID**. [Settings and secrets](../code/config.md) needs it:

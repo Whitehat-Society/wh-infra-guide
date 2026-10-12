@@ -1,0 +1,14 @@
+title: Which command carries which change
+w: 1180
+h: 300
+nodes:
+  - {id: yml, x: 20, y: 30, w: 280, title: "challenge.yml, files", sub: "text, flags, hints", glyph: YML, cat: you}
+  - {id: code, x: 20, y: 130, w: 280, title: "Server code", sub: "Dockerfile, src/", glyph: DKR, cat: you}
+  - {id: hc, x: 20, y: 230, w: 280, title: "utils/healthcheck.py", sub: "the list of challenges", glyph: PY, cat: you}
+  - {id: ctfd, x: 860, y: 30, w: 300, title: "CTFd", sub: "what players read", glyph: APP, cat: app}
+  - {id: pods, x: 860, y: 130, w: 300, title: "Challenge pods", sub: "what players connect to", glyph: POD, cat: k8s}
+  - {id: job, x: 860, y: 230, w: 300, title: "Health check job", sub: "runs every 5 minutes", glyph: CRN, cat: k8s}
+edges:
+  - {from: yml, to: ctfd, label: "ctf challenge sync", n: 1}
+  - {from: code, to: pods, label: "make build-images", n: 2}
+  - {from: hc, to: job, label: "make deploy-healthcheck-cronjob", n: 3}

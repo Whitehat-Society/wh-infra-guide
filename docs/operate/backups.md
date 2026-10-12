@@ -42,16 +42,17 @@ Restoring replaces the whole database with the backup's contents.
     ```bash
     make restore-ctfd FILE=ctfd-20270628-120000.sql.gz
     ```
-3. Restart CTFd, so it drops any data it remembered from before the restore:
+3. Clear CTFd's cache, which still holds scores and pages from before the restore. Restarting CTFd isn't enough: the cache lives in Redis, on its own disk. This also logs every player out:
     ```bash
-    kubectl rollout restart deploy/ctfd -n ctfd
+    kubectl exec -n ctfd deploy/redis -- redis-cli FLUSHALL
     ```
+    It prints `OK`.
 
 **Check it worked:** the scoreboard shows the scores as they were at the backup's time.
 
 ## Keep a copy after the event
 
-Deleting the system also deletes the backup bucket. Download the last backup first:
+Deleting the system also deletes the backup bucket. The backup holds the database only; files players downloaded are rebuilt from the repository with `ctf challenge sync`. Download the last backup first:
 
 ```bash
 aws s3 cp "s3://$EVENT-ctfd-backups/$(aws s3 ls "s3://$EVENT-ctfd-backups/" | tail -1 | awk '{print $4}')" ~/wh/

@@ -23,24 +23,68 @@ aws sts get-caller-identity
 
 ## By message
 
+Find the group that matches what you were doing, then the line that matches what you see.
+
+### Signing in
+
 | Message or symptom | Cause | Fix |
 |---|---|---|
 | `ExpiredToken` or `SSO session ... expired` | Your 8-hour AWS login ended | `aws sso login`, then rerun the command |
-| `Unable to connect to the server` from `kubectl` | `kubectl` doesn't know the cluster's address, or the cluster was deleted | `cd ~/wh/wh-2026/utils && make kubeconfig` |
-| A Service's `EXTERNAL-IP` stays `<pending>` | The load balancer controller can't create the load balancer | `kubectl logs -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller --tail=50`. A permissions error means `make deploy-eks` didn't finish; rerun it |
-| A name doesn't resolve (`dig` prints nothing) | ExternalDNS hasn't created the record, or your domain doesn't point at Route 53 | `kubectl logs -n external-dns -l app.kubernetes.io/name=external-dns --tail=30`, and check `dig +short NS <your-domain>` |
-| The browser says `ERR_NAME_NOT_RESOLVED`, but `dig` or Google's DNS finds the name | Your computer or router remembered "doesn't exist" from before the record was created | Wait up to 15 minutes. On Windows, `ipconfig /flushdns` clears your computer's copy |
-| The browser warns about the certificate | cert-manager hasn't got the certificate yet, or Let's Encrypt refused because it issued the same certificate 5 times this week | `kubectl describe certificate -A` gives the reason. `kubectl logs -n cert-manager deploy/cert-manager --tail=50` gives detail |
-| A web challenge answers `503` | The request limit, 20 a second per address | See [Rate limits](../operate/risks.md#rate-limits) |
-| Pulumi: `the stack is currently locked` | An earlier Pulumi run was interrupted and left a lock | Set the [Pulumi variables](#pulumi-variables), then `pulumi -C <folder> cancel --yes` |
-| Pulumi: `incorrect passphrase` | The passphrase is wrong, or a settings file from WH-2026 is still present | Delete any `Pulumi.wh-2026.yaml`. Never change the passphrase of a running system |
 | Terraform: `No valid credential sources found` | You signed in with `aws login` instead of `aws sso login`, and Terraform can't read that kind of login | Use the Identity Center profile from [Sign in from the terminal](../accounts/cli-login.md). Or add a profile that hands Terraform the CLI's keys: `credential_process = aws configure export-credentials --profile <yours> --format process` |
 | Python scripts: `Missing Dependency: Using the login credential provider requires an additional dependency` | Same cause, in `secrets.py` and `builder.py` | `pip install "botocore[crt]"` |
 | `explicit deny in a service control policy` | Your account is a Free-plan project that only allows one region | Use that region everywhere; see [Which kind of account you have](../accounts/aws.md#which-kind-of-account-you-have) |
-| `Cannot connect to the Docker daemon` or `docker.sock: no such file` | Docker isn't running | Windows and macOS: start Docker Desktop and wait for it to say *Engine running*. Linux: `sudo systemctl start docker` |
-| Docker: `error getting credentials` … `A specified logon session does not exist` | On Windows, Docker in Ubuntu tries to use the Windows password store and can't | Remove the line `"credsStore": "desktop.exe"` from `~/.docker/config.json`, then retry |
+| `Unable to connect to the server` from `kubectl` | `kubectl` doesn't know the cluster's address, or the cluster was deleted | `cd ~/wh/wh-2026/utils && make kubeconfig` |
+
+### Names and addresses
+
+| Message or symptom | Cause | Fix |
+|---|---|---|
+| A name doesn't resolve (`dig` prints nothing) | ExternalDNS hasn't created the record, or your domain doesn't point at Route 53 | `kubectl logs -n external-dns -l app.kubernetes.io/name=external-dns --tail=30`, and check `dig +short NS <your-domain>` |
+| The browser says `ERR_NAME_NOT_RESOLVED`, but `dig` or Google's DNS finds the name | Your computer or router remembered "doesn't exist" from before the record was created | Wait up to 15 minutes, then retry. On Windows, `ipconfig /flushdns` in PowerShell clears your computer's copy |
+| Still `ERR_NAME_NOT_RESOLVED` or `Non-existent domain` after 15 minutes, and `nslookup <your-domain>` fails for the domain itself | Your internet provider blocks the whole domain, which happens with free domain services | For Chrome only: **Settings → Privacy and security → Security → Use secure DNS → Google (Public DNS)**. For the whole computer, terminal tools included: Windows **Settings → Network & internet → Wi-Fi → your network → Hardware properties → DNS server assignment → Edit → Manual**. Set IPv4 to `8.8.8.8` and `1.1.1.1`, and IPv6 to `2001:4860:4860::8888` and `2606:4700:4700::1111`. On a phone hotspot the block usually doesn't apply |
+| Chrome opens the CTF, but a terminal tool fails with `NameResolutionError` or `Name or service not known` | Chrome's secure DNS setting skips your router; the terminal still uses it | Change the computer's DNS as in the line above |
+| The browser warns about the certificate | cert-manager hasn't got the certificate yet, or Let's Encrypt refused because it issued the same certificate 5 times this week | `kubectl describe certificate -A` gives the reason. `kubectl logs -n cert-manager deploy/cert-manager --tail=50` gives detail |
+| A web challenge answers `503` | The request limit, 20 a second per address | See [Rate limits](../operate/risks.md#rate-limits) |
+| A Service's `EXTERNAL-IP` stays `<pending>` | The load balancer controller can't create the load balancer | `kubectl logs -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller --tail=50`. A permissions error means `make deploy-eks` didn't finish; rerun it |
+
+### Deploying challenges
+
+| Message or symptom | Cause | Fix |
+|---|---|---|
+| `Required plugins are not installed` | Terraform for the image registry was never prepared on this computer | `terraform -chdir=ecr init`, then `make build-images` |
+| `No such file or directory: 'oras'` | The `oras` tool isn't installed | Install it as in [Install the tools](../setup/pc.md#2-install-the-other-programs) |
+| `Challenge name must be alphanumeric with hyphens only` | An older `builder.py` that only accepts names like `xoph-dark-embers` | Update `utils/builder/builder.py` from the repository's `main` branch, which accepts any name |
+| `creating failed` or `updating failed` for a `Deployment`, after Pulumi waits 10 minutes | One challenge's pods never became ready, so Pulumi stopped, and the builder skipped every step after it, including loading CTFd | `kubectl get pods -n challenges-web; kubectl get pods -n challenges-tcp` shows the broken one; fix it with the lines below, then rerun `make build-images` |
+| A pod shows `StartError` or `RunContainerError`, and `kubectl describe pod` says `executable file not found` | The Dockerfile starts a program its final image doesn't contain, often `socat` | Fix the Dockerfile; see [Rules for the Dockerfile](../write/server.md#rules-for-the-dockerfile) |
+| After a rebuild, the challenge still behaves like the old version | Kubernetes is running the image it downloaded before | See [Old code still running](../operate/data.md#old-code-still-running) |
+| A challenge disappeared from the cluster after `make build-images` | Its image failed to build, so the builder left it out, and Pulumi deleted what it no longer saw | Scroll up in the output to the challenge's `Error` line, fix it, and rerun `make build-images` |
+| `filelocker` fails with `go install github.com/air-verse/air@latest` | `filelocker` needs the optional chall-manager, and its Dockerfile downloads a tool that no longer builds | Expected. Leave it hidden, or see the [chall-manager appendix](chall-manager.md) |
+| The build ends with `NameResolutionError` or `JSONDecodeError` from `ctf` | The images and pods are deployed, but ctfcli couldn't reach CTFd | Fix the cause (see [Names and addresses](#names-and-addresses), or finish [CTFd's setup](../deploy/ctfd.md)), then run `cd ~/wh/wh-2026 && ctf challenge install && cd utils && make build-images` so the addresses are filled in |
+| A challenge shows twice in CTFd | Its `name:` was changed after it was loaded | See [Rename a challenge](../operate/change.md#rename-a-challenge) |
+
+### CTFd
+
+| Message or symptom | Cause | Fix |
+|---|---|---|
+| `missing configuration value 'backup_irsa_arn'` | The Makefile doesn't pass this setting to Pulumi | Step 1 of [The scoreboard](../deploy/ctfd.md) |
+| Scores, challenges or settings look out of date after a restore or a change made directly in the database | CTFd's cache in Redis still holds the old copies | [Clear CTFd's cache](../operate/data.md#clear-ctfds-cache) |
+| Players are logged out after you cleared the cache | Logins are kept in the same cache | Expected; they log in again |
+
+### Pulumi and Terraform
+
+| Message or symptom | Cause | Fix |
+|---|---|---|
+| Pulumi: `the stack is currently locked` | An earlier Pulumi run was interrupted and left a lock | Set the [Pulumi variables](#pulumi-variables), then `pulumi -C <folder> cancel --yes` |
+| Pulumi: `incorrect passphrase` | The passphrase is wrong, or a settings file from WH-2026 is still present | Delete any `Pulumi.wh-2026.yaml`. Never change the passphrase of a running system |
 | Terraform: `Error acquiring the state lock` | Another Terraform run is going, or one crashed and left a lock | Make sure nobody else is deploying, then `terraform -chdir=eks force-unlock <LOCK_ID>` with the ID from the message |
 | Terraform: `secret ... scheduled for deletion` | A teardown less than 7 days ago deleted the secret | `make restore-secrets`, then rerun `make deploy-eks` |
+
+### Docker
+
+| Message or symptom | Cause | Fix |
+|---|---|---|
+| `Cannot connect to the Docker daemon` or `docker.sock: no such file` | Docker isn't running | Windows and macOS: start Docker Desktop and wait for it to say *Engine running*. Linux: `sudo systemctl start docker` |
+| Docker: `error getting credentials` … `A specified logon session does not exist` | On Windows, Docker in Ubuntu tries to use the Windows password store and can't | Remove the line `"credsStore": "desktop.exe"` from `~/.docker/config.json`, then retry |
 
 ## Pulumi variables
 

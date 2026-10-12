@@ -4,7 +4,7 @@ This stage starts CTFd, the scoreboard, with its database (**MariaDB**) and its 
 
 <figure class="diagram">
 --8<-- "diagrams/ctfd.svg"
-<figcaption>Only MariaDB and the uploads disk keep data across restarts. Redis holds logged-in sessions and cached pages, which CTFd can rebuild.</figcaption>
+<figcaption>Each of MariaDB, Redis and the uploads has its own disk, so all three keep their data across restarts. MariaDB holds teams and solves. Redis holds logins and cached pages; see <a href="../../operate/data/#clear-ctfds-cache">Clear CTFd's cache</a>.</figcaption>
 </figure>
 
 1. Give Pulumi the address of the backup job's permissions role. Terraform created the role on the previous page, but the Makefile doesn't pass it on, so you set it once by hand:
@@ -32,7 +32,7 @@ This stage starts CTFd, the scoreboard, with its database (**MariaDB**) and its 
     Repeat until it prints one or more IP addresses.
 
     !!! warning "Don't open the address in a browser before this prints an address"
-        If you ask for a name before its record exists, your computer and your router remember the answer "doesn't exist" for up to 15 minutes, even after the record appears. If that happened, wait 15 minutes. `ipconfig /flushdns` in Windows PowerShell clears your computer's copy, but not your router's.
+        If you ask for a name before its record exists, your computer and your router remember the answer "doesn't exist" for up to 15 minutes, even after the record appears. If that happened, wait 15 minutes. `ipconfig /flushdns` in Windows PowerShell clears your computer's copy, but not your router's. To skip the router in Chrome, open **Settings → Privacy and security → Security**, and under **Use secure DNS** choose **Google (Public DNS)**.
 
 ## Finish setup in the browser
 

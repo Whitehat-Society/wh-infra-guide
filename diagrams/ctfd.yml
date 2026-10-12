@@ -7,7 +7,7 @@ nodes:
   - {id: nginx, x: 20, y: 110, w: 220, title: "NGINX", sub: "ctf.<your-domain>", glyph: NGX, cat: k8s}
   - {id: ctfd, x: 330, y: 110, w: 200, title: "CTFd", sub: "the scoreboard", glyph: APP, cat: app}
   - {id: db, x: 650, y: 40, w: 250, title: "MariaDB", sub: "teams, solves; own disk", glyph: DB, cat: db}
-  - {id: redis, x: 650, y: 120, w: 250, title: "Redis", sub: "cache, no disk", glyph: RDS, cat: db}
+  - {id: redis, x: 650, y: 120, w: 250, title: "Redis", sub: "cache and logins; own disk", glyph: RDS, cat: db}
   - {id: up, x: 650, y: 200, w: 250, title: "Uploads disk", sub: "files players download", glyph: EBS, cat: store}
   - {id: ecr, x: 330, y: 320, w: 200, title: "ECR", sub: "the CTFd image", glyph: ECR, cat: compute}
 edges:

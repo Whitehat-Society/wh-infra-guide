@@ -14,7 +14,9 @@ Then run it:
 make smoke-test
 ```
 
-Every web and pwn challenge shows `PASS`. `filelocker` shows `FAIL`, because it needs the optional chall-manager; see the [appendix](../reference/chall-manager.md).
+Every challenge it lists shows `PASS`. The test then prints `==> filelocker (chall-manager HTTP)` and stops with `make: *** [Makefile:224: smoke-test] Error 1`, without a summary line. That ending is expected: `filelocker` needs the optional chall-manager (see the [appendix](../reference/chall-manager.md)), and the script stops at its first missing answer. Count the `PASS` lines instead: 5 web and 3 pwn.
+
+The smoke test, like the health check, doesn't test `another` and `postman`. Check them by hand with the `nc` commands in the browser checklist below.
 
 ## Checks from the terminal
 
@@ -33,7 +35,7 @@ kubectl get nodes
 2. A line containing `Let's Encrypt`: the certificate was issued by Let's Encrypt.
 3. `200`: the web challenge answered normally.
 4. Only the header line: every pod is running.
-5. Three nodes, all `Ready`.
+5. Between two and six nodes, all `Ready`. The cluster adds a node by itself when pods need room, so a fourth one after the builds is normal.
 
 ## Checks in the browser
 
@@ -44,7 +46,7 @@ kubectl get nodes
 - [ ] A test team can register, see a visible challenge and submit its flag. Delete the test team afterwards
 - [ ] The alerts channel received the test alert from [page 4](day2.md)
 - [ ] A backup from the last hour is in S3: `aws s3 ls s3://$EVENT-ctfd-backups/ | tail -1`
-- [ ] No alarm is active: `aws cloudwatch describe-alarms --state-value ALARM --query 'MetricAlarms[].AlarmName'` prints `[]`
+- [ ] No alarm is active except `<event>-chall-manager-pod-down`: `aws cloudwatch describe-alarms --state-value ALARM --query 'MetricAlarms[].AlarmName'`. That one stays active because chall-manager isn't deployed; [The cluster](eks.md) turned off its notifications
 
 ## If a check fails
 

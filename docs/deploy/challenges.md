@@ -33,7 +33,7 @@ The first run takes longest. Docker keeps parts of each image it builds, its **c
     - `[shared-tcp] Pulumi deploy complete.`
 
 !!! note "One error is expected: filelocker"
-    `filelocker` gives each team its own copy of the challenge, which needs the optional chall-manager. This deploy leaves chall-manager out, so the builder prints an error for `filelocker` and moves on to the next challenge. Keep `filelocker` hidden in CTFd, or set it up with the [chall-manager appendix](../reference/chall-manager.md).
+    `filelocker` gives each team its own copy of the challenge, which needs the optional chall-manager. This deploy leaves chall-manager out, so the builder prints an error for `filelocker` (its image build may also fail first) and moves on to the next challenge. Keep `filelocker` hidden in CTFd, or set it up with the [chall-manager appendix](../reference/chall-manager.md).
 
 ## Check it worked
 
@@ -77,7 +77,14 @@ Each `challenge.yml` contains `state: hidden`. When the CTF starts, make them vi
 Edit the files in the challenge's folder, then:
 
 - If you changed only text, flags or attached files: `cd ~/wh/wh-2026 && ctf challenge sync <category>/<challenge-folder>`
-- If you changed the challenge's code or Dockerfile: rerun `make build-images`. Unchanged challenges rebuild quickly from the cache.
+- If you changed the challenge's code or Dockerfile: rerun `make build-images`. Unchanged challenges rebuild quickly from the cache. The new image keeps the same name, so Kubernetes keeps running the old copy it already downloaded. Make it download the new one and restart the pods:
+    ```bash
+    NAME=<name>; NS=challenges-web   # challenges-tcp for a pwn challenge
+    kubectl patch deploy "$NAME" -n "$NS" -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"$NAME\",\"imagePullPolicy\":\"Always\"}]}}}}"
+    kubectl rollout restart deploy "$NAME" -n "$NS"
+    kubectl rollout status deploy "$NAME" -n "$NS"
+    ```
+    The last line says `successfully rolled out`.
 
 ## If it fails
 
@@ -87,6 +94,9 @@ Edit the files in the challenge's folder, then:
 | `denied: Your authorization token has expired` | The ECR login expired. Redo step 1 |
 | `JSONDecodeError` at the very end | CTFd's setup isn't finished, or `.ctf/config` is wrong. Fix it, then run `cd ~/wh/wh-2026 && ctf challenge install` |
 | `passphrase must be set` or `incorrect passphrase` | The `pulumi_passphrase` secret is missing, or WH-2026's old settings file is still there. See step 4 of [Make it yours](../code/make-it-yours.md) |
+| `Challenge name must be alphanumeric with hyphens only` | The builder uses each web and pwn challenge's `name:` as the image and pod name, so it may only contain letters, digits and hyphens. Change `name:` in that `challenge.yml`, e.g. `Xoph, Dark Embers` to `xoph-dark-embers`, then rerun `make build-images` |
+| `creating failed` for a `Deployment`, then `make: *** [Makefile:29: build-images] Error 1` | One challenge's pods never started, so Pulumi gave up, and the builder stopped before the challenges after it. Find the broken pod with `kubectl get pods -A \| grep -v Running`, fix it as in the rows below, then rerun `make build-images` |
+| A pod shows `StartError` or `CrashLoopBackOff`, and `kubectl describe pod` says `executable file not found` | The challenge's Dockerfile starts a program its image doesn't contain. Fix the Dockerfile, e.g. install `socat`. Rerun `make build-images`, then make the pods download the new image as in [Changing a challenge later](#changing-a-challenge-later) |
 | A web pod shows `CrashLoopBackOff` | The challenge program keeps crashing. `kubectl logs -n challenges-web deploy/<name>` shows its last output. The cause is usually in the challenge's own code |
 | A pwn `EXTERNAL-IP` stays `<pending>` | The load balancer controller couldn't create it. `kubectl logs -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller --tail=50` shows why |
 
