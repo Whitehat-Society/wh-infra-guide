@@ -13,7 +13,7 @@ There is no command for a single challenge: every run handles all of them. That 
 
 | Part of the run | Took |
 |---|---|
-| Building and uploading all 11 images, with the cache | 10 seconds |
+| Building and uploading all 10 challenge images, with the cache | 10 seconds |
 | Pulumi, pwn challenges, nothing changed | 4 seconds |
 | Pulumi, one web challenge changed | 13 seconds |
 | A whole run that changed one challenge | about 1 minute |
