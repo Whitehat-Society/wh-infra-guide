@@ -1,14 +1,13 @@
 # Make it yours
 
-<span class="time">Time: about 10 minutes</span>
-
-The code still contains three values from WH-2026, and they point at an AWS account that no longer exists. This page replaces them with yours across every file at once.
+The code still contains four values from WH-2026, and they point at an AWS account that no longer exists. This page replaces them with yours across every file at once.
 
 | Value | WH-2026's value | Your value |
 |---|---|---|
 | AWS account ID | the 12-digit number in `utils/config.ini.example` | the `Account` printed by `aws sts get-caller-identity` |
 | Domain | `whitehats-ctf.com` | the domain from [Domain name](../accounts/domain.md) |
 | Event name | `wh-2026` | e.g. `wh-2027`. Use only lowercase letters, digits and `-` |
+| Region | `ap-southeast-1` (Singapore) | the same, unless your account only allows another region ([how to tell](../accounts/aws.md#which-kind-of-account-you-have)) |
 
 The event name starts the name of almost everything the system creates, such as the cluster `wh-2027-eks` and the bucket `wh-2027-ctfd-backups`. Use a new one each year. S3 bucket names are shared across every AWS customer, and a name may still be held from a previous event.
 
@@ -25,6 +24,7 @@ Before changing anything, you'll start a **branch**: a separate line of changes 
     OLD_ACCOUNT=$(grep -oE '[0-9]{12}' utils/config.ini.example | head -1)
     NEW_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
     NEW_DOMAIN=example-ctf.com
+    NEW_REGION=$(aws configure get region)
     ```
 3. Replace the values in every file. The commands leave out `docs/` and the Markdown files, which record WH-2026's history, and they keep the repository's own address, `Whitehat-Society/wh-2026`, unchanged:
     ```bash
@@ -32,6 +32,7 @@ Before changing anything, you'll start a **branch**: a separate line of changes 
     files "$OLD_ACCOUNT"     | xargs -0r perl -pi -e "s/$OLD_ACCOUNT/$NEW_ACCOUNT/g"
     files whitehats-ctf.com | xargs -0r perl -pi -e "s/whitehats-ctf\\.com/$NEW_DOMAIN/g"
     files wh-2026           | xargs -0r perl -pi -e "s#Whitehat-Society/wh-2026#\\@REPO\\@#g; s/wh-2026/$NEW_EVENT/g; s#\\@REPO\\@#Whitehat-Society/wh-2026#g"
+    files ap-southeast-1    | xargs -0r perl -pi -e "s/ap-southeast-1/$NEW_REGION/g"
     ```
 4. Delete one leftover settings file. It was locked with WH-2026's Pulumi passphrase, which nobody has any more, and Pulumi creates a fresh one during the deploy:
     ```bash
@@ -43,9 +44,10 @@ Before changing anything, you'll start a **branch**: a separate line of changes 
 ```bash
 git grep -nIF -e "$OLD_ACCOUNT" -e whitehats-ctf.com -- utils web pwn ':!*.md' ':!*.txt' | head
 git grep -nI 'wh-2026' -- utils ':!*.md' ':!*.txt' | grep -v 'Whitehat-Society/wh-2026' | head
+[ "$NEW_REGION" = ap-southeast-1 ] || git grep -nI ap-southeast-1 -- utils web pwn ':!*.md' ':!*.txt' | head
 ```
 
-Both commands print nothing, which means no old value is left.
+All three commands print nothing, which means no old value is left.
 
 Then look at the lines that matter most:
 

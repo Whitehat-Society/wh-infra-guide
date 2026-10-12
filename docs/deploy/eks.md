@@ -1,7 +1,5 @@
 # 1. The cluster
 
-<span class="time">Time: about 25 minutes, of which 20 are waiting</span>
-
 This stage builds the foundation everything else runs on: the private network, the three rented computers, the Kubernetes cluster that manages them, and the helper programs listed in [Containers and Kubernetes](../concepts/containers-and-kubernetes.md#helper-programs-inside-the-cluster). It also creates the backup bucket, the alarms, and the bucket where Pulumi keeps its records.
 
 `make deploy-eks` runs Terraform on the files in `utils/eks/` in two rounds. The first round creates the network and the cluster. The second installs the programs that run inside the cluster, which Terraform can only plan once the cluster exists.
@@ -41,7 +39,7 @@ What each command should show:
 
 1. **Nodes:** three lines, each with `STATUS` `Ready`. These are the three rented computers.
 2. **Pods that aren't running:** only the header line. `-A` lists pods in every namespace, and `grep -v` hides the healthy ones, so an empty list means everything is up.
-3. **The NGINX service:** under `EXTERNAL-IP`, a long name ending in `.elb.ap-southeast-1.amazonaws.com`. That is the web load balancer's address.
+3. **The NGINX service:** under `EXTERNAL-IP`, a long name ending in `.elb.<region>.amazonaws.com`. That is the web load balancer's address.
 4. **Certificates:** `wildcard-challenges` with `READY` `True`. Let's Encrypt can take up to 5 minutes after the deploy ends; rerun the command until it shows `True`.
 
 ## If it fails

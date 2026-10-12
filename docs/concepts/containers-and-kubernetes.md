@@ -1,62 +1,67 @@
 # Containers and Kubernetes
 
-<span class="time">Time: about 10 minutes to read</span>
-
-The scoreboard and each challenge are separate programs, often written in different languages with different needs. This page explains how they are packaged, how they run, and how the system keeps them running.
+The scoreboard and each challenge are separate programs, often in different languages. This page shows how they are packaged, run, and kept running.
 
 ## Containers
 
-A challenge written in Python might need Python 3.12 and five libraries. Another written in Node.js needs something else entirely. Installing all of that on one computer leads to conflicts.
+A Python challenge needs Python and its libraries; a Node.js challenge needs something else. Installing everything on one computer leads to conflicts. A **container** avoids that: it is a program packaged with every file it needs, running sealed off from the others on the same computer.
 
-A **container** solves this. It is a program packaged together with every file it needs, running in its own sealed-off space on a computer. Many containers can share one computer without seeing each other's files.
+<figure class="diagram">
+--8<-- "diagrams/image-flow.svg"
+<figcaption>Every challenge folder has a Dockerfile. The deploy builds each one into an image, uploads it to ECR, and the cluster downloads it to start a pod.</figcaption>
+</figure>
 
-- A **container image** is the package: a snapshot of the program and its files. A container is one running copy of an image.
-- A **Dockerfile** is the recipe for building an image. Each challenge folder in the repo has one.
-- **Docker** is the tool that builds images from Dockerfiles and runs containers.
-- A **registry** stores images so other computers can download them. This system uses **ECR** (Elastic Container Registry), AWS's private registry.
+| Term | What it is |
+|---|---|
+| **Dockerfile** | The recipe for an image. |
+| **Container image** | The package: a snapshot of the program and its files. A **container** is one running copy. |
+| **Docker** | The tool that builds images and runs containers. |
+| **Registry** | Stores images for other computers to download. This system uses **ECR**, AWS's private registry. |
 
 ## Kubernetes
 
-Three computers and about twenty containers raise questions. Which container runs on which computer? What happens when a container crashes, or a computer dies? **Kubernetes** answers these.
+Three computers and about twenty containers raise questions. Which container runs where? What happens when one crashes, or a computer dies? **Kubernetes** answers them. You describe what should be running, for example "one copy of `xssive-login`", and Kubernetes starts it, watches it, and replaces it if it stops.
 
-You give Kubernetes a description of what should be running, for example "two copies of the `xssive-login` image". Kubernetes starts them, watches them, and replaces any that stop. Its group of computers is a **cluster**, and each computer in it is a **node**. **EKS** (Elastic Kubernetes Service) is AWS's managed Kubernetes. AWS runs the part of Kubernetes that makes decisions, and the club rents the nodes.
+| Term | What it is |
+|---|---|
+| **Cluster** | Kubernetes' group of computers. Each computer is a **node**. |
+| **EKS** | AWS's managed Kubernetes. AWS runs the decision-making part; the club rents the nodes. |
+| **kubectl** | The command-line tool you use to talk to the cluster. |
 
-You talk to Kubernetes with a command-line tool called **kubectl**.
+## The objects Kubernetes runs
 
-## The things Kubernetes runs
+<figure class="diagram">
+--8<-- "diagrams/k8s-objects.svg"
+<figcaption>One web challenge. NGINX reads the Ingress to learn which Service a name belongs to, then forwards the request to that Service, which picks one of the Deployment's pods.</figcaption>
+</figure>
 
-Kubernetes has its own names for the things you describe. These are the ones this system uses:
-
-| Name | What it is | Example in this system |
+| Object | What it is | Example |
 |---|---|---|
-| **Pod** | One running container (occasionally a few that work together). The smallest thing Kubernetes runs | One copy of `xssive-login` |
+| **Pod** | One running container | One copy of `xssive-login` |
 | **Deployment** | "Keep this many identical pods running." The number is the **replica** count | `xssive-login`, 1 replica |
-| **Service** | A fixed name and address in front of a group of pods, so other programs can find them even as pods are replaced | `ctfd`, port 8000 |
-| **Ingress** | A rule like "requests for this name go to that Service". NGINX reads these rules | `xssive-login.challenges.example-ctf.com` goes to `xssive-login` |
-| **Namespace** | A folder that groups related things | `ctfd`, `challenges-web`, `challenges-tcp` |
-| **CronJob** | Runs a pod on a schedule | Hourly database backup |
-| **Secret** | A Kubernetes object that hands a password or token to a pod | The database password |
+| **Service** | A fixed address in front of a Deployment's pods. A Service can also ask AWS for its own load balancer; that is how each pwn challenge gets one | `ctfd`, port 8000 |
+| **Ingress** | A rule: "requests for this name go to that Service" | `xssive-login.challenges.example-ctf.com` |
+| **Namespace** | A folder that groups objects | `ctfd`, `challenges-web`, `challenges-tcp` |
+| **CronJob** | Runs a pod on a schedule | The hourly database backup |
+| **Secret** | Hands a password or token to a pod | The database password |
 | **Persistent volume** | A disk that survives when its pod is replaced | CTFd's database files |
-
-A Service can ask AWS for a load balancer. That is how each pwn challenge gets its own NLB.
 
 ## Helper programs inside the cluster
 
-A few programs run inside the cluster and create AWS resources on its behalf. You don't operate them directly, but their names appear in error messages:
+Four programs in the cluster create AWS resources for it. You never run them yourself, but their names appear in error messages.
 
-- **NGINX ingress controller**: the NGINX that reads Ingress rules and forwards web requests.
-- **AWS Load Balancer Controller**: creates an AWS load balancer whenever a Service asks for one.
-- **ExternalDNS**: creates the DNS records in Route 53 for every name in an Ingress.
-- **cert-manager**: gets TLS certificates from Let's Encrypt, and renews them before they expire.
-- **Cluster Autoscaler**: rents another node when pods don't fit on the existing ones, and returns nodes that sit mostly idle.
+<figure class="diagram">
+--8<-- "diagrams/helpers.svg"
+<figcaption>Each helper watches one kind of Kubernetes object and creates the matching thing outside the cluster. NGINX, the fifth helper, forwards web requests.</figcaption>
+</figure>
 
 ## How the system scales
 
-Kubernetes can add capacity in two ways, and this system uses only one of them:
+| What grows | How | Limit |
+|---|---|---|
+| **Nodes** | Automatically. When a pod can't start because every node is full, the Cluster Autoscaler rents another | 6 nodes |
+| **Pods** | By hand. Each Deployment's replica count is a fixed number in the code; you change it and redeploy ([Adding capacity](../operate/scaling.md)) | none |
 
-- **More nodes: automatic.** When a pod can't start because every node is full, the Cluster Autoscaler rents another node, up to a limit of six.
-- **More pods: manual.** No program here adds pods when traffic rises. Each Deployment's replica count is a fixed number in the code. To add pods, you change the number and redeploy. [Adding capacity](../operate/scaling.md) shows how.
-
-Busy pods don't make the cluster grow. A pod only triggers a new node when it can't start at all.
+A busy pod doesn't make the cluster grow. Only a pod that can't start at all triggers a new node.
 
 **Next:** [Infrastructure as code](infrastructure-as-code.md).

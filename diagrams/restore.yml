@@ -1,0 +1,9 @@
+title: Backup and restore
+w: 1000
+h: 170
+nodes:
+  - {id: db, x: 20, y: 60, w: 240, title: "MariaDB", sub: "the live database", glyph: DB, cat: db}
+  - {id: s3, x: 740, y: 60, w: 240, title: "S3 bucket", sub: "one file per hour", glyph: S3, cat: store}
+edges:
+  - {from: db, to: s3, label: "make backup-ctfd (and every hour)", pts: [[260, 80], [740, 80]], lx: 500, ly: 80}
+  - {from: s3, to: db, label: "make restore-ctfd FILE=…", pts: [[740, 104], [260, 104]], lx: 500, ly: 104, hot: true}

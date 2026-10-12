@@ -1,7 +1,5 @@
 # Discord and GitHub
 
-<span class="time">Time: about 10 minutes</span>
-
 ## Discord webhooks
 
 A **webhook** is a secret web address that lets a program post messages into one Discord channel. The system posts in two places, so you need two webhooks:

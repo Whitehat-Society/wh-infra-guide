@@ -1,8 +1,11 @@
 # Backup and restore
 
-<span class="time">Time: 2 minutes to back up, about 5 minutes to restore</span>
-
 The CTFd database holds every team, solve and score. It is the only part of the system you can't rebuild from the code, so it is backed up every hour. A backup is one compressed file in the S3 bucket `<event>-ctfd-backups`.
+
+<figure class="diagram">
+--8<-- "diagrams/restore.svg"
+<figcaption>A restore replaces the whole live database with the chosen file.</figcaption>
+</figure>
 
 ## Take a backup now
 

@@ -1,0 +1,20 @@
+title: Helper programs in the cluster and what each creates
+w: 1000
+h: 380
+groups:
+  - {x: 10, y: 10, w: 340, h: 360, label: "Inside the cluster", style: cluster}
+  - {x: 620, y: 10, w: 370, h: 360, label: "Outside the cluster", style: aws}
+nodes:
+  - {id: lbc, x: 30, y: 45, w: 300, title: "Load Balancer Controller", sub: "watches Services", glyph: K8S, cat: k8s}
+  - {id: edns, x: 30, y: 125, w: 300, title: "ExternalDNS", sub: "watches Ingresses", glyph: K8S, cat: k8s}
+  - {id: cm, x: 30, y: 205, w: 300, title: "cert-manager", sub: "watches certificates", glyph: K8S, cat: k8s}
+  - {id: ca, x: 30, y: 285, w: 300, title: "Cluster Autoscaler", sub: "watches pods that can't start", glyph: K8S, cat: k8s}
+  - {id: nlb, x: 640, y: 45, w: 330, title: "Load balancers (NLB)", sub: "one per pwn challenge, one for web", glyph: LB, cat: net}
+  - {id: rec, x: 640, y: 125, w: 330, title: "DNS records", sub: "in Route 53", glyph: DNS, cat: net}
+  - {id: cert, x: 640, y: 205, w: 330, title: "TLS certificates", sub: "from Let's Encrypt", glyph: TLS, cat: sec}
+  - {id: ec2, x: 640, y: 285, w: 330, title: "More computers", sub: "EC2 nodes, up to 6", glyph: EC2, cat: compute}
+edges:
+  - {from: lbc, to: nlb, label: "creates"}
+  - {from: edns, to: rec, label: "writes"}
+  - {from: cm, to: cert, label: "requests"}
+  - {from: ca, to: ec2, label: "rents"}

@@ -1,13 +1,11 @@
 # 2. The scoreboard
 
-<span class="time">Time: about 15 minutes</span>
+This stage starts CTFd, the scoreboard, with its database (**MariaDB**) and its fast memory store (**Redis**). `make deploy-ctfd` builds the CTFd image from `~/wh/CTFd`, uploads it to ECR, and runs the Pulumi program in `utils/ctfd/`.
 
-This stage starts CTFd, the scoreboard. CTFd needs two helpers, and each runs as its own pod:
-
-- **MariaDB**, the database. It stores teams, solves and scores on a disk that survives restarts.
-- **Redis**, a fast memory store. CTFd keeps logged-in sessions and cached pages in it.
-
-`make deploy-ctfd` does three things. It builds a container image from the CTFd folder, uploads the image to ECR, and runs the Pulumi program in `utils/ctfd/`, which starts the three pods and an Ingress for `ctf.<your-domain>`.
+<figure class="diagram">
+--8<-- "diagrams/ctfd.svg"
+<figcaption>Only MariaDB and the uploads disk keep data across restarts. Redis holds logged-in sessions and cached pages, which CTFd can rebuild.</figcaption>
+</figure>
 
 1. Deploy:
     ```bash

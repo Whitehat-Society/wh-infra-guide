@@ -1,0 +1,12 @@
+title: From a Dockerfile to a running container
+w: 1260
+h: 110
+nodes:
+  - {id: df, x: 20, y: 23, w: 200, title: "Dockerfile", sub: "the recipe", glyph: TXT, cat: tool}
+  - {id: img, x: 360, y: 23, w: 200, title: "Image", sub: "the package", glyph: IMG, cat: app}
+  - {id: ecr, x: 700, y: 23, w: 220, title: "ECR registry", sub: "stores images", glyph: ECR, cat: compute}
+  - {id: pod, x: 1040, y: 23, w: 200, title: "Pod", sub: "a running copy", glyph: POD, cat: k8s}
+edges:
+  - {from: df, to: img, label: "docker build"}
+  - {from: img, to: ecr, label: "docker push"}
+  - {from: ecr, to: pod, label: "download"}

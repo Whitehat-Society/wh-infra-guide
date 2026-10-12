@@ -1,48 +1,56 @@
 # Infrastructure as code
 
-<span class="time">Time: about 10 minutes to read</span>
+Building the system by clicking through the AWS console would take days, and nobody could repeat it exactly. Instead, files in the repository describe every part, and tools turn those files into real resources. This is called **infrastructure as code**. It also means you can delete everything after the event and rebuild it identically next year.
 
-You could build the whole system by clicking through the AWS console. It would take days, nobody could repeat it exactly, and nobody could tell afterwards what had been clicked. Instead, the club describes every part in files, and tools turn those files into real resources. This approach is called **infrastructure as code**.
+## The whole deploy in four commands
+
+<figure class="diagram">
+--8<-- "diagrams/who-builds.svg"
+<figcaption>Each deploy step is one short command. Teardown runs the same tools in reverse order.</figcaption>
+</figure>
+
+The file `utils/Makefile` gives each long sequence of commands a short name, called a **target**. You run a target with `make`, from inside the `utils/` folder.
 
 ## Terraform: the AWS foundation
 
-**Terraform** reads files ending in `.tf` that describe AWS resources: the private network, the cluster, the disks, the alarms. Three commands do almost everything:
+**Terraform** reads `.tf` files describing AWS resources and makes AWS match them.
 
-- `terraform plan` compares the files with what exists and lists what it would change.
-- `terraform apply` makes those changes.
-- `terraform destroy` deletes everything the files describe.
+<figure class="diagram">
+--8<-- "diagrams/tf-cycle.svg"
+<figcaption>Terraform compares what should exist with what it built last time, then changes only the difference. Never delete the state file by hand: without it, Terraform can't update or delete what it built.</figcaption>
+</figure>
 
-Terraform records what it created in a **state file**. It uses the state file to know what to update or delete later, so never delete that file by hand.
+| Command | What it does |
+|---|---|
+| `terraform plan` | Lists what it would change |
+| `terraform apply` | Makes those changes |
+| `terraform destroy` | Deletes everything the files describe |
 
-Terraform also installs the helper programs inside the cluster, using **Helm**, an installer for Kubernetes software. Each Helm package is called a *chart*.
-
-The Terraform files are in `utils/eks/` (the cluster and everything around it) and `utils/ecr/` (the registry for challenge images).
+Terraform also installs the helper programs inside the cluster, using **Helm**, an installer for Kubernetes software. Its files are in `utils/eks/` (the cluster and everything around it) and `utils/ecr/` (the challenge image registry).
 
 ## Pulumi: what runs on the cluster
 
-**Pulumi** does the same job as Terraform, but you write the description as a normal program. Here the programs are written in Go. The club uses Pulumi to put workloads on the cluster:
+**Pulumi** does the same job, but the description is a program, here written in Go.
 
-| Folder | Pulumi creates |
+| Folder | What Pulumi creates |
 |---|---|
-| `utils/ctfd/` | CTFd, its MariaDB database and its Redis cache, plus the Ingress for `ctf.<your-domain>` |
-| `utils/web-shared/` | A Deployment, a Service and an Ingress for each web challenge |
+| `utils/ctfd/` | CTFd, its MariaDB database and Redis cache, and the Ingress for `ctf.<your-domain>` |
+| `utils/web-shared/` | A Deployment, Service and Ingress for each web challenge |
 | `utils/shared-tcp/` | A Deployment and a load-balanced Service for each pwn challenge |
 
-Each Pulumi folder can have several copies, called **stacks**. This system uses one stack per folder, named after the event, e.g. `wh-2027`. Pulumi also keeps a state file. It stores it in an S3 bucket and encrypts the secret parts with a **passphrase**, a long password stored in Secrets Manager.
+Each folder has one **stack**, named after the event, such as `wh-2027`. Pulumi keeps its state in an S3 bucket and locks the secret parts with a **passphrase** stored in Secrets Manager.
 
-## The Makefile: short commands for long ones
+## Other tools
 
-Deploying needs long command sequences. For example, read the passphrase, set three settings, then run Pulumi. The file `utils/Makefile` gives each sequence a short name called a **target**. You run a target with `make`, for example `make deploy-ctfd`. The Makefile only works from inside the `utils/` folder.
-
-## Other tools in the repo
-
-- **`builder.py`** (in `utils/builder/`) reads every challenge's settings file, builds each challenge's container image, pushes it to ECR, and runs Pulumi for the challenges. `make build-images` runs it.
-- **ctfcli** is CTFd's own command-line tool. It reads each challenge's `challenge.yml` (name, description, flag, files) and loads the challenge into CTFd.
-- **`secrets.py`** (in `utils/`) reads and writes the secrets in Secrets Manager.
+| Tool | What it does |
+|---|---|
+| `builder.py` | Builds every challenge's image, uploads it to ECR, and runs Pulumi for the challenges. `make build-images` runs it |
+| **ctfcli** | CTFd's own tool. Reads each `challenge.yml` (name, description, flag, files) and loads the challenge into CTFd |
+| `secrets.py` | Reads and writes the secrets in Secrets Manager |
 
 ## Settings files
 
-A few settings files hold values for your event, such as the domain and the event name. None of them contain passwords. Git, the version-control tool, is told to ignore them, so they never get uploaded with the code.
+These hold your event's values, such as its name and domain. None contains a password, and git ignores all of them, so they are never uploaded.
 
 | File | Read by |
 |---|---|
@@ -50,22 +58,5 @@ A few settings files hold values for your event, such as the domain and the even
 | `utils/ecr/terraform.tfvars` | Terraform, for the image registry |
 | `utils/config.ini` | The Makefile, `builder.py` and the helper scripts |
 | `.ctf/config` | ctfcli: the scoreboard's address and an access token |
-
-## Who builds what
-
-Putting it together, a full deploy runs the tools in this order:
-
-<div class="wh">
-<div class="card">
-<ol class="steps">
-  <li><div><span class="cmd">Terraform · utils/eks</span><span>The network, the cluster, the helper programs, the alarms and the backup bucket</span></div></li>
-  <li><div><span class="cmd">Docker + Pulumi · utils/ctfd</span><span>The CTFd image, then CTFd, its database and its cache on the cluster</span></div></li>
-  <li><div><span class="cmd">builder.py: Docker + Pulumi + ctfcli</span><span>Every challenge image, the web and pwn challenges on the cluster, then every challenge loaded into CTFd</span></div></li>
-  <li><div><span class="cmd">kubectl</span><span>The backup and health-check schedules</span></div></li>
-</ol>
-</div>
-</div>
-
-Tearing down runs the same tools in reverse order.
 
 **Next:** [Open a terminal](../setup/terminal.md).

@@ -1,0 +1,23 @@
+title: The tools on your computer and what each one talks to
+w: 1120
+h: 510
+groups:
+  - {x: 10, y: 10, w: 420, h: 490, label: "Your computer", style: computer}
+nodes:
+  - {id: git, x: 30, y: 45, w: 380, title: "git, gh", sub: "download the code", glyph: GIT, cat: tool}
+  - {id: aws, x: 30, y: 121, w: 380, title: "aws, terraform, pulumi, go", sub: "create and change AWS resources", glyph: AWS, cat: tool}
+  - {id: kub, x: 30, y: 197, w: 380, title: "kubectl", sub: "look inside the cluster", glyph: K8S, cat: tool}
+  - {id: dock, x: 30, y: 273, w: 380, title: "docker", sub: "build and upload images", glyph: DKR, cat: tool}
+  - {id: py, x: 30, y: 349, w: 380, title: "python3, ctfcli", sub: "run builder.py, load challenges", glyph: PY, cat: tool}
+  - {id: misc, x: 30, y: 425, w: 380, title: "make, jq, nc, curl, dig", sub: "small helpers used by the commands", glyph: SH, cat: tool}
+  - {id: gh, x: 620, y: 45, w: 480, title: "GitHub", sub: "Whitehat-Society/wh-2026", glyph: GIT, cat: ext}
+  - {id: acct, x: 620, y: 121, w: 480, title: "The AWS account", sub: "network, cluster, buckets, secret", glyph: AWS, cat: net}
+  - {id: clu, x: 620, y: 197, w: 480, title: "The Kubernetes cluster", sub: "pods, Services, logs", glyph: K8S, cat: k8s}
+  - {id: ecr, x: 620, y: 273, w: 480, title: "ECR registry", sub: "challenge and CTFd images", glyph: ECR, cat: compute}
+  - {id: ctfd, x: 620, y: 349, w: 480, title: "CTFd", sub: "the challenge list", glyph: APP, cat: app}
+edges:
+  - {from: git, to: gh}
+  - {from: aws, to: acct}
+  - {from: kub, to: clu}
+  - {from: dock, to: ecr}
+  - {from: py, to: ctfd}

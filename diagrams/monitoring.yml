@@ -1,0 +1,16 @@
+title: Where alerts come from and where they go
+w: 1120
+h: 280
+nodes:
+  - {id: hc, x: 20, y: 10, w: 260, title: "Health check", sub: "every 5 minutes", glyph: CRN, cat: k8s}
+  - {id: cw, x: 20, y: 110, w: 260, title: "CloudWatch alarms", sub: "5 measurements", glyph: CW, cat: mgmt}
+  - {id: sns, x: 360, y: 110, w: 200, title: "SNS topic", sub: "forwards", glyph: SNS, cat: mgmt}
+  - {id: lam, x: 640, y: 110, w: 200, title: "Lambda program", sub: "reformats", glyph: "λ", cat: compute}
+  - {id: mail, x: 640, y: 200, w: 200, title: "Email", sub: "alarm addresses", glyph: "@", cat: ext}
+  - {id: dc, x: 900, y: 60, w: 200, title: "Discord", sub: "alerts channel", glyph: DSC, cat: ext}
+edges:
+  - {from: hc, to: dc, label: "a challenge fails", lx: 600, ly: 42, pts: [[280, 42], [1000, 42], [1000, 60]]}
+  - {from: cw, to: sns}
+  - {from: sns, to: lam}
+  - {from: sns, to: mail, pts: [[460, 174], [460, 232], [640, 232]]}
+  - {from: lam, to: dc, pts: [[840, 142], [870, 142], [870, 100], [900, 100]]}

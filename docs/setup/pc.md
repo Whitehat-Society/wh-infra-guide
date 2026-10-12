@@ -1,20 +1,11 @@
 # Install the tools
 
-<span class="time">Time: about 45 minutes, mostly waiting for downloads</span>
-
 The guide uses about a dozen command-line programs. This page installs all of them. Each block is safe to run again if a download gets interrupted.
 
-| Program | What it does in this guide |
-|---|---|
-| `git` | Downloads the club's code and records your changes to it |
-| `aws` | The AWS CLI: controls the AWS account from the terminal |
-| `terraform` (version 1.9 or newer) | Builds the network and the cluster from the files in `utils/eks/` |
-| `kubectl` | Talks to the Kubernetes cluster |
-| `pulumi` (version 3) | Puts CTFd and the challenges onto the cluster |
-| `go` (version 1.25 or newer) | The language the Pulumi programs are written in. Pulumi needs it to run them |
-| `docker` | Builds the container images |
-| `python3` and `ctfcli` | Run `builder.py` and load challenges into CTFd |
-| `make`, `jq`, `nc`, `curl`, `dig` | Small helpers. `make` runs Makefile targets, `jq` reads JSON output, `nc` opens plain connections, `curl` fetches web pages, `dig` looks up DNS records |
+<figure class="diagram">
+--8<-- "diagrams/tools.svg"
+<figcaption>Every tool on the left runs on your computer and reaches one part of the system over the internet. Versions needed: Terraform 1.9 or newer, Pulumi 3, Go 1.25 or newer.</figcaption>
+</figure>
 
 ## 1. Install Docker
 

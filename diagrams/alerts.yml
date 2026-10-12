@@ -1,0 +1,14 @@
+title: How an alarm reaches people
+w: 1100
+h: 200
+nodes:
+  - {id: cw, x: 20, y: 50, w: 230, title: "CloudWatch alarm", sub: "a limit was crossed", glyph: CW, cat: mgmt}
+  - {id: sns, x: 330, y: 50, w: 200, title: "SNS topic", sub: "forwards messages", glyph: SNS, cat: mgmt}
+  - {id: mail, x: 620, y: 10, w: 200, title: "Email", sub: "alarm addresses", glyph: "@", cat: ext}
+  - {id: lam, x: 620, y: 120, w: 200, title: "Lambda program", sub: "reformats", glyph: "λ", cat: compute}
+  - {id: disc, x: 880, y: 120, w: 200, title: "Discord", sub: "alerts channel", glyph: DSC, cat: ext}
+edges:
+  - {from: cw, to: sns}
+  - {from: sns, to: mail}
+  - {from: sns, to: lam}
+  - {from: lam, to: disc}

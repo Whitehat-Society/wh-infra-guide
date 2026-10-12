@@ -24,6 +24,8 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -r requirements.txt
+      - name: Diagrams pass the geometry lint and match their sources
+        run: python scripts/diagrams.py && git diff --exit-code snippets/diagrams
       - run: mkdocs build --strict
       - uses: actions/upload-pages-artifact@v3
         with:

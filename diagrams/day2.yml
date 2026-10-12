@@ -1,0 +1,15 @@
+title: The two scheduled jobs
+w: 1120
+h: 230
+nodes:
+  - {id: bk, x: 20, y: 20, w: 260, title: "Backup CronJob", sub: "every hour", glyph: CRN, cat: k8s}
+  - {id: db, x: 420, y: 20, w: 240, title: "MariaDB", sub: "the scoreboard data", glyph: DB, cat: db}
+  - {id: s3, x: 800, y: 20, w: 300, title: "S3 bucket", sub: "<event>-ctfd-backups", glyph: S3, cat: store}
+  - {id: hc, x: 20, y: 145, w: 260, title: "Health check CronJob", sub: "every 5 minutes", glyph: CRN, cat: k8s}
+  - {id: ch, x: 420, y: 145, w: 240, title: "Every challenge", sub: "web and pwn", glyph: WEB, cat: app}
+  - {id: dc, x: 800, y: 145, w: 300, title: "Discord alerts", sub: "only when one fails", glyph: DSC, cat: ext}
+edges:
+  - {from: bk, to: db, label: "copies"}
+  - {from: db, to: s3, label: "uploads"}
+  - {from: hc, to: ch, label: "connects"}
+  - {from: ch, to: dc, label: "no answer", style: dash}

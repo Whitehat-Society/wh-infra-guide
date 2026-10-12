@@ -1,7 +1,5 @@
 # 5. Final checks
 
-<span class="time">Time: about 10 minutes</span>
-
 Run these checks after every fresh deploy, and again on the morning of the event. They confirm that a player can reach everything.
 
 ## Automatic check

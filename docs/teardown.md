@@ -1,7 +1,5 @@
 # Delete everything
 
-<span class="time">Time: about 30 minutes, mostly waiting</span>
-
 AWS bills for the system until it no longer exists. Delete it the day after the event, or whenever it will sit unused for more than a day. This page deletes everything except the domain and its DNS records. Rebuilding later takes about 1.5 hours with [Deploy](deploy/index.md).
 
 !!! danger "This can't be undone"
@@ -9,7 +7,12 @@ AWS bills for the system until it no longer exists. Delete it the day after the 
 
 ## Why the order matters
 
-Some AWS resources were created by the helper programs inside the cluster rather than by Terraform: the challenges' load balancers, their DNS records and the database disk. Terraform doesn't know about them, so it can't delete them. Instead, you delete the Pulumi stacks first. Kubernetes then tells the helper programs, which delete the resources they made. Only after that do you delete the cluster with Terraform.
+<figure class="diagram">
+--8<-- "diagrams/teardown.svg"
+<figcaption>The helper programs in the cluster created the challenges' load balancers, DNS records and disks, so Terraform doesn't know about them. Deleting the Pulumi stacks first makes the helpers clean those up while they still run.</figcaption>
+</figure>
+
+## Steps
 
 1. **Keep the final backup.** Follow [Keep a copy after the event](operate/backups.md#keep-a-copy-after-the-event).
 2. **Set the variables Pulumi needs:**
@@ -43,7 +46,7 @@ Some AWS resources were created by the helper programs inside the cluster rather
 Run the whole block. Each line checks for one kind of resource that costs money, and each should print `[]` or nothing:
 
 ```bash
-R=ap-southeast-1
+R=$(aws configure get region)
 aws eks list-clusters --region $R --query clusters
 aws ec2 describe-instances --region $R --filters Name=instance-state-name,Values=running,pending --query 'Reservations[].Instances[].InstanceId'
 aws ec2 describe-nat-gateways --region $R --filter Name=state,Values=available,pending --query 'NatGateways[].NatGatewayId'

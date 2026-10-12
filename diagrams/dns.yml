@@ -1,0 +1,14 @@
+title: How a name becomes an address
+w: 1020
+h: 260
+nodes:
+  - {id: reg, x: 20, y: 40, w: 220, title: "Registrar", sub: "where you rent the name", glyph: REG, cat: ext}
+  - {id: zone, x: 360, y: 40, w: 260, title: "Route 53 hosted zone", sub: "the domain's records", glyph: DNS, cat: net}
+  - {id: edns, x: 780, y: 40, w: 220, title: "ExternalDNS", sub: "runs in the cluster", glyph: K8S, cat: k8s}
+  - {id: browser, x: 20, y: 170, w: 220, title: "Player's browser", sub: "ctf.example-ctf.com", glyph: USR, cat: ext}
+  - {id: lb, x: 780, y: 170, w: 220, title: "Load balancer", sub: "the address", glyph: LB, cat: net}
+edges:
+  - {from: reg, to: zone, label: "points to", style: dash}
+  - {from: edns, to: zone, label: "writes records", style: dash}
+  - {from: browser, to: zone, pts: [[240, 190], [490, 190], [490, 104]], n: 1, label: "asks for the address", lx: 365, ly: 190}
+  - {from: browser, to: lb, y: 222, n: 2, label: "connects", lx: 650, ly: 222}

@@ -1,0 +1,29 @@
+title: Which command runs which tool, and what it builds
+w: 1220
+h: 380
+groups:
+  - {x: 10, y: 10, w: 290, h: 360, label: "You type", style: plain}
+  - {x: 370, y: 10, w: 330, h: 360, label: "Tool", style: plain}
+  - {x: 770, y: 10, w: 440, h: 360, label: "What it builds", style: plain}
+nodes:
+  - {id: m1, x: 25, y: 45, w: 260, title: "make deploy-eks", glyph: "1", cat: you}
+  - {id: m2, x: 25, y: 125, w: 260, title: "make deploy-ctfd", glyph: "2", cat: you}
+  - {id: m3, x: 25, y: 205, w: 260, title: "make build-images", glyph: "3", cat: you}
+  - {id: m4, x: 25, y: 285, w: 260, title: "make deploy-…-cronjob", glyph: "4", cat: you}
+  - {id: t1, x: 385, y: 45, w: 300, title: "Terraform", sub: "utils/eks", glyph: TF, cat: tool}
+  - {id: t2, x: 385, y: 125, w: 300, title: "Docker, then Pulumi", sub: "utils/ctfd", glyph: PUL, cat: tool}
+  - {id: t3, x: 385, y: 205, w: 300, title: "builder.py", sub: "Docker, Pulumi, ctfcli", glyph: PY, cat: tool}
+  - {id: t4, x: 385, y: 285, w: 300, title: "kubectl", sub: "utils/ctfd/*.yaml", glyph: K8S, cat: tool}
+  - {id: r1, x: 785, y: 45, w: 410, title: "Network, cluster, helpers", sub: "plus alarms, buckets, the secret", glyph: AWS, cat: net}
+  - {id: r2, x: 785, y: 125, w: 410, title: "CTFd, its database and cache", sub: "and the address ctf.<domain>", glyph: APP, cat: app}
+  - {id: r3, x: 785, y: 205, w: 410, title: "Every challenge", sub: "running, and loaded into CTFd", glyph: WEB, cat: app}
+  - {id: r4, x: 785, y: 285, w: 410, title: "Backup and health checks", sub: "on a schedule", glyph: CRN, cat: k8s}
+edges:
+  - {from: m1, to: t1}
+  - {from: m2, to: t2}
+  - {from: m3, to: t3}
+  - {from: m4, to: t4}
+  - {from: t1, to: r1}
+  - {from: t2, to: r2}
+  - {from: t3, to: r3}
+  - {from: t4, to: r4}

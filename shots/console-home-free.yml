@@ -1,0 +1,8 @@
+src: console-home-free.png
+out: accounts/free-plan-console.webp
+crop: [180, 0, 1500, 900]
+marks:
+  - {blur: [1560, 0, 100, 44]}
+  - {box: [1318, 102, 156, 32], n: 1}
+  - {box: [1325, 628, 136, 32], n: 2}
+  - {box: [205, 700, 650, 60]}

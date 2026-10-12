@@ -1,7 +1,5 @@
 # Terminal basics
 
-<span class="time">Time: about 15 minutes</span>
-
 You need only a handful of terminal skills for this guide. Try each example in your own terminal as you read.
 
 ## Running a command

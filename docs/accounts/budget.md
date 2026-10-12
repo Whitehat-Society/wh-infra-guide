@@ -1,7 +1,5 @@
 # Budget alert
 
-<span class="time">Time: about 3 minutes</span>
-
 A **budget** in AWS is a spending limit that emails you as spending approaches it. It does not stop spending; it only warns you. This page creates a monthly budget that emails you twice: when actual spending passes half the limit, and when AWS predicts you'll pass the whole limit by the end of the month.
 
 1. Set your email and the monthly limit, in US dollars. Replace the example email with yours:

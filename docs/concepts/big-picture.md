@@ -1,7 +1,5 @@
 # The big picture
 
-<span class="time">Time: about 10 minutes to read</span>
-
 This page follows a player through the system, from typing an address into a browser to seeing a challenge. Each later page in this section explains one part of that journey in more detail.
 
 ## Where the system runs
@@ -12,19 +10,23 @@ Renting this way is called using **the cloud**. You pay by the hour, you can add
 
 ## Following a player
 
-Suppose the club owns the domain name `example-ctf.com`. Here is what happens when a player uses the system.
+Suppose the club owns the domain name `example-ctf.com`. Follow the numbers.
 
-**Opening the scoreboard.** The player types `ctf.example-ctf.com` into a browser.
+<figure class="diagram">
+--8<-- "diagrams/journey.svg"
+<figcaption>Solid arrows carry the player's traffic. The dashed arrow is a lookup only.</figcaption>
+</figure>
 
-1. The browser asks the internet's address book, called **DNS**, where `ctf.example-ctf.com` lives. DNS answers with the address of a **load balancer**, a machine that receives incoming connections and passes each one to a computer that can handle it.
-2. The load balancer passes the connection to **NGINX**, a program that reads the name the player asked for and forwards the request to the right application.
-3. NGINX forwards it to **CTFd**, the scoreboard. CTFd looks up the player's team and scores in its **database**, and sends back the page.
+| Step | What happens |
+|---|---|
+| 1 | The browser asks **DNS**, the internet's address book, where `ctf.example-ctf.com` lives. |
+| 2 | DNS answers with the address of the **load balancer**, a machine that receives every incoming connection. The browser connects to it. |
+| 3 | The load balancer passes the connection to **NGINX**. |
+| 4 | NGINX reads the name the player typed. `ctf.…` goes to **CTFd**, the scoreboard; `xssive-login.challenges.…` goes to that web challenge. |
+| 5 | CTFd reads the player's team and score from its **database** and sends the page back. |
+| A, B | A pwn player runs `nc <address> 7331`. Each pwn challenge has its own load balancer, which connects straight to the challenge. NGINX isn't involved. |
 
-**Opening a web challenge.** The player opens `xssive-login.challenges.example-ctf.com`. The first two steps are the same. NGINX sees a different name, so it forwards the request to the `xssive-login` challenge instead of CTFd.
-
-**Connecting to a pwn challenge.** The player types `nc <address> 7331` in their terminal. `nc` opens a plain connection that sends text back and forth, with no web pages involved. Each pwn challenge has its own load balancer, which passes the connection straight to the challenge program. NGINX is not involved.
-
-**Every player shares the same copy of each challenge.** Two teams attacking `xssive-login` reach the same running program. The [Known weak spots](../operate/risks.md) page explains what that means in practice.
+Every player shares the same running copy of each challenge. [Known weak spots](../operate/risks.md) explains what that means.
 
 ## What runs where
 
@@ -42,16 +44,12 @@ All of the programs above, including CTFd, NGINX and every challenge, run on a s
 
 ## How the system gets built
 
-You don't build any of this by hand. The club's code repository, `wh-2026`, contains files that describe every part. Two tools, **Terraform** and **Pulumi**, read those files and create the matching resources in AWS. A file called the **Makefile** wraps the long commands into short ones, so most of the deploy is five commands such as `make deploy-eks`.
-
-Because everything is described in code, you can delete the whole system after the event and rebuild it exactly next year.
+Nobody builds this by hand. Files in the club's repository, `wh-2026`, describe every part, and four commands turn them into the running system. [Infrastructure as code](infrastructure-as-code.md) shows which command builds what.
 
 ## Read next
 
-The next three pages explain the parts in more detail:
-
-1. [Cloud, networks and names](cloud-and-networks.md): AWS, addresses, DNS, web traffic and load balancers.
+1. [Cloud, networks and names](cloud-and-networks.md): accounts, regions, the private network, DNS and certificates.
 2. [Containers and Kubernetes](containers-and-kubernetes.md): how the programs are packaged and kept running.
 3. [Infrastructure as code](infrastructure-as-code.md): how Terraform, Pulumi and the Makefile build the system.
 
-If you prefer pictures, the [Architecture explorer](../reference/architecture.md) is an interactive map of the system. It uses the technical names, which those three pages explain.
+The [Architecture explorer](../reference/architecture.md) is an interactive map of the whole system.

@@ -1,0 +1,13 @@
+title: How the terminal signs in to AWS
+w: 980
+h: 280
+nodes:
+  - {id: term, x: 20, y: 110, w: 240, title: "Your terminal", sub: "aws sso login", glyph: CLI, cat: you}
+  - {id: browser, x: 340, y: 20, w: 240, title: "Browser", sub: "you sign in, click Allow", glyph: WWW, cat: ext}
+  - {id: idc, x: 700, y: 20, w: 260, title: "IAM Identity Center", sub: "checks your login", glyph: IAM, cat: sec}
+  - {id: acct, x: 700, y: 200, w: 260, title: "AWS account", sub: "accepts the keys", glyph: AWS, cat: ext}
+edges:
+  - {from: term, to: browser, n: 1, label: "opens", lx: 240, ly: 52, pts: [[140, 110], [140, 52], [340, 52]]}
+  - {from: browser, to: idc, n: 2, label: "sign in"}
+  - {from: idc, to: term, n: 3, label: "8-hour keys", lx: 545, ly: 142, pts: [[830, 84], [830, 142], [260, 142]]}
+  - {from: term, to: acct, n: 4, label: "every aws command", lx: 450, ly: 232, pts: [[200, 174], [200, 232], [700, 232]]}

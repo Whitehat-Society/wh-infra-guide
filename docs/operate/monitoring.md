@@ -1,7 +1,5 @@
 # Watching the system
 
-<span class="time">Time: 10 minutes to set up on the morning of the event, then a glance every 15 minutes</span>
-
 During the event, keep three things open. Together they tell you within minutes when something breaks.
 
 1. **The Discord alerts channel.** The health check posts here when a challenge stops answering, and CloudWatch alarms post here when a measurement crosses a limit.
@@ -13,8 +11,14 @@ During the event, keep three things open. Together they tell you within minutes 
 3. **The CloudWatch dashboard**, a page of graphs of memory, processor use and node count. Print its address and open it in a browser:
     ```bash
     EVENT=$(jq -r .event_name ~/wh/wh-2026/utils/eks/terraform.tfvars.json)
-    echo "https://ap-southeast-1.console.aws.amazon.com/cloudwatch/home?region=ap-southeast-1#dashboards/dashboard/$EVENT-eks-ops"
+    R=$(aws configure get region)
+    echo "https://$R.console.aws.amazon.com/cloudwatch/home?region=$R#dashboards/dashboard/$EVENT-eks-ops"
     ```
+
+<figure class="diagram">
+--8<-- "diagrams/monitoring.svg"
+<figcaption>Everything that goes wrong ends up in the Discord alerts channel. Alarms also arrive by email, so they still reach you if Discord is down.</figcaption>
+</figure>
 
 ## What raises an alert
 

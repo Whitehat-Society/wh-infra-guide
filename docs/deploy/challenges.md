@@ -1,17 +1,11 @@
 # 3. The challenges
 
-<span class="time">Time: about 20 minutes, longer on the first run</span>
+This stage builds every challenge, starts the web and pwn challenges on the cluster, and loads every challenge into CTFd. One command, `make build-images`, does it all.
 
-This stage builds every challenge, starts the web and pwn challenges on the cluster, and loads every challenge into CTFd. One command, `make build-images`, does it all:
-
-1. Terraform creates the ECR registry for challenge images, from the files in `utils/ecr/`.
-2. `builder.py` reads each challenge's `challenge.yml` and acts on its `challenge_type`:
-    - `shared-web`: builds the image, uploads it, and adds the challenge to the web list.
-    - `shared-tcp`: builds the image, uploads it, and adds the challenge to the pwn list.
-    - `text`: nothing to build. The challenge only has files and a flag.
-3. Pulumi starts every challenge on the web list (`utils/web-shared/`) and every challenge on the pwn list (`utils/shared-tcp/`). Each pwn challenge gets its own load balancer.
-4. ctfcli loads every challenge's text, files and flag into CTFd.
-5. `builder.py` fills in each challenge's **connection info**, the web address or `nc` command that players see in CTFd.
+<figure class="diagram">
+--8<-- "diagrams/build-images.svg"
+<figcaption><code>builder.py</code> reads each challenge's <code>challenge_type</code>: <code>shared-web</code> and <code>shared-tcp</code> challenges get an image (1) and pods (2); every challenge, including <code>text</code> ones, is loaded into CTFd (3) with the connection details players see.</figcaption>
+</figure>
 
 The first run takes longest. Docker keeps parts of each image it builds, its **cache**, so later runs only rebuild what changed.
 
@@ -21,7 +15,7 @@ The first run takes longest. Docker keeps parts of each image it builds, its **c
     ```bash
     cd ~/wh/wh-2026/utils
     ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-    aws ecr get-login-password | docker login --username AWS --password-stdin "$ACCOUNT.dkr.ecr.ap-southeast-1.amazonaws.com"
+    aws ecr get-login-password | docker login --username AWS --password-stdin "$ACCOUNT.dkr.ecr.$(aws configure get region).amazonaws.com"
     ```
     The last line is `Login Succeeded`.
 2. Build and deploy:
@@ -50,7 +44,7 @@ What each command should show:
 
 1. **Web challenges:** one `Running` pod per web challenge.
 2. **Pwn challenges:** three `Running` pods per pwn challenge. Each pwn challenge runs three copies, and its load balancer spreads players across them.
-3. **Pwn load balancers:** each line has an `EXTERNAL-IP` ending in `.elb.ap-southeast-1.amazonaws.com`. A new load balancer takes about 3 minutes to get one.
+3. **Pwn load balancers:** each line has an `EXTERNAL-IP` ending in `.elb.<region>.amazonaws.com`. A new load balancer takes about 3 minutes to get one.
 4. **CTFd:** the number of challenges loaded into the scoreboard.
 
 In the browser, **Admin → Challenges** lists every challenge. All of them are hidden, so players can't see them yet.

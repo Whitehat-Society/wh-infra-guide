@@ -1,0 +1,7 @@
+src: digitalplat-ns.png
+out: accounts/registrar-nameservers.webp
+crop: [560, 300, 560, 400]
+marks:
+  - {box: [630, 417, 420, 170], n: 2}
+  - {box: [636, 599, 132, 20], n: 1}
+  - {box: [893, 622, 158, 32], n: 3}

@@ -1,0 +1,17 @@
+title: The Kubernetes objects behind one web challenge
+w: 1180
+h: 330
+groups:
+  - {x: 230, y: 10, w: 940, h: 310, label: "Namespace challenges-web", style: ns}
+  - {x: 845, y: 60, w: 310, h: 250, label: "Deployment: keep N copies", style: cluster}
+nodes:
+  - {id: nginx, x: 20, y: 200, w: 180, title: "NGINX", sub: "reads the rules", glyph: NGX, cat: k8s}
+  - {id: ing, x: 270, y: 60, w: 230, title: "Ingress", sub: "this name → Service", glyph: ING, cat: k8s}
+  - {id: svc, x: 560, y: 200, w: 210, title: "Service", sub: "a fixed address", glyph: SVC, cat: k8s}
+  - {id: p1, x: 875, y: 100, w: 250, title: "Pod: xssive-login", sub: "copy 1", glyph: POD, cat: app}
+  - {id: p2, x: 875, y: 220, w: 250, title: "Pod: xssive-login", sub: "copy 2, if replicas = 2", glyph: POD, cat: app}
+edges:
+  - {from: nginx, to: ing, style: dash, label: "reads", lx: 165, ly: 92, pts: [[110, 200], [110, 92], [270, 92]]}
+  - {from: nginx, to: svc, label: "forwards", lx: 380, ly: 232, pts: [[200, 232], [560, 232]]}
+  - {from: svc, to: p1, pts: [[770, 212], [810, 212], [810, 132], [875, 132]]}
+  - {from: svc, to: p2, pts: [[770, 250], [875, 250]]}

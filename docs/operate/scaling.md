@@ -1,7 +1,5 @@
 # Adding capacity
 
-<span class="time">Time: 2 to 8 minutes per change</span>
-
 When players report slow challenges, the fix is usually more copies of a program or more computers to run them on. This system grows in only one way by itself: it rents another computer when a new pod has nowhere to run. Everything else changes only when you change a number and redeploy.
 
 ## What grows by itself, and what doesn't

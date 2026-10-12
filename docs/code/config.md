@@ -1,15 +1,11 @@
 # Settings and secrets
 
-<span class="time">Time: about 15 minutes</span>
-
 The tools read your event's details from three settings files, and its passwords from AWS Secrets Manager. This page fills in all four. The settings files contain no passwords, and git ignores them, so they stay on your computer.
 
-| Where | What it holds | Read by |
-|---|---|---|
-| `utils/eks/terraform.tfvars.json` | Event name, domain, cluster size, alarm emails | Terraform, when it builds the cluster |
-| `utils/ecr/terraform.tfvars` | The name of the challenge image registry | Terraform, when it builds the registry |
-| `utils/config.ini` | Domain, scoreboard address, bucket names | The Makefile, `builder.py` and the helper scripts |
-| Secrets Manager, secret `<event>/config` | Passwords, tokens, webhook addresses | Everything that needs a secret |
+<figure class="diagram">
+--8<-- "diagrams/settings.svg"
+<figcaption>The three files stay on your computer. The secret lives in AWS, so every teammate and every program reads the same passwords.</figcaption>
+</figure>
 
 Every command on this page runs in `~/wh/wh-2026/utils`.
 
@@ -25,7 +21,7 @@ Every command on this page runs in `~/wh/wh-2026/utils`.
     | Field | What to enter |
     |---|---|
     | `event_name` | your event name, e.g. `wh-2027` |
-    | `aws_region` | `ap-southeast-1` |
+    | `aws_region` | already filled in by [Make it yours](make-it-yours.md) |
     | `domain_name` | your domain, e.g. `example-ctf.com`. The system only creates DNS records under this name |
     | `hosted_zone_id` | the ID starting with `Z` from [Domain name](../accounts/domain.md#check-it-worked) |
     | `acme_email` | an email address. Let's Encrypt writes to it if a certificate is about to expire |
@@ -82,16 +78,20 @@ The deploy expects the secret to exist and be filled in before it starts, so you
     python3 secrets.py bootstrap
     ```
 
-    | Name | What to enter |
+    The questions come in this order:
+
+    | Question | What to enter |
     |---|---|
-    | `admin_name`, `admin_email` | the scoreboard's admin login, e.g. `admin` and the club email |
+    | `admin_email`, `admin_name` | the scoreboard's admin login, e.g. the club email and `admin` |
     | `admin_password` | the generated value |
     | `ctfd_admin_token`, `ctfd_api_key` | the generated `ctfd_…` value, in both. Scripts use it to log in to CTFd |
     | `db_password` | the generated value. The database password |
-    | `secret_key` | the generated value. CTFd uses it to sign login sessions |
-    | `pulumi_passphrase` | the generated value. Pulumi uses it to lock its records |
     | `discord_webhook_url`, `discord_alert_webhook_url` | the two webhook addresses from [Discord and GitHub](../accounts/discord-github.md) |
     | `docker_hub_user`, `docker_hub_pass` | optional. A Docker Hub login raises the limit on image downloads. Press Enter to skip |
+    | `pulumi_passphrase` | the generated value. Pulumi uses it to lock its records |
+    | `secret_key` | the generated value. CTFd uses it to sign login sessions |
+
+    At the end, type `y` to save.
 
 !!! danger "Never lose or change `pulumi_passphrase`"
     Pulumi uses it to read its own records. Without it, nobody can update or delete what Pulumi built. Secrets Manager keeps it safe. Don't change it while the system is running.

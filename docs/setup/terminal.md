@@ -1,7 +1,5 @@
 # Open a terminal
 
-<span class="time">Time: about 20 minutes on Windows, 5 minutes on macOS or Linux</span>
-
 A **terminal** is a window where you type commands instead of clicking. Almost every step in this guide is a command, so you need a terminal that understands the same commands on every computer. The tools in this guide expect a Linux-style terminal.
 
 === "Windows"

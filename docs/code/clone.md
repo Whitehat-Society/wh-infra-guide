@@ -1,7 +1,5 @@
 # Get the code
 
-<span class="time">Time: about 5 minutes</span>
-
 You need two folders side by side. Downloading a copy of a repository is called **cloning** it.
 
 ```

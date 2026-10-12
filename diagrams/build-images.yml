@@ -1,0 +1,21 @@
+title: What make build-images does
+w: 1140
+h: 320
+nodes:
+  - {id: yml, x: 20, y: 140, w: 220, title: "challenge.yml", sub: "one per challenge", glyph: YML, cat: tool}
+  - {id: bld, x: 300, y: 140, w: 220, title: "builder.py", sub: "reads challenge_type", glyph: PY, cat: tool}
+  - {id: dock, x: 600, y: 40, w: 240, title: "Docker", sub: "builds, uploads image", glyph: DKR, cat: tool}
+  - {id: pul, x: 600, y: 140, w: 240, title: "Pulumi", sub: "web-shared, shared-tcp", glyph: PUL, cat: tool}
+  - {id: ctf, x: 600, y: 240, w: 240, title: "ctfcli", sub: "text, files, flag", glyph: CTF, cat: tool}
+  - {id: ecr, x: 900, y: 40, w: 220, title: "ECR registry", sub: "challenge images", glyph: ECR, cat: compute}
+  - {id: pods, x: 900, y: 140, w: 220, title: "Challenge pods", sub: "on the cluster", glyph: POD, cat: k8s}
+  - {id: ctfd, x: 900, y: 240, w: 220, title: "CTFd", sub: "challenge list", glyph: APP, cat: app}
+edges:
+  - {from: yml, to: bld}
+  - {from: bld, to: dock, n: 1, pts: [[410, 140], [410, 72], [600, 72]], lx: 505, ly: 72}
+  - {from: bld, to: pul, n: 2, lx: 560, ly: 172}
+  - {from: bld, to: ctf, n: 3, pts: [[410, 204], [410, 272], [600, 272]], lx: 505, ly: 272}
+  - {from: dock, to: ecr}
+  - {from: pul, to: pods}
+  - {from: ctf, to: ctfd}
+  - {from: ecr, to: pods, label: "download", style: dash}

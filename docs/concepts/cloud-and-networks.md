@@ -1,62 +1,69 @@
 # Cloud, networks and names
 
-<span class="time">Time: about 10 minutes to read</span>
+The AWS side of the system, and how computers find each other. Terms in **bold** appear later in the guide; the [Glossary](../reference/glossary.md) repeats them.
 
-This page explains the AWS side of the system and the basic ideas of how computers find and talk to each other. Each term in **bold** is used later in the guide.
+## AWS accounts and logins
 
-## AWS accounts, regions and billing
+| Term | What it is |
+|---|---|
+| **AWS account** | The club's account with Amazon Web Services. Everything the system uses belongs to it, and its bill goes to the card on file. |
+| **Root user** | The login created with the account. It can do anything, including close the account, so it is protected with **MFA**: a password plus a code from your phone. |
+| **IAM Identity Center** | The AWS service that gives you an everyday login with fewer powers. **IAM** is the part of AWS that decides who may do what. |
+| **Console** and **CLI** | Two ways to control AWS: a website with buttons, and the `aws` program in your terminal. This guide uses the CLI wherever it can, because a typed command can be copied exactly. |
 
-An **AWS account** is the club's account with Amazon Web Services. Everything the system uses belongs to it, and its bill goes to the card on file. The person who creates the account gets the **root user**, a login that can do anything, including closing the account. You protect it with **MFA** (multi-factor authentication): signing in needs both the password and a code from your phone.
+## Regions and the private network
 
-For everyday work you create a separate login with fewer powers, managed by an AWS service called **IAM Identity Center**. **IAM** (Identity and Access Management) is the part of AWS that decides who may do what.
+AWS has data centres in many cities. One city's group of data centres is a **region**; Singapore's code is `ap-southeast-1`. A region contains separate buildings called **availability zones** (zones a, b and c), so a power cut in one leaves the others running.
 
-AWS has data centres in many cities. Each city's group of data centres is a **region**. This system uses the Singapore region, whose code is `ap-southeast-1`. A region contains several separate buildings called **availability zones**, so a fire or power cut in one doesn't take down the others.
+<figure class="diagram">
+--8<-- "diagrams/network.svg"
+<figcaption>The load balancer is the only way in. The computers can make outgoing connections, through the NAT gateway, but nobody on the internet can reach them directly.</figcaption>
+</figure>
 
-You can control AWS in two ways: the **console**, a website where you click buttons, and the **AWS CLI** (command-line interface), a program you run in your terminal. This guide uses the CLI wherever it can, because a typed command can be copied exactly and checked afterwards.
+| Term | What it is |
+|---|---|
+| **VPC** | The club's own private network inside the region. |
+| **Subnet** | A slice of the VPC. **Public** subnets can be reached from the internet; **private** subnets can't. |
+| **EC2** | The service that rents out computers. Each one is a **virtual machine**, a slice of a large physical server. This system uses three `t3.medium` machines: 2 processor cores and 4 GB of memory each. |
+| **NAT gateway** | Lets computers in private subnets download software without accepting incoming connections, like a home router. |
+| **Load balancer** | Receives incoming connections and passes each one to a computer that is working. AWS's **NLB** (Network Load Balancer) does this without reading the traffic. |
 
-## Computers you rent
+## Disks and storage
 
-**EC2** (Elastic Compute Cloud) is the AWS service that rents out computers. Each rented computer is a **virtual machine**: a slice of a large physical server that behaves like a separate computer. This system uses three of the `t3.medium` size, each with 2 processor cores and 4 GB of memory.
+| Term | What it is |
+|---|---|
+| **EBS** | A network disk attached to one computer. The scoreboard's database lives on one. |
+| **S3** | File storage. Files go into **buckets**. The system keeps backups and its build records there. Bucket names are shared by every AWS customer, so each must be unique. |
+| **Secrets Manager** | A locked store for passwords, keys and tokens. The system reads its **secrets** from here, never from files in the code. |
 
-Rented computers need disks. **EBS** (Elastic Block Store) provides network disks that attach to one machine at a time. The scoreboard's database lives on one. **S3** (Simple Storage Service) stores files, called *objects*, in containers called **buckets**. The system keeps database backups and its own build records in S3. Bucket names are shared across all AWS customers worldwide, so every name must be unique.
+## Addresses, ports and names
 
-## The private network
+Every computer has an **IP address**, such as `13.250.10.4`. A **port**, a number from 1 to 65535, says which program on that computer a connection is for: websites use 443, the pwn challenge `loop` uses 7331. Most connections use **TCP**, a reliable way to send data between two programs; `nc` opens a plain TCP connection.
 
-The rented computers sit on a private network that only the club can use, called a **VPC** (virtual private cloud). The VPC is divided into **subnets**:
+People remember names, not numbers. The club rents a **domain name**, such as `example-ctf.com`, from a **registrar**, and can create any name under it. **DNS** turns names into addresses.
 
-- **Public subnets** can reach the internet directly. The load balancers sit here.
-- **Private subnets** have no public address, so nobody on the internet can reach them directly. The computers that run the programs sit here.
+<figure class="diagram">
+--8<-- "diagrams/dns.svg"
+<figcaption>The registrar points the domain at Route 53. ExternalDNS, a program in the cluster, keeps the records up to date. A browser asks first (1), then connects (2).</figcaption>
+</figure>
 
-Computers in a private subnet still need to download software. A **NAT gateway** lets them make outgoing connections without accepting incoming ones, the way a home router lets your laptop browse without exposing it.
+| Term | What it is |
+|---|---|
+| **Route 53** | AWS's DNS service. |
+| **Hosted zone** | The set of DNS records for one domain, kept in Route 53. |
+| **DNS record** | One entry: a name and the address it points to. |
 
-## Addresses and ports
+## HTTPS and certificates
 
-Every computer on a network has an **IP address**, a number like `13.250.10.4`. One computer runs many programs, so each connection also names a **port**, a number from 1 to 65535 that says which program it is for. Websites use port 443. The pwn challenge `loop` uses port 7331.
+Browsers fetch pages with **HTTP**. **HTTPS** is HTTP inside an encrypted connection, shown by a padlock. To get the padlock, the site needs a **TLS certificate**, a file that proves it owns the name. **Let's Encrypt** issues them free, and the system requests and renews them by itself.
 
-Most connections on the internet use **TCP**, a method of sending data reliably between two programs. A website is TCP plus a set of rules for web pages. A pwn challenge is plain TCP: what the player types goes to the program, and what the program prints comes back. The `nc` (netcat) command opens such a plain connection.
+## Alarms
 
-## Names: domains and DNS
+**CloudWatch** collects measurements, such as memory use, and raises an **alarm** when one crosses a limit.
 
-People remember names, not numbers. A **domain name** like `example-ctf.com` is a name the club rents from a **registrar**, a company that sells domains, for about US$15 a year. You can create any number of names under it, such as `ctf.example-ctf.com`.
-
-**DNS** (Domain Name System) is the internet's address book. It turns a name into an IP address. Each entry is a **DNS record**. The club's records are kept in **Route 53**, AWS's DNS service, in a **hosted zone**: the collection of records for one domain. The system creates and updates these records by itself.
-
-## Web traffic and padlocks
-
-Browsers fetch web pages using **HTTP**. **HTTPS** is HTTP sent through an encrypted connection, so nobody in between can read or change it. The browser shows a padlock when the connection is encrypted and the site has proved its identity.
-
-The site proves its identity with a **TLS certificate**, a file signed by a trusted organisation. **Let's Encrypt** issues certificates for free, after the site proves it controls the domain. The system requests and renews them by itself.
-
-## Load balancers
-
-A **load balancer** is a machine that receives incoming connections and passes each one on to one of several computers behind it. If one of those computers fails, the load balancer stops sending it work. AWS's **NLB** (Network Load Balancer) passes connections on without reading them. This system uses one NLB for all web traffic and one NLB for each pwn challenge.
-
-## Alerts
-
-**CloudWatch** is the AWS service that collects measurements, such as memory use, and raises an **alarm** when one crosses a limit. An alarm sends a message to **SNS** (Simple Notification Service), which forwards it by email. A small program then reposts it to the club's Discord.
-
-## Secrets
-
-Passwords, keys and tokens are **secrets**. Anyone who sees one can use it. The system keeps its secrets in **AWS Secrets Manager**, a locked store inside the AWS account, instead of in files on your computer or in the code.
+<figure class="diagram">
+--8<-- "diagrams/alerts.svg"
+<figcaption>SNS (Simple Notification Service) sends every alarm by email, and to a small Lambda program that reposts it in Discord.</figcaption>
+</figure>
 
 **Next:** [Containers and Kubernetes](containers-and-kubernetes.md).

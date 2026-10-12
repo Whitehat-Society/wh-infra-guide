@@ -1,8 +1,6 @@
 # Domain name
 
-<span class="time">Time: about 10 minutes, then up to a day of waiting</span>
-
-Players reach the CTF through names under the club's domain: `ctf.<your-domain>` for the scoreboard and `<challenge>.challenges.<your-domain>` for web challenges. The system creates those names by itself, but only if the domain's DNS records are kept in **Route 53**, AWS's DNS service. (See [Cloud, networks and names](../concepts/cloud-and-networks.md#names-domains-and-dns) for what a domain and DNS are.)
+Players reach the CTF through names under the club's domain: `ctf.<your-domain>` for the scoreboard and `<challenge>.challenges.<your-domain>` for web challenges. The system creates those names by itself, but only if the domain's DNS records are kept in **Route 53**, AWS's DNS service. (See [Cloud, networks and names](../concepts/cloud-and-networks.md#addresses-ports-and-names) for what a domain and DNS are.)
 
 Choose one of the two options below.
 
@@ -11,7 +9,11 @@ Choose one of the two options below.
 
 ## Option A: Buy the domain through Route 53
 
-This is the simplest option, because Route 53 then sets up the DNS records for you. Route 53's domain commands only work in the `us-east-1` region, so every command in this option names that region.
+This is the simplest option, because Route 53 then sets up the DNS records for you.
+
+!!! warning "Not available on the AWS Free plan"
+    A Free-plan account gets `Free Tier accounts are not supported for this service` from every command below. Either [upgrade the plan](aws.md#which-kind-of-account-you-have), or use Option B.
+ Route 53's domain commands only work in the `us-east-1` region, so every command in this option names that region.
 
 1. Check that the name is free, and see the yearly price. Replace `example-ctf.com` with the name you want:
     ```bash
@@ -59,6 +61,13 @@ Use this if the club bought the domain from another company, such as Namecheap o
     ```
 2. Sign in to the other company's website, find the domain's **nameserver** settings (often under "custom nameservers"), and replace the existing entries with the four from step 1.
 
+    <figure class="shot" markdown>
+    ![The nameserver form at the registrar DigitalPlat, with the four Route 53 name servers filled in](../assets/shots/accounts/registrar-nameservers.webp){ width="560" }
+    <figcaption>Example at DigitalPlat: (1) add fields until there are four, (2) paste the four name servers, (3) save. Other registrars have the same form under a different name.</figcaption>
+    </figure>
+
+For a test, a name from a free service such as [DigitalPlat FreeDomain](https://github.com/DigitalPlatDev/FreeDomain) (for example `yourclub.dpdns.org`) works, and the change took about a minute. For the real event, buy a domain the club owns; a `.xyz` costs about US$2 for the first year.
+
 ## Check it worked
 
 1. Print the **hosted zone ID**. [Settings and secrets](../code/config.md) needs it:
@@ -71,6 +80,8 @@ Use this if the club bought the domain from another company, such as Namecheap o
     ```bash
     dig +short NS "$DOMAIN"
     ```
+    Without `dig`, ask Google's public DNS instead: `curl -s "https://dns.google/resolve?name=$DOMAIN&type=NS" | jq -r '.Answer[].data'`.
+
     The output lists four names like `ns-123.awsdns-45.com`. If it shows other names, the change hasn't spread yet. Check again in an hour. With Option B it can take up to two days.
 
 ## If it fails

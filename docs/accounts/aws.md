@@ -1,7 +1,5 @@
 # AWS account
 
-<span class="time">Time: about 30 minutes</span>
-
 This page creates the club's AWS account, locks down its master login, and gives you an everyday login. All three parts happen in a web browser, so each has a screen recording followed by the same steps in writing.
 
 You need:
@@ -28,9 +26,33 @@ You need:
 
 **Check it worked:** within a few minutes you receive an email titled *Welcome to Amazon Web Services*. Some services take up to a day to switch on. If a later command fails with `SubscriptionRequiredException` or `OptInRequired`, wait an hour and retry.
 
-## Part 2: Protect the root user with a second factor
+## Which kind of account you have
 
-<span class="time">Time: about 5 minutes</span>
+AWS now creates some new accounts as a **Free-plan project**: an account that AWS manages for you inside its own small organisation. This guide was tested on one. It works, with three limits:
+
+| Limit | Effect on this guide | What to do |
+|---|---|---|
+| **One region only**, chosen by AWS | Commands in any other region fail with `explicit deny in a service control policy` | Use that region everywhere. [Make it yours](../code/make-it-yours.md) has a step for it |
+| **No domain purchases** in Route 53 | [Domain name](domain.md) Option A fails | Use Option B, with a domain from another registrar |
+| **Ends after six months**, or when the credits run out | The account stops working | Fine for a test. For the real event, upgrade to the Paid plan |
+
+To check, open the console. A Free-plan project shows **Manage projects** and **Upgrade plan**:
+
+<figure class="shot" markdown>
+![AWS console home of a Free-plan project](../assets/shots/accounts/free-plan-console.webp)
+<figcaption>(1) Manage projects opens AWS Settings. (2) Upgrade plan switches to the Paid plan. The box shows the credits left.</figcaption>
+</figure>
+
+**Manage projects** shows the account's region:
+
+<figure class="shot" markdown>
+![AWS Settings projects page showing the free plan, credits and the single region](../assets/shots/accounts/free-plan-projects.webp)
+<figcaption>(1) Days and credits left on the Free plan. (2) The only region this account may use. (3) Activating advanced features lifts the region limit, but it can't be undone and requires the Paid plan first.</figcaption>
+</figure>
+
+Find your region from the terminal too, once you have [signed in](cli-login.md): `aws configure get region`.
+
+## Part 2: Protect the root user with a second factor
 
 A second factor means a stolen password alone can't open the account. You'll use a phone app or a security key alongside the password.
 
@@ -46,13 +68,11 @@ A second factor means a stolen password alone can't open the account. You'll use
 
 ## Part 3: Create your everyday login
 
-<span class="time">Time: about 10 minutes</span>
-
 You'll create a personal login through **IAM Identity Center**, the AWS service that manages people's logins. It gives the terminal temporary passwords that expire after a few hours, so a leaked one stops working by itself.
 
 --8<-- "rec-pending.md"
 
-1. Still signed in as root, check the region name at the top right. It must say **Asia Pacific (Singapore)**. If not, click it and choose Singapore.
+1. Still signed in as root, check the region name at the top right. It must say **Asia Pacific (Singapore)**, or on a Free-plan project, the region shown in AWS Settings. If not, click it and choose that region.
 2. Type **IAM Identity Center** in the search bar at the top, open it, and click **Enable**. If asked, choose **Enable with AWS Organizations**.
 3. In the left menu, click **Users**, then **Add user**. Use your first name as the username and your own email address. Click through to **Add user**.
 4. In the left menu, click **Permission sets**, then **Create permission set**. Choose **Predefined permission set → AdministratorAccess**. Set **Session duration** to **8 hours** and click **Create**. A *permission set* is a named list of things a user may do. AdministratorAccess allows everything except closing the account.

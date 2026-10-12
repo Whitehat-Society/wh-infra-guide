@@ -31,7 +31,6 @@
 /* Readable prose width, but figures/tables/videos may use the full width */
 .md-typeset>p,.md-typeset>ul,.md-typeset>ol,.md-typeset>.admonition,.md-typeset>details{max-width:80ch}
 .md-typeset video{width:100%;max-width:1100px;border:1px solid var(--line);border-radius:10px;background:#000}
-.md-typeset .time{font:500 .7rem/1 var(--f-mono);display:inline-block;padding:4px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent)}
 .wh{color:var(--ink);font-family:var(--f-body);display:grid;gap:16px;margin:1em 0}
 .wh p{margin:0}
 .wh h2,.wh h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:0}
@@ -195,3 +194,24 @@
 .md-typeset .wh details.gl-g>summary.gl-h::before{position:static;mask-image:none;-webkit-mask-image:none;background:none;width:auto;height:auto;content:"▸";color:var(--muted)}
 .md-typeset .wh .gloss{margin:8px 0 0}
 .md-typeset .wh .gl dd{margin:0}
+/* Static diagrams rendered by scripts/diagrams.py (same look as the explorer) */
+.md-typeset figure.diagram{width:auto;display:block;margin:1.2em 0;overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:12px}
+.md-typeset .diagram figcaption{font:13px/1.5 var(--f-body);color:var(--muted);margin:8px 4px 0;text-align:left;max-width:none}
+svg.whd{display:block;width:100%;max-width:var(--w);min-width:min(var(--w),620px);height:auto;margin:0 auto}
+svg.whd .node rect.body{fill:var(--surface);stroke:var(--line);stroke-width:1.2}
+svg.whd .node.hot rect.body{stroke:var(--accent);stroke-width:2.4}
+svg.whd .gly{fill:#fff;font:700 10px var(--f-mono)}
+svg.whd .ttl{font:600 14px var(--f-body);fill:var(--ink)}
+svg.whd .sub{font:11.5px var(--f-body);fill:var(--muted)}
+svg.whd .grp{fill:none;stroke-width:1.2}
+svg.whd .glbl{font:600 12px var(--f-mono);letter-spacing:.02em}
+svg.whd .edge{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-linejoin:round}
+svg.whd .edge.dash{stroke-dasharray:5 4}
+svg.whd .edge.hot{stroke:var(--accent);stroke-width:2.2}
+svg.whd .elbl rect{fill:var(--surface)}
+svg.whd .elbl text{font:12px var(--f-mono);fill:var(--muted)}
+svg.whd .num{fill:var(--accent)}
+svg.whd .elbl .numt{font:700 11px var(--f-mono);fill:#fff}
+.md-typeset figure.shot{width:auto;display:block;margin:1.2em 0}
+.md-typeset figure.shot img{border:1px solid var(--line);border-radius:8px;max-width:100%;height:auto}
+.md-typeset figure.shot figcaption{font:13px/1.5 var(--f-body);color:var(--muted);text-align:left;max-width:none;margin:6px 2px 0}

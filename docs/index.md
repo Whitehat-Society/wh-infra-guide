@@ -16,11 +16,11 @@ Work through the sections in order the first time. Later, use the sidebar to jum
 
 <div class="wh">
 <div class="layers">
-  <div class="layer l-node"><b>1 · How the system works</b><span>Plain-language explanations of every part. Read this before you touch anything</span><span class="pill p-mute">about 40 min</span></div>
-  <div class="layer l-node"><b>2 · Your computer</b><span>Open a terminal, learn the few commands you need, install the tools</span><span class="pill p-mute">about 1 hour</span></div>
-  <div class="layer l-node"><b>3 · Accounts</b><span>Amazon Web Services, a spending alert, a domain name, Discord and GitHub</span><span class="pill p-mute">about 1 hour, plus up to a day for the domain</span></div>
-  <div class="layer l-node"><b>4 · Code and settings</b><span>Download the club's code and fill in your own details</span><span class="pill p-mute">about 30 min</span></div>
-  <div class="layer l-node"><b>5 · Deploy</b><span>Build the system, one part at a time, checking each part works</span><span class="pill p-mute">about 1.5 hours, mostly waiting</span></div>
+  <div class="layer l-node"><b>1 · How the system works</b><span>Plain-language explanations of every part. Read this before you touch anything</span></div>
+  <div class="layer l-node"><b>2 · Your computer</b><span>Open a terminal, learn the few commands you need, install the tools</span></div>
+  <div class="layer l-node"><b>3 · Accounts</b><span>Amazon Web Services, a spending alert, a domain name, Discord and GitHub</span></div>
+  <div class="layer l-node"><b>4 · Code and settings</b><span>Download the club's code and fill in your own details</span></div>
+  <div class="layer l-node"><b>5 · Deploy</b><span>Build the system, one part at a time, checking each part works</span></div>
   <div class="layer l-man"><b>6 · Run the event</b><span>What to watch on event day and what to do when something breaks</span><span class="pill p-warn">event day</span></div>
   <div class="layer l-none"><b>7 · Tear down</b><span>Delete everything so the club stops paying</span><span class="pill p-crit">always do this</span></div>
 </div>
@@ -45,10 +45,9 @@ These are estimates from WH-2026. Check current AWS prices before you budget. A 
 
 Every page that asks you to do something has the same parts:
 
-1. **A time estimate** at the top, like <span class="time">Time: about 20 minutes</span>.
-2. **Numbered steps.** Each step starts with what to type or click.
-3. **Check it worked.** A command to run and the output you should see. Don't move on until it matches.
-4. **If it fails.** The usual errors and what fixes them.
+1. **Numbered steps.** Each step starts with what to type or click.
+2. **Check it worked.** A command to run and the output you should see. Don't move on until it matches.
+3. **If it fails.** The usual errors and what fixes them.
 
 Commands appear in grey boxes. Click the copy icon at the right edge of a box to copy its contents, then paste them into your terminal. Text in angle brackets, like `<your-domain>`, is a placeholder: replace the whole thing, brackets included, with your own value.
 

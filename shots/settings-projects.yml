@@ -1,0 +1,10 @@
+src: settings-projects.png
+out: accounts/free-plan-projects.webp
+crop: [300, 100, 1290, 640]
+marks:
+  - {blur: [345, 300, 110, 30]}
+  - {blur: [990, 300, 120, 30]}
+  - {blur: [1275, 300, 270, 50]}
+  - {box: [965, 160, 420, 60], n: 1}
+  - {box: [655, 280, 270, 50], n: 2}
+  - {box: [320, 640, 260, 30], n: 3}

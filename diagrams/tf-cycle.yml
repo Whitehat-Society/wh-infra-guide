@@ -1,0 +1,15 @@
+title: How Terraform decides what to change
+w: 1200
+h: 245
+nodes:
+  - {id: files, x: 20, y: 20, w: 260, title: ".tf files", sub: "what should exist", glyph: TF, cat: tool}
+  - {id: state, x: 20, y: 120, w: 260, title: "State file", sub: "what Terraform built", glyph: TF, cat: store}
+  - {id: plan, x: 330, y: 70, w: 260, title: "terraform plan", sub: "lists the differences", glyph: TF, cat: tool}
+  - {id: apply, x: 640, y: 70, w: 260, title: "terraform apply", sub: "makes the changes", glyph: TF, cat: tool}
+  - {id: aws, x: 950, y: 70, w: 230, title: "AWS account", sub: "real resources", glyph: AWS, cat: ext}
+edges:
+  - {from: files, to: plan, pts: [[280, 52], [300, 52], [300, 90], [330, 90]]}
+  - {from: state, to: plan, pts: [[280, 152], [315, 152], [315, 114], [330, 114]]}
+  - {from: plan, to: apply}
+  - {from: apply, to: aws}
+  - {from: apply, to: state, style: dash, label: "records what now exists", lx: 480, ly: 215, pts: [[770, 134], [770, 215], [150, 215], [150, 184]]}

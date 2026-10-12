@@ -1,13 +1,11 @@
 # 4. Backups and health checks
 
-<span class="time">Time: about 10 minutes</span>
+This stage sets up two jobs that run on a schedule. Kubernetes calls a scheduled job a **CronJob**. Both run in the `ctfd` namespace.
 
-This stage sets up two jobs that run on a schedule. Kubernetes calls a scheduled job a **CronJob**. Both run in the `ctfd` namespace:
-
-| Job | When it runs | What it does |
-|---|---|---|
-| `ctfd-backup` | every hour, on the hour | Copies the whole CTFd database into a compressed file and uploads it to the S3 bucket `<event>-ctfd-backups`. Files are kept for 30 days |
-| `challenge-healthcheck` | every 5 minutes | Opens each web challenge and connects to each pwn challenge. If one doesn't answer, it posts to the alerts channel in Discord |
+<figure class="diagram">
+--8<-- "diagrams/day2.svg"
+<figcaption><code>ctfd-backup</code> keeps 30 days of hourly copies. <code>challenge-healthcheck</code> stays silent while every challenge answers.</figcaption>
+</figure>
 
 ## Backups
 
@@ -54,7 +52,7 @@ The health check needs two things the code doesn't set up by itself: the Discord
       echo "$VAR=$HOST"
     done
     ```
-    The block prints three lines, each ending in `.elb.ap-southeast-1.amazonaws.com`.
+    The block prints three lines, each ending in `.elb.<region>.amazonaws.com`.
 3. Create the schedule, then run the check once and read its results:
     ```bash
     make deploy-healthcheck-cronjob

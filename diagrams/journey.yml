@@ -1,0 +1,26 @@
+title: How a player's request reaches the scoreboard or a challenge
+w: 1290
+h: 410
+groups:
+  - {x: 232, y: 10, w: 1038, h: 390, label: "AWS, in Singapore", style: aws}
+  - {x: 590, y: 40, w: 660, h: 340, label: "Kubernetes cluster: 3 rented computers", style: cluster}
+nodes:
+  - {id: browser, x: 20, y: 160, w: 200, title: "Player's browser", sub: "web pages", glyph: USR, cat: ext}
+  - {id: term, x: 20, y: 300, w: 200, title: "Player's terminal", sub: "nc, for pwn", glyph: USR, cat: ext}
+  - {id: dns, x: 290, y: 50, w: 230, title: "DNS (Route 53)", sub: "name to address", glyph: DNS, cat: net}
+  - {id: lbw, x: 290, y: 160, w: 230, title: "Web load balancer", sub: "one, for all web traffic", glyph: LB, cat: net}
+  - {id: lbp, x: 290, y: 300, w: 230, title: "Pwn load balancers", sub: "one per pwn challenge", glyph: LB, cat: net}
+  - {id: nginx, x: 620, y: 160, w: 170, title: "NGINX", sub: "reads the name", glyph: NGX, cat: k8s}
+  - {id: ctfd, x: 850, y: 80, w: 170, title: "CTFd", sub: "the scoreboard", glyph: APP, cat: app}
+  - {id: db, x: 1060, y: 80, w: 170, title: "Database", sub: "teams and scores", glyph: DB, cat: db}
+  - {id: web, x: 850, y: 190, w: 190, title: "Web challenges", sub: "one copy each", glyph: WEB, cat: app}
+  - {id: pwn, x: 850, y: 300, w: 190, title: "Pwn challenges", sub: "one copy each", glyph: TCP, cat: app}
+edges:
+  - {from: browser, to: dns, bend: v, n: 1, style: dash}
+  - {from: browser, to: lbw, n: 2}
+  - {from: lbw, to: nginx, n: 3}
+  - {from: nginx, to: ctfd, n: 4}
+  - {from: nginx, to: web, n: 4}
+  - {from: ctfd, to: db, n: 5}
+  - {from: term, to: lbp, n: A}
+  - {from: lbp, to: pwn, n: B}
