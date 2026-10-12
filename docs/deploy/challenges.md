@@ -89,14 +89,9 @@ Each `challenge.yml` contains `state: hidden`. When the CTF starts, make them vi
 Edit the files in the challenge's folder, then:
 
 - If you changed only text, flags or attached files: `cd ~/wh/wh-2026 && ctf challenge sync <category>/<challenge-folder>`
-- If you changed the challenge's code or Dockerfile: rerun `make build-images`. Unchanged challenges rebuild quickly from the cache. The new image keeps the same name, so Kubernetes keeps running the old copy it already downloaded. Make it download the new one and restart the pods:
-    ```bash
-    NAME=<name>; NS=challenges-web   # challenges-tcp for a pwn challenge
-    kubectl patch deploy "$NAME" -n "$NS" -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"$NAME\",\"imagePullPolicy\":\"Always\"}]}}}}"
-    kubectl rollout restart deploy "$NAME" -n "$NS"
-    kubectl rollout status deploy "$NAME" -n "$NS"
-    ```
-    The last line says `successfully rolled out`.
+- If you changed the challenge's code or Dockerfile: rerun `make build-images`. Unchanged challenges rebuild quickly from the cache, and only the changed ones restart.
+
+[Change a challenge](../operate/change.md) covers every kind of change, including renaming and removing.
 
 ## If it fails
 

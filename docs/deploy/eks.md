@@ -19,19 +19,12 @@ This stage builds the foundation everything else runs on: the private network, t
     ```bash
     make deploy-eks
     ```
-    The second run finishes with `Apply complete!`. The first run's errors, and why they go away:
+    The second run finishes with `Apply complete!`. The first run's error, and why it goes away:
 
     | First-run error | Why |
     |---|---|
     | `[restore-secrets] WARNING: failed to import <event>/config`, later `ResourceExistsException` | Terraform can only take over the secret once the cluster exists. The second run imports it |
-    | `failed calling webhook "mservice.elbv2.k8s.aws"` for `cert_manager` or `amazon-cloudwatch-observability` | Those parts started before the load balancer controller was ready |
 
-    If the second run stops with `cannot re-use a name that is still in use` for `helm_release.cert_manager`, the first run left a failed install record behind. Connect `kubectl` (step 4), delete the record, and run the command a third time:
-    ```bash
-    make kubeconfig
-    kubectl delete secret -n cert-manager sh.helm.release.v1.cert-manager.v1
-    make deploy-eks
-    ```
 4. Tell `kubectl` how to reach the new cluster. The command saves the cluster's address and login method in a file `kubectl` reads:
     ```bash
     make kubeconfig

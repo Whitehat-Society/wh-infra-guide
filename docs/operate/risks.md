@@ -12,7 +12,7 @@ WH-2026's review after the event found these weak spots. They are ranked by how 
 
 ## When a computer fails
 
-The cluster has one group of computers per availability zone, each with at least one computer. When a computer fails, AWS replaces it in the same zone, and pods that keep data on a disk in that zone (CTFd, MariaDB, Redis) start again there. Expect CTFd to be unreachable for 2 to 5 minutes.
+The cluster has one group of computers per availability zone, each with at least one computer. When a computer fails, AWS replaces it in the same zone, and pods that keep data on a disk in that zone (CTFd, MariaDB, Redis) start again there. In a test, the computer holding MariaDB was switched off: the replacement joined 40 seconds later, MariaDB ran again after 77 seconds, and no data was lost. Expect CTFd to be unreachable for 1 to 3 minutes.
 
 **Symptoms that it didn't recover:** after 10 minutes CTFd still doesn't load, `kubectl get pods -n ctfd` shows `ctfd`, `redis` or `mariadb` as `Pending`, and `kubectl describe pod -n ctfd <pod>` ends with `volume node affinity conflict` or `didn't match PersistentVolume's node affinity`.
 
