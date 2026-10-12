@@ -21,7 +21,7 @@ Do these in order, as soon as the CTF ends.
 3. **Export the results as spreadsheets.** This script saves six CSV files, which open in Excel or Google Sheets, to `~/wh/results/`:
     ```bash
     cd ~/wh/wh-2026/utils
-    curl -sSLo export_results.py https://whitehat-society.github.io/wh-infra-guide/assets/scripts/export_results.py
+    curl -sSLo export_results.py https://lampardnk.github.io/wh-infra-guide/assets/scripts/export_results.py
     python3 export_results.py
     ```
     It prints one line per file, e.g. `submissions.csv: 4812 rows`, then `Saved in /home/<you>/wh/results`. The script:
