@@ -154,6 +154,8 @@ You should see:
 | Message | Fix |
 |---|---|
 | `MISSING` or `command not found` right after installing | Close and reopen the terminal. If it's still missing, rerun that program's install block |
+| `error getting credentials` … `logon session does not exist` | Windows: remove the line `"credsStore": "desktop.exe"` from `~/.docker/config.json` |
+| `Cannot connect to the Docker daemon` | Start Docker Desktop and wait for *Engine running*. On Windows, also check step 1.3, WSL integration |
 | `permission denied ... docker.sock` | Linux: log out and back in. Windows: check that Docker Desktop is running and its WSL integration is on |
 | `go` older than 1.25 | An older Go is installed elsewhere. `which -a go` lists every copy; remove the old one |
 | `ctf` is MISSING | The virtual environment isn't active. Run `source ~/.venvs/wh/bin/activate` |

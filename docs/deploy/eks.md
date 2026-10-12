@@ -50,6 +50,7 @@ What each command should show:
 | `AccessDenied` or `OptInRequired` while creating the cluster | Either the new account is still being switched on, or you aren't signed in as your admin login. Check `aws sts get-caller-identity`, wait an hour, and rerun |
 | `BucketAlreadyExists` | Another AWS customer owns that bucket name. Choose a new event name, then redo [Make it yours](../code/make-it-yours.md) and [Settings and secrets](../code/config.md) |
 | `ResourceExistsException` for the secret | Terraform didn't take over the secret. Run `terraform -chdir=eks init`, then `make deploy-eks` again |
+| The command waits more than 10 minutes on `aws_eks_node_group ... Still creating` | AWS can't start the computers. `aws autoscaling describe-scaling-activities --max-items 1 --query 'Activities[].StatusMessage'` gives the reason. `not eligible for Free Tier` means a Free-plan account: change `node_instance_type` (see [Which kind of account you have](../accounts/aws.md#which-kind-of-account-you-have)), wait for the command to fail, then rerun it |
 | A node stays `NotReady` | Wait 3 minutes. If it's still not ready, `kubectl describe node <name>` and read the `Conditions` section |
 | Certificate stays `False` | Your domain's DNS doesn't point at Route 53 yet. Redo the checks on [Domain name](../accounts/domain.md#check-it-worked). `kubectl describe certificate -A` shows the exact reason |
 

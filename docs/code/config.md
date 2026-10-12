@@ -30,7 +30,7 @@ Every command on this page runs in `~/wh/wh-2026/utils`.
     | `pulumi_state_bucket` | `<event>-pulumi-state`, e.g. `wh-2027-pulumi-state` |
     | `scenarios_ecr_repo_name` | `<event>-scenarios`. Only the optional [chall-manager](../reference/chall-manager.md) uses it, but the field is required |
 
-    Leave `k8s_version` and `node_instance_type` as they are. Save with Ctrl+O and Enter, and quit with Ctrl+X.
+    Leave `k8s_version` as it is. Leave `node_instance_type` as `t3.medium`, unless your account is a [Free-plan project](../accounts/aws.md#which-kind-of-account-you-have): then use `c7i-flex.large`. Save with Ctrl+O and Enter, and quit with Ctrl+X.
 
 ## 2. Image registry settings
 

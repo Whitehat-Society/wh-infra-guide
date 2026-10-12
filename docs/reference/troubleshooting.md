@@ -33,6 +33,11 @@ aws sts get-caller-identity
 | A web challenge answers `503` | The request limit, 20 a second per address | See [Rate limits](../operate/risks.md#rate-limits) |
 | Pulumi: `the stack is currently locked` | An earlier Pulumi run was interrupted and left a lock | Set the [Pulumi variables](#pulumi-variables), then `pulumi -C <folder> cancel --yes` |
 | Pulumi: `incorrect passphrase` | The passphrase is wrong, or a settings file from WH-2026 is still present | Delete any `Pulumi.wh-2026.yaml`. Never change the passphrase of a running system |
+| Terraform: `No valid credential sources found` | You signed in with `aws login` instead of `aws sso login`, and Terraform can't read that kind of login | Use the Identity Center profile from [Sign in from the terminal](../accounts/cli-login.md). Or add a profile that hands Terraform the CLI's keys: `credential_process = aws configure export-credentials --profile <yours> --format process` |
+| Python scripts: `Missing Dependency: Using the login credential provider requires an additional dependency` | Same cause, in `secrets.py` and `builder.py` | `pip install "botocore[crt]"` |
+| `explicit deny in a service control policy` | Your account is a Free-plan project that only allows one region | Use that region everywhere; see [Which kind of account you have](../accounts/aws.md#which-kind-of-account-you-have) |
+| `Cannot connect to the Docker daemon` or `docker.sock: no such file` | Docker isn't running | Windows and macOS: start Docker Desktop and wait for it to say *Engine running*. Linux: `sudo systemctl start docker` |
+| Docker: `error getting credentials` … `A specified logon session does not exist` | On Windows, Docker in Ubuntu tries to use the Windows password store and can't | Remove the line `"credsStore": "desktop.exe"` from `~/.docker/config.json`, then retry |
 | Terraform: `Error acquiring the state lock` | Another Terraform run is going, or one crashed and left a lock | Make sure nobody else is deploying, then `terraform -chdir=eks force-unlock <LOCK_ID>` with the ID from the message |
 | Terraform: `secret ... scheduled for deletion` | A teardown less than 7 days ago deleted the secret | `make restore-secrets`, then rerun `make deploy-eks` |
 

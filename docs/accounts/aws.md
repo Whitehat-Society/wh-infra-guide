@@ -28,11 +28,12 @@ You need:
 
 ## Which kind of account you have
 
-AWS now creates some new accounts as a **Free-plan project**: an account that AWS manages for you inside its own small organisation. This guide was tested on one. It works, with three limits:
+AWS now creates some new accounts as a **Free-plan project**: an account that AWS manages for you inside its own small organisation. This guide was tested on one. It works, with four limits:
 
 | Limit | Effect on this guide | What to do |
 |---|---|---|
 | **One region only**, chosen by AWS | Commands in any other region fail with `explicit deny in a service control policy` | Use that region everywhere. [Make it yours](../code/make-it-yours.md) has a step for it |
+| **Only "Free Tier eligible" computer sizes** | The cluster's computers never start: `The specified instance type is not eligible for Free Tier` | In [Settings and secrets](../code/config.md), set `node_instance_type` to `c7i-flex.large`, which has the same 2 cores and 4 GB as `t3.medium` |
 | **No domain purchases** in Route 53 | [Domain name](domain.md) Option A fails | Use Option B, with a domain from another registrar |
 | **Ends after six months**, or when the credits run out | The account stops working | Fine for a test. For the real event, upgrade to the Paid plan |
 

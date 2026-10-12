@@ -1,0 +1,14 @@
+title: On Windows, the guide's commands run inside Ubuntu
+w: 960
+h: 260
+groups:
+  - {x: 10, y: 10, w: 940, h: 240, label: "Your Windows computer", style: computer}
+  - {x: 30, y: 45, w: 420, h: 185, label: "Ubuntu, inside WSL", style: cluster}
+nodes:
+  - {id: term, x: 50, y: 80, w: 380, title: "Ubuntu terminal", sub: "every command in this guide", glyph: CLI, cat: you}
+  - {id: tools, x: 50, y: 160, w: 380, title: "aws, terraform, kubectl, …", sub: "installed here", glyph: SH, cat: tool}
+  - {id: dd, x: 560, y: 80, w: 360, title: "Docker Desktop", sub: "a Windows app", glyph: DKR, cat: tool}
+  - {id: br, x: 560, y: 160, w: 360, title: "Browser", sub: "AWS sign-in, CTFd setup", glyph: WWW, cat: ext}
+edges:
+  - {from: term, to: dd, label: "docker", both: true}
+  - {from: tools, to: br, label: "opens", style: dash}

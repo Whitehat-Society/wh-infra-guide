@@ -6,6 +6,11 @@ A **terminal** is a window where you type commands instead of clicking. Almost e
 
     Windows terminals use different commands, so you'll install **WSL** (Windows Subsystem for Linux). WSL runs Ubuntu, a version of Linux, inside Windows. From then on, you'll type every command into the Ubuntu window.
 
+    <figure class="diagram">
+    --8<-- "diagrams/wsl.svg"
+    <figcaption>Ubuntu runs inside Windows. Docker Desktop and your browser stay ordinary Windows apps, and Ubuntu uses them.</figcaption>
+    </figure>
+
     1. Click Start, type `PowerShell`, right-click **Windows PowerShell** and choose **Run as administrator**.
     2. Type this and press Enter:
         ```powershell
