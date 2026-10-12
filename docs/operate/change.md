@@ -93,7 +93,7 @@ Removing deletes its solves, and every team that solved it loses those points.
     ```bash
     make build-images
     ```
-    Pulumi deletes its pods and Service, and for pwn its load balancer. ExternalDNS deletes its address within a few minutes.
+    Pulumi deletes its pods and Service, and for pwn its load balancer. ExternalDNS deletes its address within a few minutes. A warning ending in `DependencyViolation: resource sg-… has a dependent object` is harmless: the load balancer controller retries, and the leftover security group is gone a minute later.
 4. Remove it from `utils/healthcheck.py` and from the `for` line in step 2 of [Health checks](../deploy/day2.md#health-checks), then `make deploy-healthcheck-cronjob`.
 5. Optional: delete its image, which otherwise stays in ECR until teardown:
     ```bash

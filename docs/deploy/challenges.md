@@ -9,6 +9,18 @@ This stage builds every challenge, starts the web and pwn challenges on the clus
 
 The first run takes longest. Docker keeps parts of each image it builds, its **cache**, so later runs only rebuild what changed.
 
+There is no command for a single challenge: every run handles all of them. That is still quick, because unchanged parts are skipped. Measured on the test deploy:
+
+| Part of the run | Took |
+|---|---|
+| Building and uploading all 11 images, with the cache | 10 seconds |
+| Pulumi, pwn challenges, nothing changed | 4 seconds |
+| Pulumi, one web challenge changed | 13 seconds |
+| A whole run that changed one challenge | about 1 minute |
+| Pulumi when one challenge's pods never start | 10 minutes, then it fails |
+
+A run that seems stuck is almost always the last line: Pulumi waits up to 10 minutes for pods that never become ready. Open a second terminal and run `kubectl get pods -n challenges-tcp; kubectl get pods -n challenges-web` to see which one.
+
 ## Run it
 
 1. Log Docker in to ECR, so it may upload images there. The login lasts 12 hours:
