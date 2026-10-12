@@ -14,13 +14,30 @@ This stage builds the foundation everything else runs on: the private network, t
     ```bash
     make deploy-eks
     ```
-    The command first hands the secret you created over to Terraform (`[restore-secrets] Importing: <event>/config`). Then it creates about 70 resources without asking for confirmation. It prints lines like `Still creating... [5m0s elapsed]` while it waits. The cluster takes about 10 minutes and the computers about 3. Let it run until the prompt returns.
-3. Tell `kubectl` how to reach the new cluster. The command saves the cluster's address and login method in a file `kubectl` reads:
+    It creates about 70 resources without asking for confirmation, printing lines like `Still creating... [5m0s elapsed]` while it waits. The cluster takes about 10 minutes and the computers about 3. Let it run until the prompt returns.
+3. **On a brand-new account, the first run always ends with errors.** Run the same command again:
+    ```bash
+    make deploy-eks
+    ```
+    The second run finishes with `Apply complete!`. The first run's errors, and why they go away:
+
+    | First-run error | Why |
+    |---|---|
+    | `[restore-secrets] WARNING: failed to import <event>/config`, later `ResourceExistsException` | Terraform can only take over the secret once the cluster exists. The second run imports it |
+    | `failed calling webhook "mservice.elbv2.k8s.aws"` for `cert_manager` or `amazon-cloudwatch-observability` | Those parts started before the load balancer controller was ready |
+
+    If the second run stops with `cannot re-use a name that is still in use` for `helm_release.cert_manager`, the first run left a failed install record behind. Connect `kubectl` (step 4), delete the record, and run the command a third time:
+    ```bash
+    make kubeconfig
+    kubectl delete secret -n cert-manager sh.helm.release.v1.cert-manager.v1
+    make deploy-eks
+    ```
+4. Tell `kubectl` how to reach the new cluster. The command saves the cluster's address and login method in a file `kubectl` reads:
     ```bash
     make kubeconfig
     ```
-4. Each address in `alarm_notification_emails` receives an email titled *AWS Notification - Subscription Confirmation*. Click **Confirm subscription** in each one. Until you do, alarms don't reach that address.
-5. Switch off one alarm that doesn't apply. It watches chall-manager, an optional part this deploy leaves out, so it would report a problem constantly:
+5. Each address in `alarm_notification_emails` receives an email titled *AWS Notification - Subscription Confirmation*. Click **Confirm subscription** in each one. Until you do, alarms don't reach that address.
+6. Switch off one alarm that doesn't apply. It watches chall-manager, an optional part this deploy leaves out, so it would report a problem constantly:
     ```bash
     EVENT=$(jq -r .event_name eks/terraform.tfvars.json)
     aws cloudwatch disable-alarm-actions --alarm-names "$EVENT-chall-manager-pod-down"
