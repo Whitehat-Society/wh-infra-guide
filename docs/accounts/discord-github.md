@@ -9,14 +9,14 @@ A **webhook** is a secret web address that lets a program post messages into one
 | `discord_webhook_url` | CTFd, announcing the first three solves of each challenge | a public announcements channel |
 | `discord_alert_webhook_url` | Alarms and the health check, when something breaks | a staff-only channel such as `#infra-alerts` |
 
---8<-- "rec-pending.md"
+<video controls preload="metadata" poster="../../assets/video/accounts/discord-webhook.jpg" src="../../assets/video/accounts/discord-webhook.mp4"></video>
 
 Do these steps once for each channel:
 
 1. In Discord, hover over the channel and click the gear icon (**Edit Channel**).
-2. Open **Integrations**, then **Webhooks**, then **New Webhook**.
-3. Click the new webhook, give it a name such as `CTFd` or `Infra alerts`, and click **Copy Webhook URL**.
-4. Paste the address into a temporary note. [Settings and secrets](../code/config.md) stores it properly.
+2. Open **Integrations**, then click **Create Webhook**. If the channel already has webhooks, the button is **Webhooks**, then **New Webhook**.
+3. Click the new webhook to open it. Change its name to `CTFd` or `Infra alerts`, and click **Save Changes** in the bar at the bottom.
+4. Click **Copy Webhook URL** and paste the address into a temporary note. [Settings and secrets](../code/config.md) stores it properly.
 
 You need the **Manage Webhooks** permission on the server. If **Integrations** is missing, ask a server admin.
 
@@ -26,7 +26,7 @@ You need the **Manage Webhooks** permission on the server. If **Integrations** i
 curl -sS -H 'Content-Type: application/json' -d '{"content":"webhook test"}' "https://discord.com/api/webhooks/..."
 ```
 
-The command prints nothing, and "webhook test" appears in the channel.
+The command prints nothing, and "webhook test" appears in the channel, posted by the webhook's name.
 
 !!! danger "Treat a webhook address like a password"
     Anyone who has it can post in the channel. Never paste it into the code or a public chat.

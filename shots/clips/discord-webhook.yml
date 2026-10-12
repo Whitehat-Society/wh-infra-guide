@@ -1,0 +1,24 @@
+out: accounts/discord-webhook
+width: 1280
+height: 720
+frames:
+  - src: discord/06-hover.png
+    caption: "1. Hover over the channel and click the gear (Edit Channel)"
+    seconds: 4
+    marks: [{blur: [0, 85, 75, 750]}, {blur: [8, 835, 195, 55]}, {box: [338, 219, 24, 24], n: 1}]
+  - src: discord/07-settings.png
+    caption: "2. Open Integrations"
+    seconds: 3
+    marks: [{box: [280, 186, 238, 28], n: 2}]
+  - src: discord/08-integrations.png
+    caption: "3. Click Create Webhook"
+    seconds: 3
+    marks: [{box: [1092, 233, 124, 32], n: 3}]
+  - src: discord/10-named.png
+    caption: "4. Rename it, e.g. CTFd, then Save Changes at the bottom"
+    seconds: 4
+    marks: [{blur: [800, 345, 90, 16]}, {box: [720, 438, 238, 40], n: 4}, {box: [1134, 836, 106, 33]}]
+  - src: discord/11-copy.png
+    caption: "5. Copy Webhook URL, and keep it for Settings and secrets"
+    seconds: 4
+    marks: [{blur: [800, 345, 90, 16]}, {box: [720, 527, 143, 32], n: 5}]
