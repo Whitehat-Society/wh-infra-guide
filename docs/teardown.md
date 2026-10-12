@@ -50,7 +50,7 @@ AWS bills for the system until it no longer exists. Delete it the day after the 
         aws logs delete-log-group --log-group-name "$g" && echo "deleted $g";; esac
     done
     ```
-    It prints one `deleted` line per log group, about 11 in all.
+    It prints one `deleted` line per log group, 9 to 11 in all.
 
 ## Check the bill has stopped
 
@@ -94,6 +94,7 @@ On macOS, replace `date -d '-3 days' +%F` with `date -v-3d +%F`. After teardown,
 |---|---|
 | Pulumi mentions the `passphrase` | This terminal doesn't have the Pulumi variables. Redo step 3 |
 | `DependencyViolation` while deleting the network | A load balancer made by the cluster still exists. Rerun the check in step 5, delete leftovers with `aws elbv2 delete-load-balancer --load-balancer-arn <arn>`, then rerun step 6 |
+| `module.vpc.aws_vpc.this[0]: Still destroying...` for more than 12 minutes | A security group the load balancer controller made, named `k8s-traffic-…`, is still in the network. In a second terminal, list the network's groups: `aws ec2 describe-security-groups --filters Name=vpc-id,Values=<the vpc-… id from the line> --query 'SecurityGroups[].[GroupId,GroupName]' --output text`. Delete each one except `default`: `aws ec2 delete-security-group --group-id <sg-…>`. The deletion finishes within a minute |
 | `ExpiredTokenException` or `Your session has expired` in the middle of a step | Your login ended. Sign in again, then run the same command again: Terraform and Pulumi continue with what is left |
 | The deletion was interrupted, and the cluster still exists | Follow *Recovery: EKS cluster orphaned from Terraform state* in `docs/ops/deploy-live-infra.md` in the wh-2026 repository |
 | All checks are empty, but charges continue | In the AWS console, open **Billing and Cost Management → Bills**. It lists each charge by service and region |
