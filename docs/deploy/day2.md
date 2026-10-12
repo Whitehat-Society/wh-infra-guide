@@ -32,7 +32,7 @@ The output lists one file named like `ctfd-20270628-120000.sql.gz`, with a size 
 
 ## Health checks
 
-The health check needs two things the code doesn't set up by itself: the Discord alert address, stored where the job can read it, and the current addresses of the pwn load balancers.
+The health check tests every web and pwn challenge every 5 minutes, and posts to the Discord alerts channel when one doesn't answer. Its list of challenges comes from the `challenge.yml` files, with each pwn challenge's current load balancer address.
 
 1. Give the cluster the alert address. The command copies it from Secrets Manager into a Kubernetes Secret named `healthcheck-webhook`:
     ```bash
@@ -40,27 +40,21 @@ The health check needs two things the code doesn't set up by itself: the Discord
       --from-literal=url="$(python3 secrets.py get discord_alert_webhook_url)" \
       --dry-run=client -o yaml | kubectl apply -f -
     ```
-2. Write the pwn load balancer addresses into the job's settings file, `ctfd/healthcheck-cronjob.yaml`. The addresses change whenever the pwn challenges are rebuilt from nothing, so rerun this step after every fresh deploy. First set the variables Pulumi needs:
-    --8<-- "pulumi-env.md"
-    Then copy each address from Pulumi's records into the file:
-    ```bash
-    pulumi -C shared-tcp stack select "$EVENT"
-    for n in loop library xoph-dark-embers; do
-      VAR="SHARED_TCP_$(echo "$n" | tr 'a-z-' 'A-Z_')_HOSTNAME"
-      HOST=$(pulumi -C shared-tcp stack output "$n-hostname")
-      perl -0pi -e "s/(name: $VAR\n\s*value: )\"[^\"]*\"/\${1}\"$HOST\"/" ctfd/healthcheck-cronjob.yaml
-      echo "$VAR=$HOST"
-    done
-    ```
-    The block prints three lines, each ending in `.elb.<region>.amazonaws.com`.
-3. Create the schedule, then run the check once and read its results:
+2. Create the schedule, with the current list of challenges:
     ```bash
     make deploy-healthcheck-cronjob
+    ```
+    It ends with `Healthcheck CronJob deployed (every 5 min).` A line starting with `WARNING: no load balancer hostname yet` means a pwn load balancer is still starting; wait 3 minutes and run it again.
+3. Run the check once and read its results:
+    ```bash
     make run-healthcheck
     sleep 60; kubectl logs -n ctfd -l job-name --tail=30 --prefix | grep -i -e pass -e fail
     ```
 
-**Check it worked:** every challenge shows `PASS`, and nothing appears in the alerts channel.
+**Check it worked:** every web and pwn challenge shows `PASS`, and nothing appears in the alerts channel.
+
+!!! tip "Rerun step 2 after the challenges change"
+    The list is copied into the cluster when you run `make deploy-healthcheck-cronjob`. Run it again after you add or remove a web or pwn challenge, and after the pwn challenges were deleted and deployed again, which gives their load balancers new addresses.
 
 Then check that alerts reach Discord. Stop one challenge, wait for the next 5-minute run, and look for the alert:
 
@@ -68,7 +62,7 @@ Then check that alerts reach Discord. Stop one challenge, wait for the next 5-mi
 kubectl scale deploy/base64converter -n challenges-web --replicas=0
 ```
 
-When the alert arrives, start the challenge again:
+The alert looks like `Challenge Health Check FAILED … base64converter unreachable`, once per 5-minute run while the challenge is down. When it arrives, start the challenge again:
 
 ```bash
 kubectl scale deploy/base64converter -n challenges-web --replicas=1
@@ -76,20 +70,13 @@ kubectl scale deploy/base64converter -n challenges-web --replicas=1
 
 `kubectl scale` changes how many copies of a challenge run. Zero stops it.
 
-The alert looks like `Challenge Health Check FAILED … base64converter unreachable`. Expect several copies of it a minute or so apart: when a check fails, the job ends with an error, and Kubernetes reruns it up to 6 times. While those reruns go on, the regular 5-minute checks are skipped.
-
-!!! warning "Two pwn challenges aren't checked"
-    The health check's own list, `SHARED_TCP_CHALLENGES` in `utils/healthcheck.py`, names only `loop`, `library` and `xoph-dark-embers`. `another` and `postman` are deployed but never checked. To add them, follow step 3 of [Add a challenge](../operate/change.md#add-a-challenge).
-
-!!! tip "If you add or remove a pwn challenge"
-    The health check lists the pwn challenges in two places: names and ports in `utils/healthcheck.py` (`SHARED_TCP_CHALLENGES`), and addresses in `ctfd/healthcheck-cronjob.yaml`. Update both, then rerun `make deploy-healthcheck-cronjob`.
-
 ## If it fails
 
 | Message | Fix |
 |---|---|
 | The backup job shows `Error`, and its log says `AccessDenied` | The job isn't allowed to write to the bucket, usually because the old account ID is still in `utils/ctfd/main.go`. Redo [Make it yours](../code/make-it-yours.md), then rerun `make deploy-ctfd` |
 | `NoSuchBucket` | The bucket name in the Makefile (`BACKUP_BUCKET`) doesn't match `<event>-ctfd-backups`. Redo [Make it yours](../code/make-it-yours.md) |
-| A pwn challenge shows `FAIL` | The address in the settings file is out of date. Redo step 2, then step 3 |
+| A pwn challenge shows `FAIL`, or `no NLB hostname` | The list in the cluster has an old or missing address. Redo step 2, then step 3 |
+| A challenge you added isn't in the results | The list was made before you added it. Redo step 2 |
 
 **Next:** [5. Final checks](verify.md).

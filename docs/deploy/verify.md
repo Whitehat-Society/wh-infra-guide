@@ -14,9 +14,18 @@ Then run it:
 make smoke-test
 ```
 
-Every challenge it lists shows `PASS`. The test then prints `==> filelocker (chall-manager HTTP)` and stops with `make: *** [Makefile:224: smoke-test] Error 1`, without a summary line. That ending is expected: `filelocker` needs the optional chall-manager (see the [appendix](../reference/chall-manager.md)), and the script stops at its first missing answer. Count the `PASS` lines instead: 5 web and 3 pwn.
+It runs the same check as the health check job, against every web and pwn challenge, from your computer. It doesn't post to Discord. The output ends with:
 
-The smoke test, like the health check, doesn't test `another` and `postman`. Check them by hand with the `nc` commands in the browser checklist below.
+```
+=== Results: 10 passed, 0 failed ===
+
+chall-manager not deployed (api_endpoint empty) — per-player challenges skipped.
+
+Shared challenges: all passed
+Per-player challenges: 0 passed, 0 failed
+```
+
+The count is the number of web and pwn challenges. `filelocker` isn't tested, because it needs the optional chall-manager; see the [appendix](../reference/chall-manager.md).
 
 ## Checks from the terminal
 

@@ -7,24 +7,17 @@ This stage starts CTFd, the scoreboard, with its database (**MariaDB**) and its 
 <figcaption>Each of MariaDB, Redis and the uploads has its own disk, so all three keep their data across restarts. MariaDB holds teams and solves. Redis holds logins and cached pages; see <a href="../../operate/data/#clear-ctfds-cache">Clear CTFd's cache</a>.</figcaption>
 </figure>
 
-1. Give Pulumi the address of the backup job's permissions role. Terraform created the role on the previous page, but the Makefile doesn't pass it on, so you set it once by hand:
-    --8<-- "pulumi-env.md"
-    ```bash
-    pulumi -C ctfd stack select --create "$EVENT"
-    pulumi -C ctfd config set backup_irsa_arn "$(terraform -chdir=eks output -raw ctfd_backup_irsa_arn)"
-    ```
-    Without this, the deploy stops with `missing configuration value 'backup_irsa_arn'`.
-2. Deploy:
+1. Deploy:
     ```bash
     make deploy-ctfd
     ```
     The last lines show `Resources:` with a count of resources created, then `Duration:`, and no line starting with `error:`.
-3. Watch the three pods start:
+2. Watch the three pods start:
     ```bash
     kubectl get pods -n ctfd -w
     ```
     `-w` keeps watching and prints a new line whenever something changes. When `ctfd`, `mariadb` and `redis` each show `1/1` and `Running`, press Ctrl+C.
-4. Wait for the DNS record. ExternalDNS creates it within a few minutes of the Ingress appearing:
+3. Wait for the DNS record. ExternalDNS creates it within a few minutes of the Ingress appearing:
     ```bash
     DOMAIN=$(jq -r .domain_name eks/terraform.tfvars.json)
     dig +short "ctf.$DOMAIN"

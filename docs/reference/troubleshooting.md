@@ -66,7 +66,7 @@ Find the group that matches what you were doing, then the line that matches what
 
 | Message or symptom | Cause | Fix |
 |---|---|---|
-| `missing configuration value 'backup_irsa_arn'` | The Makefile doesn't pass this setting to Pulumi | Step 1 of [The scoreboard](../deploy/ctfd.md) |
+| `missing configuration value 'backup_irsa_arn'` | Your copy of `utils/Makefile` is older than the fix that passes this setting to Pulumi | Set it once by hand, then rerun `make deploy-ctfd`: `pulumi -C ctfd config set backup_irsa_arn "$(terraform -chdir=eks output -raw ctfd_backup_irsa_arn)"`, after the [Pulumi variables](#pulumi-variables) |
 | Scores, challenges or settings look out of date after a restore or a change made directly in the database | CTFd's cache in Redis still holds the old copies | [Clear CTFd's cache](../operate/data.md#clear-ctfds-cache) |
 | Players are logged out after you cleared the cache | Logins are kept in the same cache | Expected; they log in again |
 
