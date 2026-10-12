@@ -7,23 +7,32 @@ This stage starts CTFd, the scoreboard, with its database (**MariaDB**) and its 
 <figcaption>Only MariaDB and the uploads disk keep data across restarts. Redis holds logged-in sessions and cached pages, which CTFd can rebuild.</figcaption>
 </figure>
 
-1. Deploy:
+1. Give Pulumi the address of the backup job's permissions role. Terraform created the role on the previous page, but the Makefile doesn't pass it on, so you set it once by hand:
+    --8<-- "pulumi-env.md"
     ```bash
-    cd ~/wh/wh-2026/utils
+    pulumi -C ctfd stack select --create "$EVENT"
+    pulumi -C ctfd config set backup_irsa_arn "$(terraform -chdir=eks output -raw ctfd_backup_irsa_arn)"
+    ```
+    Without this, the deploy stops with `missing configuration value 'backup_irsa_arn'`.
+2. Deploy:
+    ```bash
     make deploy-ctfd
     ```
     The last lines show `Resources:` with a count of resources created, then `Duration:`, and no line starting with `error:`.
-2. Watch the three pods start:
+3. Watch the three pods start:
     ```bash
     kubectl get pods -n ctfd -w
     ```
     `-w` keeps watching and prints a new line whenever something changes. When `ctfd`, `mariadb` and `redis` each show `1/1` and `Running`, press Ctrl+C.
-3. Wait for the DNS record. ExternalDNS creates it within a few minutes of the Ingress appearing:
+4. Wait for the DNS record. ExternalDNS creates it within a few minutes of the Ingress appearing:
     ```bash
     DOMAIN=$(jq -r .domain_name eks/terraform.tfvars.json)
     dig +short "ctf.$DOMAIN"
     ```
     Repeat until it prints one or more IP addresses.
+
+    !!! warning "Don't open the address in a browser before this prints an address"
+        If you ask for a name before its record exists, your computer and your router remember the answer "doesn't exist" for up to 15 minutes, even after the record appears. If that happened, wait 15 minutes. `ipconfig /flushdns` in Windows PowerShell clears your computer's copy, but not your router's.
 
 ## Finish setup in the browser
 
