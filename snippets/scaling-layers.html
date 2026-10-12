@@ -1,0 +1,10 @@
+  <div class="layers">
+    <div class="layer l-auto"><b>Route 53</b><span>DNS answers for every hostname</span><span class="pill p-ok">AWS scales it</span></div>
+    <div class="layer l-auto"><b>6 Network Load Balancers</b><span>1 for HTTP, 1 per pwn challenge. No capacity settings exist</span><span class="pill p-ok">AWS scales it</span></div>
+    <div class="layer l-auto"><b>NAT gateway</b><span>All outbound traffic. Bandwidth grows by itself, but it sits in one AZ</span><span class="pill p-ok">AWS scales it</span></div>
+    <div class="layer l-man"><b>ingress-nginx · 2 pods</b><span>Change <code>replicaCount</code> in helm.tf, then terraform apply</span><span class="pill p-warn">manual</span></div>
+    <div class="layer l-man"><b>Web challenges · 2 pods each</b><span>Change <code>replicas</code> in the web-shared stack config, then pulumi up</span><span class="pill p-warn">manual</span></div>
+    <div class="layer l-man"><b>Pwn challenges · 3 pods each</b><span>Change <code>shared_tcp_replicas</code> in config.ini, then make build-images</span><span class="pill p-warn">manual</span></div>
+    <div class="layer l-none"><b>CTFd · MariaDB · Redis · 1 pod each</b><span>Single-writer EBS volumes. Only a bigger CPU/memory limit is possible</span><span class="pill p-crit">can't scale out</span></div>
+    <div class="layer l-node"><b>Worker nodes · 2 to 6</b><span>Cluster Autoscaler adds a node when a pod is Pending, removes one after 10 min under 50%</span><span class="pill p-ok">automatic</span></div>
+  </div>

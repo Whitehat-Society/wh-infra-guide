@@ -1,0 +1,7 @@
+  <ol class="steps">
+    <li><div><b>CTFd, MariaDB and Redis are one pod each, on single-AZ EBS volumes.</b><span>If that node or AZ is lost, the whole event stops until a pod reschedules in the same AZ. The fix is managed RDS + ElastiCache, plus uploads on S3 so CTFd can run more than one replica.</span></div></li>
+    <li><div><b>Rate limits probably key on NLB addresses, not players.</b><span>Turn on proxy protocol (NLB annotation plus <code>use-proxy-protocol</code> in NGINX), or set <code>externalTrafficPolicy: Local</code> with client-IP preservation, then re-test the limits.</span></div></li>
+    <li><div><b>Web replicas hold their own state.</b><span>Either keep stateful challenges at 1 replica, add sticky sessions (<code>nginx.ingress.kubernetes.io/affinity: cookie</code>), or pin secrets and move state out of the pod.</span></div></li>
+    <li><div><b>No pod autoscaling.</b><span>Add metrics-server + HPA for the stateless challenges and the ingress. The node autoscaler then has pending pods to react to.</span></div></li>
+    <li><div><b>One NAT gateway.</b><span>Losing its AZ cuts outbound traffic (image pulls, ACME, the S3 backup path) for nodes in all 3 AZs.</span></div></li>
+  </ol>

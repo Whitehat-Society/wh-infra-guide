@@ -1,0 +1,15 @@
+  <figure class="figure" data-seq="pwnload">
+    <h3>Pwn example: 40 players connect to loop at once</h3>
+    <div class="scroll"></div>
+    <figcaption>What happens under load with fixed replicas. Same pattern for every pwn challenge.</figcaption>
+  </figure>
+  <figure class="figure" data-seq="webload">
+    <h3>Web example: xssive-login under load</h3>
+    <div class="scroll"></div>
+    <figcaption>The rate limit is the only thing that reacts to load. Pods don't multiply.</figcaption>
+  </figure>
+  <figure class="figure" data-seq="scaleup">
+    <h3>The only way capacity grows: an operator raises a replica count</h3>
+    <div class="scroll"></div>
+    <figcaption>This is what the 1 → 2 web replica change during the event went through. Times are AWS and Kubernetes defaults, not measured.</figcaption>
+  </figure>

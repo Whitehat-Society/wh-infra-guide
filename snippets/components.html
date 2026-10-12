@@ -1,0 +1,13 @@
+  <div class="tbl"><table>
+    <thead><tr><th>Layer</th><th>Tool · path</th><th>What it creates</th></tr></thead>
+    <tbody>
+      <tr><td><b>Network</b></td><td class="mono">Terraform · utils/eks/vpc.tf</td><td>VPC <code>10.100.0.0/16</code>, 3 public + 3 private subnets across 3 AZs, a single NAT gateway, and subnet tags so the LB controller can find them.</td></tr>
+      <tr><td><b>Cluster</b></td><td class="mono">Terraform · utils/eks/main.tf</td><td>EKS via <code>terraform-aws-modules/eks ~&gt;20</code>; managed node group of <code>t3.medium</code> (min 2, desired 3, max 6 by default); add-ons coredns, kube-proxy, vpc-cni, EBS CSI; default <code>gp3</code> StorageClass, encrypted.</td></tr>
+      <tr><td><b>Cluster services</b></td><td class="mono">Terraform · helm.tf, cert-manager.tf</td><td>AWS Load Balancer Controller, ExternalDNS (Route 53 records for every Ingress host), ingress-nginx (2 replicas behind an NLB), cert-manager with a Let's Encrypt wildcard cert for <code>*.whitehats-ctf.com</code> and <code>*.challenges.whitehats-ctf.com</code>, Cluster Autoscaler. Each controller gets its own IRSA role (iam.tf).</td></tr>
+      <tr><td><b>Supporting AWS</b></td><td class="mono">Terraform · main.tf, secrets.tf, observability.tf, lambda.tf</td><td>ECR repo for the CTFd image, S3 buckets for Pulumi state and CTFd backups, a Secrets Manager entry for non-IaC secrets, Container Insights, alarms, SNS, and a Lambda that relays alarms to Discord.</td></tr>
+      <tr><td><b>Scoreboard</b></td><td class="mono">Pulumi · utils/ctfd</td><td>CTFd + MariaDB + Redis, each one replica with a <code>Recreate</code> strategy and EBS volumes; Ingress for <code>ctf.whitehats-ctf.com</code>; PodDisruptionBudgets with <code>maxUnavailable: 0</code> on CTFd and MariaDB.</td></tr>
+      <tr><td><b>Web challenges</b></td><td class="mono">Pulumi · utils/web-shared</td><td>For each challenge: a Deployment, a ClusterIP Service and an Ingress at <code>{name}.challenges.whitehats-ctf.com</code> with NGINX rate-limit annotations.</td></tr>
+      <tr><td><b>Pwn challenges</b></td><td class="mono">Pulumi · utils/shared-tcp</td><td>For each challenge: a Deployment and a <code>LoadBalancer</code> Service. The LB controller turns each Service into its own internet-facing NLB.</td></tr>
+      <tr><td><b>Static challenges</b></td><td class="mono">ctfcli</td><td>The 29 crypto, forensics, OSINT and misc challenges are files and flags inside CTFd. They need no infrastructure of their own.</td></tr>
+    </tbody>
+  </table></div>

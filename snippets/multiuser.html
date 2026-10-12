@@ -1,0 +1,66 @@
+  <figure class="figure" data-seq="pwnshare">
+    <h3>Two players nc the same pwn challenge</h3>
+    <div class="scroll"></div>
+    <figcaption>Port 7331 on the same NLB. Isolation is per process, not per container.</figcaption>
+  </figure>
+  <figure class="figure" data-seq="webshare">
+    <h3>Two players on the same web challenge</h3>
+    <div class="scroll"></div>
+    <figcaption>xssive-login with 2 replicas, from its source: random secret_key per process and a SQLite file inside each pod.</figcaption>
+  </figure>
+  <figure class="figure" data-seq="ratelimit">
+    <h3>Two players, one rate-limit bucket</h3>
+    <div class="scroll"></div>
+    <figcaption>Why a per-IP limit can throttle players who each stay under it.</figcaption>
+  </figure>
+  <div class="cols">
+    <div class="card">
+      <span class="k">Web · HTTP</span>
+      <h3>Shared pods, load-balanced per request</h3>
+      <ul>
+        <li>NGINX spreads requests across the 2 replicas. No session affinity is configured.</li>
+        <li>Rate limits, per client address: <code>20 rps</code>, burst ×1, <code>15</code> concurrent connections. Excess requests get <code>503</code>.</li>
+        <li>Each NGINX pod counts on its own, so the effective limit is up to 2× that.</li>
+        <li>Pods run the framework dev servers (Flask <code>app.run</code>, Node): one process per pod.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="k">Pwn · TCP</span>
+      <h3>Fresh process per connection</h3>
+      <ul>
+        <li>Each container runs <code>socat TCP-LISTEN,fork</code>, so every <code>nc</code> session gets its own copy of the binary on a PTY.</li>
+        <li><code>-T60</code>: the connection drops after 60 s of no traffic.</li>
+        <li>The NLB spreads connections over 3 pods. No rate limit, no connection cap.</li>
+        <li>Players share each container's filesystem and kernel: a player who pops a shell is in the same container other players use.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="k">Scoreboard · CTFd</span>
+      <h3>One pod for everyone</h3>
+      <ul>
+        <li>1 pod, 2 gunicorn workers, sessions in Redis, data in MariaDB.</li>
+        <li>It handled the peak hour: <b>1,962 submissions</b> between 10:00 and 11:00 SGT.</li>
+        <li>No rate limit in code at HEAD. A 100 rps limit was added on 06-26 and later reverted.</li>
+        <li>Upload limit <code>50m</code> per request.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <b class="h">Per-IP limits may have been per-NLB-node <span class="pill p-mute">inferred</span></b>
+    <p>The ingress NLB uses <code>ip</code> targets with plain TCP, and the repo sets neither proxy protocol nor client-IP preservation. In that setup AWS rewrites the source address to the NLB's own private IP, so NGINX would see one IP per AZ instead of each player. The "per IP" buckets of 20 rps and 15 connections would then be shared by every player routed through the same AZ. The audit's finding that CTFd saw all 9,316 submissions arrive from just 2 internal IPs fits this. It is a plausible contributor to the web downtime that led to the 15-minute extension, but it was never confirmed live.</p>
+  </div>
+
+  <h3>Per-challenge behaviour with 2 replicas</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Challenge</th><th>State inside the pod</th><th>What a player experiences</th><th>Risk</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">xssive-login</td><td>Flask <code>secret_key = secrets.token_hex()</code>, generated randomly at start, so each replica has a different key. The admin bot runs headless Chromium inside the request (<code>subprocess.run</code>).</td><td>A session cookie only works on the replica that issued it. The bot logs in through the public URL, so its login and its visit to the player's link can hit different replicas. Each report starts a Chromium in a 512Mi pod.</td><td><span class="pill p-crit">high</span></td></tr>
+      <tr><td class="mono">inspectpost</td><td><code>express-session</code> with the default in-memory store, plus a SQLite file.</td><td>Logged in on one replica, logged out on the other. Data written on one replica isn't visible on the other.</td><td><span class="pill p-crit">high</span></td></tr>
+      <tr><td class="mono">pokemon-portal</td><td>Prisma on SQLite at <code>/tmp/pokemon.db</code>, seeded at start. JWT cookie signed with <code>JWT_SECRET</code>.</td><td>A trainer registered on one replica doesn't exist on the other. <code>JWT_SECRET</code> comes from a gitignored <code>src/.env</code>, and the Deployment sets no environment variables. If the image was built without that file, login returns 500.</td><td><span class="pill p-crit">high</span></td></tr>
+      <tr><td class="mono">a-thousand-suns</td><td>No server-side session found.</td><td>Requests are independent, so either replica gives the same result.</td><td><span class="pill p-ok">low</span></td></tr>
+      <tr><td class="mono">base64converter</td><td>No server-side session found.</td><td>Same as above.</td><td><span class="pill p-ok">low</span></td></tr>
+      <tr><td class="mono">all players, all web</td><td>One shared app instance.</td><td>Players see each other's side effects: stored XSS, registered accounts, any data that was modified. Nothing resets between players.</td><td><span class="pill p-warn">by design</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="prose tag">Risk ratings come from reading the challenge source code. None of them was tested against the live deployment.</p>

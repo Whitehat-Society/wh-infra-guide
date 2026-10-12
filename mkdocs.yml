@@ -1,0 +1,90 @@
+site_name: WH Infra Guide
+site_description: Build and run the Whitehacks CTF infrastructure from a blank PC.
+site_url: https://whitehat-society.github.io/wh-infra-guide/
+repo_url: https://github.com/Whitehat-Society/wh-2026
+repo_name: Whitehat-Society/wh-2026
+edit_uri: https://github.com/Whitehat-Society/wh-infra-guide/edit/main/docs/
+
+theme:
+  name: material
+  font: false
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle: { icon: material/weather-night, name: Dark mode }
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle: { icon: material/weather-sunny, name: Light mode }
+  features:
+    - toc.integrate
+    - navigation.sections
+    - navigation.footer
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+    - search.highlight
+
+extra_css:
+  - https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap
+  - stylesheets/wh.css
+extra_javascript:
+  - javascripts/explorer.js
+  - javascripts/sequences.js
+  - javascripts/glossary.js
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc: { permalink: true }
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight: { anchor_linenums: true }
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed: { alternate_style: true }
+  - pymdownx.tasklist: { custom_checkbox: true }
+  - pymdownx.keys
+  - pymdownx.snippets: { base_path: [snippets], check_paths: true }
+
+nav:
+  - Start here: index.md
+  - 1 · Your PC:
+      - Install the tools: setup/pc.md
+  - 2 · Accounts:
+      - AWS account: accounts/aws.md
+      - Sign in from the CLI: accounts/cli-login.md
+      - Budget alert: accounts/budget.md
+      - Domain name: accounts/domain.md
+      - Discord & GitHub: accounts/discord-github.md
+  - 3 · Code & config:
+      - Get the code: code/clone.md
+      - Make it yours: code/make-it-yours.md
+      - Config files & secrets: code/config.md
+  - 4 · Deploy:
+      - Overview: deploy/index.md
+      - 1. Cluster (EKS): deploy/eks.md
+      - 2. Scoreboard (CTFd): deploy/ctfd.md
+      - 3. Challenges: deploy/challenges.md
+      - 4. Backups & health checks: deploy/day2.md
+      - 5. Final checks: deploy/verify.md
+  - 5 · Run the event:
+      - Watching the system: operate/monitoring.md
+      - Scaling up: operate/scaling.md
+      - Backup & restore: operate/backups.md
+      - Known weak spots: operate/risks.md
+  - 6 · Tear down:
+      - Destroy & check the bill: teardown.md
+  - Reference:
+      - Architecture explorer: reference/architecture.md
+      - Glossary: reference/glossary.md
+      - Troubleshooting: reference/troubleshooting.md
+      - "Appendix: chall-manager": reference/chall-manager.md
+
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn

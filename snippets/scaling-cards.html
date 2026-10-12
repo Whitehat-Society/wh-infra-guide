@@ -1,0 +1,43 @@
+  <div class="cols">
+    <div class="card">
+      <span class="k">Node level · Cluster Autoscaler 9.46.2</span>
+      <h3>Adds nodes when pods can't be scheduled</h3>
+      <ul>
+        <li>Node group bounds: min <b>2</b>, max <b>6</b> by default (the audit records max 8 in the deploy-time tfvars).</li>
+        <li>New node allowed up to <code>5m</code> to join.</li>
+        <li>Removes a node after it has run below <code>50%</code> of requested capacity for <code>10m</code>, and not sooner than <code>10m</code> after a scale-up.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="k">What triggers it</span>
+      <h3>Pending pods, not CPU load</h3>
+      <p>The autoscaler reacts to pods that don't fit, judged by their <em>requests</em>. A traffic spike makes existing pods busier but creates no new pods, so it never adds a node. Extra capacity only arrives after someone raises a replica count.</p>
+    </div>
+    <div class="card">
+      <span class="k">Pod level</span>
+      <h3>Fixed replicas</h3>
+      <p>Web 2 × 5, pwn 3 × 5, ingress 2, CTFd / MariaDB / Redis 1 each. Pods are not CPU-capped at the request: each challenge pod requests <code>100m</code> but may burst to <code>500m</code>, so pods on the same node compete for spare CPU.</p>
+    </div>
+  </div>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Workload</th><th>Replicas</th><th>Requests → limits (each)</th><th>Can it scale out?</th></tr></thead>
+    <tbody>
+      <tr><td>ingress-nginx</td><td class="num">2</td><td class="num">chart default</td><td><span class="pill p-ok">yes · Helm value</span> stateless; anti-affinity spreads the 2 pods over different nodes</td></tr>
+      <tr><td>Web challenges ×5</td><td class="num">2</td><td class="num">100m/128Mi → 500m/512Mi</td><td><span class="pill p-warn">yes, with side effects</span> state lives inside each pod; see <a href="../risks/#many-players-on-one-challenge">Known weak spots</a></td></tr>
+      <tr><td>Pwn challenges ×5</td><td class="num">3</td><td class="num">100m/128Mi → 500m/512Mi</td><td><span class="pill p-ok">yes · config</span> <code>shared_tcp_replicas</code>; a fresh process per connection, so replicas are interchangeable</td></tr>
+      <tr><td>CTFd</td><td class="num">1</td><td class="num">500m/512Mi → 2/2Gi</td><td><span class="pill p-crit">no</span> uploads and logs sit on ReadWriteOnce EBS volumes; PDB blocks eviction</td></tr>
+      <tr><td>MariaDB</td><td class="num">1</td><td class="num">250m/512Mi → 1/1Gi</td><td><span class="pill p-crit">no</span> single instance on one EBS volume</td></tr>
+      <tr><td>Redis</td><td class="num">1</td><td class="num">100m/128Mi → 500m/512Mi</td><td><span class="pill p-crit">no</span> a second copy on the same volume broke sessions (comment in <code>ctfd/main.go</code>)</td></tr>
+    </tbody>
+  </table></div>
+
+  <figure class="figure">
+    <h3>Why the cluster probably grew to 4 nodes <span class="pill p-mute">inferred</span></h3>
+    <div id="slots" class="slots"></div>
+    <div class="legend">
+      <span><i class="sw slot s-ds"></i>DaemonSet (5 per node)</span><span><i class="sw slot s-sys"></i>cluster services (14)</span><span><i class="sw slot s-ctfd"></i>CTFd stack (3)</span><span><i class="sw slot s-web"></i>web (10)</span><span><i class="sw slot s-pwn"></i>pwn (15)</span><span><i class="sw slot s-free"></i>free</span>
+    </div>
+    <figcaption>Each t3.medium fits 17 pods under the VPC CNI. 42 non-DaemonSet pods need 42 slots; 3 nodes offer 36. The 6 left over stay Pending until Cluster Autoscaler adds a 4th node. Placement here is illustrative: the scheduler spreads pods, it doesn't fill nodes in order.</figcaption>
+  </figure>
+

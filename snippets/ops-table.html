@@ -1,0 +1,10 @@
+  <div class="tbl"><table>
+    <thead><tr><th>Mechanism</th><th>Config</th><th>Proven during the event?</th></tr></thead>
+    <tbody>
+      <tr><td>CloudWatch Container Insights + 8-widget dashboard</td><td>EKS add-on; node role has CloudWatch agent policy</td><td><span class="pill p-mute">unknown</span> metrics gone with account</td></tr>
+      <tr><td>Alarms → SNS → email + Lambda → Discord</td><td>ingress-nginx pod down · node count &lt; min · MariaDB memory &gt; 80% · node filesystem &gt; 85% · node memory &gt; 85%</td><td><span class="pill p-mute">unknown</span> no alarm history survives</td></tr>
+      <tr><td>Challenge healthcheck CronJob</td><td>every 5 min, <code>healthcheck.py</code> probes each endpoint, posts failures to Discord</td><td><span class="pill p-warn">doubtful</span> nothing in the repo creates the <code>healthcheck-webhook</code> Secret it needs</td></tr>
+      <tr><td>CTFd DB backup CronJob</td><td>hourly <code>mysqldump</code> → gzip → S3 via IRSA; bucket versioned, SSE-S3, 30-day expiry</td><td><span class="pill p-ok">yes</span> the 12:00 UTC dump on event day exists and is in the repo</td></tr>
+      <tr><td>First-blood announcements</td><td>CTFd Discord webhook, first 3 solves per challenge</td><td><span class="pill p-mute">not recorded</span></td></tr>
+    </tbody>
+  </table></div>

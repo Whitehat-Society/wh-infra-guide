@@ -1,0 +1,2872 @@
+{
+ "views": {
+  "traffic": {
+   "title": "Player traffic",
+   "desc": "Logical request path. HTTP goes through one NLB and NGINX; each pwn challenge has its own NLB straight to the pods.",
+   "w": 1310,
+   "h": 700,
+   "groups": [
+    {
+     "x": 225,
+     "y": 40,
+     "w": 220,
+     "h": 640,
+     "label": "AWS managed edge",
+     "style": "region"
+    },
+    {
+     "x": 480,
+     "y": 40,
+     "w": 815,
+     "h": 640,
+     "label": "EKS cluster · wh-2026-eks",
+     "style": "cluster"
+    },
+    {
+     "x": 490,
+     "y": 320,
+     "w": 210,
+     "h": 105,
+     "label": "ns ingress-nginx",
+     "style": "ns"
+    },
+    {
+     "x": 805,
+     "y": 70,
+     "w": 480,
+     "h": 235,
+     "label": "ns ctfd",
+     "style": "ns"
+    },
+    {
+     "x": 805,
+     "y": 320,
+     "w": 230,
+     "h": 105,
+     "label": "ns challenges-web",
+     "style": "ns"
+    },
+    {
+     "x": 805,
+     "y": 540,
+     "w": 230,
+     "h": 105,
+     "label": "ns challenges-tcp",
+     "style": "ns"
+    }
+   ],
+   "nodes": [
+    {
+     "id": "players",
+     "x": 20,
+     "y": 352,
+     "w": 150
+    },
+    {
+     "id": "r53",
+     "x": 240,
+     "y": 96,
+     "w": 190
+    },
+    {
+     "id": "nlbh",
+     "x": 240,
+     "y": 352,
+     "w": 190
+    },
+    {
+     "id": "nlbt",
+     "x": 240,
+     "y": 572,
+     "w": 190
+    },
+    {
+     "id": "nginx",
+     "x": 505,
+     "y": 352,
+     "w": 185
+    },
+    {
+     "id": "ctfd",
+     "x": 820,
+     "y": 170,
+     "w": 200
+    },
+    {
+     "id": "web",
+     "x": 820,
+     "y": 352,
+     "w": 200
+    },
+    {
+     "id": "pwn",
+     "x": 820,
+     "y": 572,
+     "w": 200
+    },
+    {
+     "id": "mariadb",
+     "x": 1090,
+     "y": 100,
+     "w": 180
+    },
+    {
+     "id": "redis",
+     "x": 1090,
+     "y": 170,
+     "w": 180
+    },
+    {
+     "id": "pvc",
+     "x": 1090,
+     "y": 240,
+     "w": 180
+    }
+   ],
+   "edges": [
+    {
+     "id": "t_dns",
+     "from": "players",
+     "to": "r53",
+     "pts": [
+      [
+       95,
+       352
+      ],
+      [
+       95,
+       124
+      ],
+      [
+       240,
+       124
+      ]
+     ],
+     "label": "DNS lookup",
+     "lx": 95,
+     "ly": 240,
+     "style": "dash"
+    },
+    {
+     "id": "t_alias",
+     "from": "r53",
+     "to": "nlbh",
+     "pts": [
+      [
+       335,
+       152
+      ],
+      [
+       335,
+       352
+      ]
+     ],
+     "label": "ALIAS",
+     "lx": 335,
+     "ly": 250,
+     "style": "dash"
+    },
+    {
+     "id": "t_https",
+     "from": "players",
+     "to": "nlbh",
+     "pts": [
+      [
+       170,
+       380
+      ],
+      [
+       240,
+       380
+      ]
+     ],
+     "label": "443",
+     "lx": 205,
+     "ly": 380
+    },
+    {
+     "id": "t_tcp",
+     "from": "players",
+     "to": "nlbt",
+     "pts": [
+      [
+       95,
+       408
+      ],
+      [
+       95,
+       600
+      ],
+      [
+       240,
+       600
+      ]
+     ],
+     "label": "nc host port",
+     "lx": 95,
+     "ly": 500
+    },
+    {
+     "id": "t_nlbng",
+     "from": "nlbh",
+     "to": "nginx",
+     "pts": [
+      [
+       430,
+       380
+      ],
+      [
+       505,
+       380
+      ]
+     ]
+    },
+    {
+     "id": "t_ngctfd",
+     "from": "nginx",
+     "to": "ctfd",
+     "pts": [
+      [
+       690,
+       366
+      ],
+      [
+       720,
+       366
+      ],
+      [
+       720,
+       198
+      ],
+      [
+       820,
+       198
+      ]
+     ],
+     "label": "host ctf.",
+     "lx": 720,
+     "ly": 280
+    },
+    {
+     "id": "t_ngweb",
+     "from": "nginx",
+     "to": "web",
+     "pts": [
+      [
+       690,
+       380
+      ],
+      [
+       820,
+       380
+      ]
+     ],
+     "label": "*.challenges",
+     "lx": 754,
+     "ly": 380
+    },
+    {
+     "id": "t_nlbpwn",
+     "from": "nlbt",
+     "to": "pwn",
+     "pts": [
+      [
+       430,
+       600
+      ],
+      [
+       820,
+       600
+      ]
+     ],
+     "label": "raw TCP, no TLS",
+     "lx": 620,
+     "ly": 600
+    },
+    {
+     "id": "t_db",
+     "from": "ctfd",
+     "to": "mariadb",
+     "pts": [
+      [
+       1020,
+       184
+      ],
+      [
+       1055,
+       184
+      ],
+      [
+       1055,
+       128
+      ],
+      [
+       1090,
+       128
+      ]
+     ]
+    },
+    {
+     "id": "t_redis",
+     "from": "ctfd",
+     "to": "redis",
+     "pts": [
+      [
+       1020,
+       198
+      ],
+      [
+       1090,
+       198
+      ]
+     ]
+    },
+    {
+     "id": "t_pvc",
+     "from": "ctfd",
+     "to": "pvc",
+     "pts": [
+      [
+       1020,
+       212
+      ],
+      [
+       1055,
+       212
+      ],
+      [
+       1055,
+       268
+      ],
+      [
+       1090,
+       268
+      ]
+     ]
+    }
+   ],
+   "flows": [
+    {
+     "label": "Open the scoreboard",
+     "steps": [
+      {
+       "e": [
+        "t_dns",
+        "t_alias"
+       ],
+       "t": "The browser resolves ctf.whitehats-ctf.com. ExternalDNS created that Route 53 record from the CTFd Ingress, and it points at the HTTP NLB."
+      },
+      {
+       "e": [
+        "t_https"
+       ],
+       "t": "The browser opens TCP 443 to the NLB. The NLB does not decrypt anything; it forwards the connection to an NGINX pod IP (ip target type)."
+      },
+      {
+       "e": [
+        "t_nlbng"
+       ],
+       "t": "NGINX terminates TLS with the ctfd-tls certificate (Let's Encrypt, issued by cert-manager) and matches the Host header ctf.whitehats-ctf.com."
+      },
+      {
+       "e": [
+        "t_ngctfd"
+       ],
+       "t": "NGINX proxies to Service ctfd:8000, which has one pod. One of its 2 gunicorn workers takes the request."
+      },
+      {
+       "e": [
+        "t_redis",
+        "t_db"
+       ],
+       "t": "CTFd validates the session and reads cached config from Redis, then reads teams, solves and challenge values from MariaDB to build the page."
+      }
+     ]
+    },
+    {
+     "label": "Submit a flag",
+     "steps": [
+      {
+       "e": [
+        "t_https",
+        "t_nlbng"
+       ],
+       "t": "POST /api/v1/challenges/attempt reaches NGINX through the same NLB as every other HTTP request."
+      },
+      {
+       "e": [
+        "t_ngctfd"
+       ],
+       "t": "There is no rate limit on the CTFd Ingress at HEAD. A 100 rps limit was added on 2026-06-26 and removed again in the archive commit."
+      },
+      {
+       "e": [
+        "t_db"
+       ],
+       "t": "CTFd writes the submission and, if correct, the solve to MariaDB. Dynamic values (1000 → 100 over 31 solves) are computed from the solve count."
+      },
+      {
+       "e": [
+        "t_redis"
+       ],
+       "t": "Cached scoreboard entries in Redis are invalidated. The Discord plugin posts the first 3 solves of each challenge (see the Operations view)."
+      }
+     ]
+    },
+    {
+     "label": "Use a web challenge",
+     "steps": [
+      {
+       "e": [
+        "t_dns",
+        "t_alias"
+       ],
+       "t": "{name}.challenges.whitehats-ctf.com resolves to the same HTTP NLB as the scoreboard. ExternalDNS made one record per Ingress host."
+      },
+      {
+       "e": [
+        "t_https",
+        "t_nlbng"
+       ],
+       "t": "Same NLB, same two NGINX pods. Each challenge Ingress has its own Let's Encrypt certificate ({name}-tls)."
+      },
+      {
+       "e": [
+        "t_ngweb"
+       ],
+       "t": "NGINX applies the challenge limits: 20 requests/s, burst ×1, 15 concurrent connections per client address, else HTTP 503. It then picks one of the 2 pods round-robin, with no stickiness."
+      }
+     ]
+    },
+    {
+     "label": "Connect to a pwn challenge",
+     "steps": [
+      {
+       "e": [
+        "t_tcp"
+       ],
+       "t": "The player copies nc k8s-challeng-…elb.ap-southeast-1.amazonaws.com 7331 from CTFd. builder.py wrote that hostname into connection_info after Pulumi created the NLB."
+      },
+      {
+       "e": [
+        "t_nlbpwn"
+       ],
+       "t": "The challenge's own NLB forwards the TCP connection to one of 3 pod IPs. No NGINX, no TLS, no rate limit."
+      },
+      {
+       "n": [
+        "pwn"
+       ],
+       "t": "socat forks a fresh copy of the binary on a PTY for this connection. 60 seconds without traffic and socat closes it."
+      }
+     ]
+    },
+    {
+     "label": "Download a challenge file",
+     "steps": [
+      {
+       "e": [
+        "t_https",
+        "t_nlbng",
+        "t_ngctfd"
+       ],
+       "t": "File links point at ctf.whitehats-ctf.com/files/…, so downloads take the scoreboard path. The Ingress allows request bodies up to 50 MB."
+      },
+      {
+       "e": [
+        "t_pvc"
+       ],
+       "t": "CTFd reads the file from /var/uploads, a 5 GiB gp3 EBS volume mounted ReadWriteOnce. This volume is why CTFd can only run as one pod."
+      }
+     ]
+    }
+   ]
+  },
+  "network": {
+   "title": "AWS network",
+   "desc": "Physical layout in ap-southeast-1, drawn the way terravision groups resources: account, region, VPC, availability zone, subnet.",
+   "w": 1240,
+   "h": 790,
+   "groups": [
+    {
+     "x": 10,
+     "y": 80,
+     "w": 1220,
+     "h": 700,
+     "label": "AWS Cloud · account 6546…3256",
+     "style": "cloud"
+    },
+    {
+     "x": 30,
+     "y": 110,
+     "w": 1190,
+     "h": 660,
+     "label": "Region ap-southeast-1",
+     "style": "region"
+    },
+    {
+     "x": 50,
+     "y": 140,
+     "w": 950,
+     "h": 620,
+     "label": "VPC wh-2026-eks-vpc · 10.100.0.0/16",
+     "style": "vpc"
+    },
+    {
+     "x": 60,
+     "y": 240,
+     "w": 300,
+     "h": 510,
+     "label": "ap-southeast-1a",
+     "style": "az"
+    },
+    {
+     "x": 375,
+     "y": 240,
+     "w": 300,
+     "h": 510,
+     "label": "ap-southeast-1b",
+     "style": "az"
+    },
+    {
+     "x": 690,
+     "y": 240,
+     "w": 300,
+     "h": 510,
+     "label": "ap-southeast-1c",
+     "style": "az"
+    },
+    {
+     "x": 70,
+     "y": 270,
+     "w": 280,
+     "h": 150,
+     "label": "public 10.100.0.0/24",
+     "style": "public"
+    },
+    {
+     "x": 385,
+     "y": 270,
+     "w": 280,
+     "h": 150,
+     "label": "public 10.100.1.0/24",
+     "style": "public"
+    },
+    {
+     "x": 700,
+     "y": 270,
+     "w": 280,
+     "h": 150,
+     "label": "public 10.100.2.0/24",
+     "style": "public"
+    },
+    {
+     "x": 70,
+     "y": 440,
+     "w": 280,
+     "h": 300,
+     "label": "private 10.100.10.0/24",
+     "style": "private",
+     "labelPos": "bottom"
+    },
+    {
+     "x": 385,
+     "y": 440,
+     "w": 280,
+     "h": 300,
+     "label": "private 10.100.11.0/24",
+     "style": "private",
+     "labelPos": "bottom"
+    },
+    {
+     "x": 700,
+     "y": 440,
+     "w": 280,
+     "h": 300,
+     "label": "private 10.100.12.0/24",
+     "style": "private",
+     "labelPos": "bottom"
+    }
+   ],
+   "nodes": [
+    {
+     "id": "players",
+     "x": 430,
+     "y": 12,
+     "w": 190,
+     "h": 50
+    },
+    {
+     "id": "igw",
+     "x": 430,
+     "y": 170,
+     "w": 190,
+     "h": 50
+    },
+    {
+     "id": "nat",
+     "x": 80,
+     "y": 300,
+     "w": 145
+    },
+    {
+     "id": "nlbenia",
+     "x": 235,
+     "y": 300,
+     "w": 110
+    },
+    {
+     "id": "nlbenib",
+     "x": 545,
+     "y": 300,
+     "w": 110
+    },
+    {
+     "id": "nlbenic",
+     "x": 860,
+     "y": 300,
+     "w": 110
+    },
+    {
+     "id": "workera",
+     "x": 80,
+     "y": 480,
+     "w": 260
+    },
+    {
+     "id": "workerb",
+     "x": 395,
+     "y": 480,
+     "w": 260
+    },
+    {
+     "id": "workerc",
+     "x": 710,
+     "y": 480,
+     "w": 260
+    },
+    {
+     "id": "ebs",
+     "x": 80,
+     "y": 600,
+     "w": 260
+    },
+    {
+     "id": "r53",
+     "x": 1020,
+     "y": 170,
+     "w": 190
+    },
+    {
+     "id": "secrets",
+     "x": 1020,
+     "y": 250,
+     "w": 190
+    },
+    {
+     "id": "iam",
+     "x": 1020,
+     "y": 330,
+     "w": 190
+    },
+    {
+     "id": "cw",
+     "x": 1020,
+     "y": 410,
+     "w": 190
+    },
+    {
+     "id": "eksapi",
+     "x": 1020,
+     "y": 480,
+     "w": 190
+    },
+    {
+     "id": "ecr",
+     "x": 1020,
+     "y": 560,
+     "w": 190
+    },
+    {
+     "id": "s3",
+     "x": 1020,
+     "y": 640,
+     "w": 190
+    }
+   ],
+   "edges": [
+    {
+     "id": "n_in",
+     "from": "players",
+     "to": "igw",
+     "pts": [
+      [
+       525,
+       62
+      ],
+      [
+       525,
+       170
+      ]
+     ],
+     "label": "internet",
+     "lx": 525,
+     "ly": 120
+    },
+    {
+     "id": "n_dns",
+     "from": "players",
+     "to": "r53",
+     "pts": [
+      [
+       620,
+       37
+      ],
+      [
+       1115,
+       37
+      ],
+      [
+       1115,
+       170
+      ]
+     ],
+     "label": "DNS",
+     "lx": 870,
+     "ly": 37,
+     "style": "dash"
+    },
+    {
+     "id": "n_igwa",
+     "from": "igw",
+     "to": "nlbenia",
+     "pts": [
+      [
+       430,
+       195
+      ],
+      [
+       290,
+       195
+      ],
+      [
+       290,
+       300
+      ]
+     ]
+    },
+    {
+     "id": "n_igwb",
+     "from": "igw",
+     "to": "nlbenib",
+     "pts": [
+      [
+       600,
+       220
+      ],
+      [
+       600,
+       300
+      ]
+     ]
+    },
+    {
+     "id": "n_igwc",
+     "from": "igw",
+     "to": "nlbenic",
+     "pts": [
+      [
+       620,
+       195
+      ],
+      [
+       915,
+       195
+      ],
+      [
+       915,
+       300
+      ]
+     ]
+    },
+    {
+     "id": "n_tga",
+     "from": "nlbenia",
+     "to": "workera",
+     "pts": [
+      [
+       290,
+       356
+      ],
+      [
+       290,
+       480
+      ]
+     ],
+     "label": "pod IPs",
+     "lx": 290,
+     "ly": 398
+    },
+    {
+     "id": "n_tgb",
+     "from": "nlbenib",
+     "to": "workerb",
+     "pts": [
+      [
+       600,
+       356
+      ],
+      [
+       600,
+       480
+      ]
+     ],
+     "label": "pod IPs",
+     "lx": 600,
+     "ly": 398
+    },
+    {
+     "id": "n_tgc",
+     "from": "nlbenic",
+     "to": "workerc",
+     "pts": [
+      [
+       915,
+       356
+      ],
+      [
+       915,
+       480
+      ]
+     ],
+     "label": "pod IPs",
+     "lx": 915,
+     "ly": 398
+    },
+    {
+     "id": "n_egress",
+     "from": "workera",
+     "to": "nat",
+     "pts": [
+      [
+       145,
+       480
+      ],
+      [
+       145,
+       356
+      ]
+     ],
+     "label": "0.0.0.0/0",
+     "lx": 145,
+     "ly": 398,
+     "style": "dash"
+    },
+    {
+     "id": "n_ebs",
+     "from": "workera",
+     "to": "ebs",
+     "pts": [
+      [
+       210,
+       536
+      ],
+      [
+       210,
+       600
+      ]
+     ],
+     "label": "attach",
+     "lx": 210,
+     "ly": 568
+    },
+    {
+     "id": "n_api",
+     "from": "workerc",
+     "to": "eksapi",
+     "pts": [
+      [
+       970,
+       508
+      ],
+      [
+       1020,
+       508
+      ]
+     ]
+    },
+    {
+     "id": "n_ecr",
+     "from": "workerc",
+     "to": "ecr",
+     "pts": [
+      [
+       780,
+       536
+      ],
+      [
+       780,
+       588
+      ],
+      [
+       1020,
+       588
+      ]
+     ],
+     "label": "image pull",
+     "lx": 860,
+     "ly": 588,
+     "style": "dash"
+    },
+    {
+     "id": "n_s3",
+     "from": "workerc",
+     "to": "s3",
+     "pts": [
+      [
+       750,
+       536
+      ],
+      [
+       750,
+       668
+      ],
+      [
+       1020,
+       668
+      ]
+     ],
+     "label": "hourly backup",
+     "lx": 860,
+     "ly": 668,
+     "style": "dash"
+    }
+   ],
+   "flows": [
+    {
+     "label": "Player packet in",
+     "steps": [
+      {
+       "e": [
+        "n_dns"
+       ],
+       "t": "Route 53 returns the NLB's addresses. Each NLB has one node, and one public IP, in every AZ it spans."
+      },
+      {
+       "e": [
+        "n_in"
+       ],
+       "t": "Traffic enters the VPC through the internet gateway, the only public entry."
+      },
+      {
+       "e": [
+        "n_igwa",
+        "n_igwb",
+        "n_igwc"
+       ],
+       "t": "The NLB node in one AZ receives the connection. Cross-zone load balancing is off by default for NLBs and nothing turns it on, so each AZ's node forwards to targets in its own AZ."
+      },
+      {
+       "e": [
+        "n_tga",
+        "n_tgb",
+        "n_tgc"
+       ],
+       "t": "With ip targets the NLB sends straight to the pod's VPC IP (VPC CNI gives every pod a real subnet address). The source address the pod sees is the NLB's private IP, not the player's."
+      }
+     ]
+    },
+    {
+     "label": "Pod reaches the internet",
+     "steps": [
+      {
+       "e": [
+        "n_egress"
+       ],
+       "t": "Nodes sit in private subnets with no public IPs. All outbound traffic from every AZ leaves through the one NAT gateway in ap-southeast-1a."
+      },
+      {
+       "e": [
+        "n_ecr",
+        "n_s3"
+       ],
+       "t": "There are no VPC endpoints, so ECR image pulls and S3 backup uploads also go through that NAT gateway."
+      }
+     ]
+    },
+    {
+     "label": "Storage is zonal",
+     "steps": [
+      {
+       "e": [
+        "n_ebs"
+       ],
+       "t": "EBS volumes live in one AZ. MariaDB, Redis and the two CTFd volumes are bound to whichever AZ their pod first landed in (WaitForFirstConsumer). A rescheduled pod must return to that AZ."
+      }
+     ]
+    }
+   ]
+  },
+  "deploy": {
+   "title": "Build and deploy",
+   "desc": "What the operator runs, in order, and what each tool creates. Columns run left to right in deploy order.",
+   "w": 1230,
+   "h": 700,
+   "groups": [
+    {
+     "x": 20,
+     "y": 110,
+     "w": 270,
+     "h": 580,
+     "label": "1 · Foundation",
+     "style": "lane"
+    },
+    {
+     "x": 330,
+     "y": 110,
+     "w": 270,
+     "h": 580,
+     "label": "2 · Scoreboard",
+     "style": "lane"
+    },
+    {
+     "x": 640,
+     "y": 110,
+     "w": 285,
+     "h": 580,
+     "label": "3 · Challenges",
+     "style": "lane"
+    },
+    {
+     "x": 950,
+     "y": 110,
+     "w": 260,
+     "h": 580,
+     "label": "4 · Register",
+     "style": "lane"
+    }
+   ],
+   "nodes": [
+    {
+     "id": "operator",
+     "x": 40,
+     "y": 12,
+     "w": 1150,
+     "h": 50
+    },
+    {
+     "id": "tf",
+     "x": 40,
+     "y": 150,
+     "w": 230
+    },
+    {
+     "id": "awsres",
+     "x": 40,
+     "y": 270,
+     "w": 230
+    },
+    {
+     "id": "helm",
+     "x": 40,
+     "y": 390,
+     "w": 230
+    },
+    {
+     "id": "ci",
+     "x": 40,
+     "y": 610,
+     "w": 230
+    },
+    {
+     "id": "pctfd",
+     "x": 350,
+     "y": 150,
+     "w": 230
+    },
+    {
+     "id": "ecrc",
+     "x": 350,
+     "y": 270,
+     "w": 230
+    },
+    {
+     "id": "nsctfd",
+     "x": 350,
+     "y": 390,
+     "w": 230
+    },
+    {
+     "id": "builder",
+     "x": 655,
+     "y": 150,
+     "w": 230
+    },
+    {
+     "id": "docker",
+     "x": 655,
+     "y": 270,
+     "w": 230
+    },
+    {
+     "id": "ecrw",
+     "x": 655,
+     "y": 390,
+     "w": 230
+    },
+    {
+     "id": "pstacks",
+     "x": 655,
+     "y": 510,
+     "w": 230
+    },
+    {
+     "id": "nsch",
+     "x": 655,
+     "y": 610,
+     "w": 230
+    },
+    {
+     "id": "ctfcli",
+     "x": 965,
+     "y": 150,
+     "w": 230
+    },
+    {
+     "id": "ctfdapi",
+     "x": 965,
+     "y": 510,
+     "w": 230
+    }
+   ],
+   "edges": [
+    {
+     "id": "d_eks",
+     "from": "operator",
+     "to": "tf",
+     "pts": [
+      [
+       155,
+       62
+      ],
+      [
+       155,
+       150
+      ]
+     ],
+     "label": "make deploy-eks",
+     "lx": 155,
+     "ly": 88
+    },
+    {
+     "id": "d_ctfd",
+     "from": "operator",
+     "to": "pctfd",
+     "pts": [
+      [
+       465,
+       62
+      ],
+      [
+       465,
+       150
+      ]
+     ],
+     "label": "make deploy-ctfd",
+     "lx": 465,
+     "ly": 88
+    },
+    {
+     "id": "d_build",
+     "from": "operator",
+     "to": "builder",
+     "pts": [
+      [
+       770,
+       62
+      ],
+      [
+       770,
+       150
+      ]
+     ],
+     "label": "make build-images",
+     "lx": 770,
+     "ly": 88
+    },
+    {
+     "id": "d_sync",
+     "from": "operator",
+     "to": "ctfcli",
+     "pts": [
+      [
+       1080,
+       62
+      ],
+      [
+       1080,
+       150
+      ]
+     ],
+     "label": "ctf challenge sync",
+     "lx": 1080,
+     "ly": 88
+    },
+    {
+     "id": "d_tf1",
+     "from": "tf",
+     "to": "awsres",
+     "pts": [
+      [
+       155,
+       206
+      ],
+      [
+       155,
+       270
+      ]
+     ],
+     "label": "apply 1 · targeted",
+     "lx": 155,
+     "ly": 238
+    },
+    {
+     "id": "d_tf2",
+     "from": "awsres",
+     "to": "helm",
+     "pts": [
+      [
+       155,
+       326
+      ],
+      [
+       155,
+       390
+      ]
+     ],
+     "label": "apply 2 · full",
+     "lx": 155,
+     "ly": 358
+    },
+    {
+     "id": "d_push",
+     "from": "pctfd",
+     "to": "ecrc",
+     "pts": [
+      [
+       465,
+       206
+      ],
+      [
+       465,
+       270
+      ]
+     ],
+     "label": "docker push",
+     "lx": 465,
+     "ly": 238
+    },
+    {
+     "id": "d_pull",
+     "from": "ecrc",
+     "to": "nsctfd",
+     "pts": [
+      [
+       465,
+       326
+      ],
+      [
+       465,
+       390
+      ]
+     ],
+     "label": "pulumi up",
+     "lx": 465,
+     "ly": 358
+    },
+    {
+     "id": "d_dbuild",
+     "from": "builder",
+     "to": "docker",
+     "pts": [
+      [
+       770,
+       206
+      ],
+      [
+       770,
+       270
+      ]
+     ],
+     "label": "per challenge.yml",
+     "lx": 770,
+     "ly": 238
+    },
+    {
+     "id": "d_dpush",
+     "from": "docker",
+     "to": "ecrw",
+     "pts": [
+      [
+       770,
+       326
+      ],
+      [
+       770,
+       390
+      ]
+     ],
+     "label": "push :name",
+     "lx": 770,
+     "ly": 358
+    },
+    {
+     "id": "d_uri",
+     "from": "ecrw",
+     "to": "pstacks",
+     "pts": [
+      [
+       770,
+       446
+      ],
+      [
+       770,
+       510
+      ]
+     ],
+     "label": "image URIs",
+     "lx": 770,
+     "ly": 478,
+     "style": "dash"
+    },
+    {
+     "id": "d_pup",
+     "from": "builder",
+     "to": "pstacks",
+     "pts": [
+      [
+       885,
+       190
+      ],
+      [
+       910,
+       190
+      ],
+      [
+       910,
+       526
+      ],
+      [
+       885,
+       526
+      ]
+     ],
+     "label": "pulumi up",
+     "lx": 910,
+     "ly": 358
+    },
+    {
+     "id": "d_apply",
+     "from": "pstacks",
+     "to": "nsch",
+     "pts": [
+      [
+       770,
+       566
+      ],
+      [
+       770,
+       610
+      ]
+     ]
+    },
+    {
+     "id": "d_install",
+     "from": "builder",
+     "to": "ctfcli",
+     "pts": [
+      [
+       885,
+       166
+      ],
+      [
+       965,
+       166
+      ]
+     ],
+     "label": "install",
+     "lx": 930,
+     "ly": 166
+    },
+    {
+     "id": "d_api",
+     "from": "ctfcli",
+     "to": "ctfdapi",
+     "pts": [
+      [
+       1080,
+       206
+      ],
+      [
+       1080,
+       510
+      ]
+     ],
+     "label": "challenges, flags, files",
+     "lx": 1080,
+     "ly": 358
+    },
+    {
+     "id": "d_conn",
+     "from": "pstacks",
+     "to": "ctfdapi",
+     "pts": [
+      [
+       885,
+       550
+      ],
+      [
+       965,
+       550
+      ]
+     ],
+     "label": "NLB DNS",
+     "lx": 930,
+     "ly": 550
+    }
+   ],
+   "flows": [
+    {
+     "label": "Stand up the cluster",
+     "steps": [
+      {
+       "e": [
+        "d_eks"
+       ],
+       "t": "make deploy-eks first restores any wh-2026 secrets stuck in 'pending deletion' (Secrets Manager keeps deleted secrets 7 days), then runs terraform init."
+      },
+      {
+       "e": [
+        "d_tf1"
+       ],
+       "t": "Apply 1 is targeted at the VPC, EKS, the Pulumi state bucket and the scenarios ECR repo. The Kubernetes and Helm providers need a live cluster endpoint before they can plan."
+      },
+      {
+       "e": [
+        "d_tf2"
+       ],
+       "t": "Apply 2 runs the full config: IRSA roles, Helm releases (LB controller, ExternalDNS, ingress-nginx, cert-manager, Cluster Autoscaler), the gp3 StorageClass, alarms and the Lambda. The 2026-06-23 run created 72 resources."
+      }
+     ]
+    },
+    {
+     "label": "Deploy CTFd",
+     "steps": [
+      {
+       "e": [
+        "d_ctfd"
+       ],
+       "t": "make deploy-ctfd builds the CTFd image from a separate ../../CTFd checkout (CTFd 3.8.5 plus plugins)."
+      },
+      {
+       "e": [
+        "d_push"
+       ],
+       "t": "The image goes to ECR wh-2026-ctfd:latest. A lifecycle rule keeps the last 5 images."
+      },
+      {
+       "e": [
+        "d_pull"
+       ],
+       "t": "pulumi up on utils/ctfd creates the namespace, Secrets, PVCs, MariaDB, Redis, CTFd, the Ingress and PodDisruptionBudgets. Backup and healthcheck CronJobs are applied by their own make targets."
+      }
+     ]
+    },
+    {
+     "label": "Ship challenges",
+     "steps": [
+      {
+       "e": [
+        "d_build"
+       ],
+       "t": "make build-images first applies the ECR Terraform and writes registry details into config.ini, then runs builder.py."
+      },
+      {
+       "e": [
+        "d_dbuild",
+        "d_dpush"
+       ],
+       "t": "For every challenge.yml whose challenge_type is shared-web or shared-tcp, builder.py builds the Dockerfile and pushes it to ECR wh-2026:{name}."
+      },
+      {
+       "e": [
+        "d_uri",
+        "d_pup"
+       ],
+       "t": "builder.py writes the challenge list (name, image, port, replicas) into the Pulumi stack config and runs pulumi up on web-shared and shared-tcp."
+      },
+      {
+       "e": [
+        "d_apply"
+       ],
+       "t": "Kubernetes gets one Deployment per challenge, plus an Ingress (web) or a LoadBalancer Service (pwn). The LB controller then creates one NLB per pwn challenge."
+      }
+     ]
+    },
+    {
+     "label": "Register in CTFd",
+     "steps": [
+      {
+       "e": [
+        "d_install"
+       ],
+       "t": "builder.py calls ctf challenge install so new challenges exist in CTFd."
+      },
+      {
+       "e": [
+        "d_sync",
+        "d_api"
+       ],
+       "t": "ctf challenge sync pushes descriptions, flags, hints, files and scoring from every challenge.yml to the CTFd admin API."
+      },
+      {
+       "e": [
+        "d_conn"
+       ],
+       "t": "ctfcli doesn't update connection_info for these types. builder.py reads each NLB hostname from the shared-tcp stack outputs and PATCHes connection_info directly."
+      }
+     ]
+    }
+   ]
+  },
+  "ops": {
+   "title": "Operations",
+   "desc": "Monitoring, alerting, backups, certificates, DNS and node scaling. Dashed lines were deployed but never shown to work.",
+   "w": 1210,
+   "h": 890,
+   "groups": [],
+   "nodes": [
+    {
+     "id": "cia",
+     "x": 20,
+     "y": 60,
+     "w": 210
+    },
+    {
+     "id": "cw",
+     "x": 260,
+     "y": 60,
+     "w": 210
+    },
+    {
+     "id": "alarms",
+     "x": 500,
+     "y": 60,
+     "w": 210
+    },
+    {
+     "id": "sns",
+     "x": 740,
+     "y": 60,
+     "w": 210
+    },
+    {
+     "id": "email",
+     "x": 980,
+     "y": 60,
+     "w": 210
+    },
+    {
+     "id": "lambda",
+     "x": 740,
+     "y": 170,
+     "w": 210
+    },
+    {
+     "id": "backup",
+     "x": 20,
+     "y": 300,
+     "w": 210
+    },
+    {
+     "id": "mariadb",
+     "x": 260,
+     "y": 300,
+     "w": 210
+    },
+    {
+     "id": "s3b",
+     "x": 500,
+     "y": 300,
+     "w": 210
+    },
+    {
+     "id": "health",
+     "x": 20,
+     "y": 420,
+     "w": 210
+    },
+    {
+     "id": "endpoints",
+     "x": 260,
+     "y": 420,
+     "w": 210
+    },
+    {
+     "id": "discord",
+     "x": 980,
+     "y": 420,
+     "w": 210
+    },
+    {
+     "id": "ctfd",
+     "x": 20,
+     "y": 560,
+     "w": 210
+    },
+    {
+     "id": "certm",
+     "x": 20,
+     "y": 680,
+     "w": 210
+    },
+    {
+     "id": "le",
+     "x": 500,
+     "y": 680,
+     "w": 210
+    },
+    {
+     "id": "r53",
+     "x": 260,
+     "y": 760,
+     "w": 210
+    },
+    {
+     "id": "extdns",
+     "x": 20,
+     "y": 820,
+     "w": 210
+    },
+    {
+     "id": "ca",
+     "x": 740,
+     "y": 680,
+     "w": 210
+    },
+    {
+     "id": "asg",
+     "x": 980,
+     "y": 680,
+     "w": 210
+    }
+   ],
+   "edges": [
+    {
+     "id": "o_ci",
+     "from": "cia",
+     "to": "cw",
+     "pts": [
+      [
+       230,
+       88
+      ],
+      [
+       260,
+       88
+      ]
+     ]
+    },
+    {
+     "id": "o_al",
+     "from": "cw",
+     "to": "alarms",
+     "pts": [
+      [
+       470,
+       88
+      ],
+      [
+       500,
+       88
+      ]
+     ]
+    },
+    {
+     "id": "o_sns",
+     "from": "alarms",
+     "to": "sns",
+     "pts": [
+      [
+       710,
+       88
+      ],
+      [
+       740,
+       88
+      ]
+     ]
+    },
+    {
+     "id": "o_mail",
+     "from": "sns",
+     "to": "email",
+     "pts": [
+      [
+       950,
+       88
+      ],
+      [
+       980,
+       88
+      ]
+     ]
+    },
+    {
+     "id": "o_lam",
+     "from": "sns",
+     "to": "lambda",
+     "pts": [
+      [
+       845,
+       116
+      ],
+      [
+       845,
+       170
+      ]
+     ],
+     "label": "invoke",
+     "lx": 845,
+     "ly": 143
+    },
+    {
+     "id": "o_lamd",
+     "from": "lambda",
+     "to": "discord",
+     "pts": [
+      [
+       950,
+       198
+      ],
+      [
+       1085,
+       198
+      ],
+      [
+       1085,
+       420
+      ]
+     ],
+     "label": "webhook",
+     "lx": 1085,
+     "ly": 310
+    },
+    {
+     "id": "o_dump",
+     "from": "backup",
+     "to": "mariadb",
+     "pts": [
+      [
+       230,
+       328
+      ],
+      [
+       260,
+       328
+      ]
+     ]
+    },
+    {
+     "id": "o_up",
+     "from": "backup",
+     "to": "s3b",
+     "pts": [
+      [
+       125,
+       356
+      ],
+      [
+       125,
+       385
+      ],
+      [
+       605,
+       385
+      ],
+      [
+       605,
+       356
+      ]
+     ],
+     "label": "gzip → aws s3 cp (IRSA)",
+     "lx": 365,
+     "ly": 385
+    },
+    {
+     "id": "o_probe",
+     "from": "health",
+     "to": "endpoints",
+     "pts": [
+      [
+       230,
+       448
+      ],
+      [
+       260,
+       448
+      ]
+     ]
+    },
+    {
+     "id": "o_halert",
+     "from": "health",
+     "to": "discord",
+     "pts": [
+      [
+       125,
+       476
+      ],
+      [
+       125,
+       505
+      ],
+      [
+       1040,
+       505
+      ],
+      [
+       1040,
+       476
+      ]
+     ],
+     "label": "only if healthcheck-webhook Secret exists",
+     "lx": 600,
+     "ly": 505,
+     "style": "dash"
+    },
+    {
+     "id": "o_fb",
+     "from": "ctfd",
+     "to": "discord",
+     "pts": [
+      [
+       230,
+       588
+      ],
+      [
+       1130,
+       588
+      ],
+      [
+       1130,
+       476
+      ]
+     ],
+     "label": "first 3 solves per challenge",
+     "lx": 680,
+     "ly": 588
+    },
+    {
+     "id": "o_acme",
+     "from": "certm",
+     "to": "le",
+     "pts": [
+      [
+       230,
+       700
+      ],
+      [
+       500,
+       700
+      ]
+     ],
+     "label": "ACME order",
+     "lx": 365,
+     "ly": 700
+    },
+    {
+     "id": "o_txt",
+     "from": "certm",
+     "to": "r53",
+     "pts": [
+      [
+       180,
+       736
+      ],
+      [
+       180,
+       780
+      ],
+      [
+       260,
+       780
+      ]
+     ],
+     "label": "TXT",
+     "lx": 220,
+     "ly": 780
+    },
+    {
+     "id": "o_val",
+     "from": "le",
+     "to": "r53",
+     "pts": [
+      [
+       605,
+       736
+      ],
+      [
+       605,
+       788
+      ],
+      [
+       470,
+       788
+      ]
+     ],
+     "label": "checks TXT",
+     "lx": 560,
+     "ly": 788,
+     "style": "dash"
+    },
+    {
+     "id": "o_rec",
+     "from": "extdns",
+     "to": "r53",
+     "pts": [
+      [
+       230,
+       848
+      ],
+      [
+       365,
+       848
+      ],
+      [
+       365,
+       816
+      ]
+     ],
+     "label": "A + TXT owner",
+     "lx": 300,
+     "ly": 848
+    },
+    {
+     "id": "o_scale",
+     "from": "ca",
+     "to": "asg",
+     "pts": [
+      [
+       950,
+       708
+      ],
+      [
+       980,
+       708
+      ]
+     ]
+    }
+   ],
+   "flows": [
+    {
+     "label": "An alarm fires",
+     "steps": [
+      {
+       "e": [
+        "o_ci"
+       ],
+       "t": "The amazon-cloudwatch-observability add-on runs the CloudWatch agent and Fluent Bit on every node and ships pod and node metrics to Container Insights."
+      },
+      {
+       "e": [
+        "o_al"
+       ],
+       "t": "Five alarms watch those metrics: ingress-nginx running containers < 1, node count below the minimum, MariaDB memory > 80%, node filesystem > 85%, node memory > 85%."
+      },
+      {
+       "e": [
+        "o_sns",
+        "o_mail"
+       ],
+       "t": "A breached alarm publishes to SNS topic wh-2026-eks-alerts, which emails every address in alarm_notification_emails."
+      },
+      {
+       "e": [
+        "o_lam",
+        "o_lamd"
+       ],
+       "t": "The same topic invokes the sns_to_discord Lambda, which reformats the alarm and posts it to Discord. Alarm history was destroyed with the account, so nobody knows whether any fired."
+      }
+     ]
+    },
+    {
+     "label": "Hourly backup",
+     "steps": [
+      {
+       "e": [
+        "o_dump"
+       ],
+       "t": "At minute 0 every hour, a CronJob pod (mariadb:10.11 image) runs mysqldump against the in-cluster mariadb Service."
+      },
+      {
+       "e": [
+        "o_up"
+       ],
+       "t": "A second container gzips the dump and uploads it with aws s3 cp, using the ctfd-backup IRSA role. The bucket is versioned, SSE-S3 encrypted, and expires objects after 30 days. The 12:00 UTC event-day dump survives in this repo."
+      }
+     ]
+    },
+    {
+     "label": "Healthcheck",
+     "steps": [
+      {
+       "e": [
+        "o_probe"
+       ],
+       "t": "Every 5 minutes healthcheck.py curls each web challenge URL and runs nc -z against each pwn NLB host and port."
+      },
+      {
+       "e": [
+        "o_halert"
+       ],
+       "t": "Failures go to Discord only if the healthcheck-webhook Secret exists. Nothing in the repo creates it, so unless someone made it by hand, alerts were skipped with a warning in the pod log."
+      }
+     ]
+    },
+    {
+     "label": "First blood",
+     "steps": [
+      {
+       "e": [
+        "o_fb"
+       ],
+       "t": "CTFd's Discord plugin posts 'Congratulations to {user} from {team} for the {n} solve on {challenge}' for the first 3 solves (DISCORD_WEBHOOK_LIMIT=3)."
+      }
+     ]
+    },
+    {
+     "label": "Issue a TLS certificate",
+     "steps": [
+      {
+       "e": [
+        "o_acme"
+       ],
+       "t": "An Ingress annotated cert-manager.io/cluster-issuer: letsencrypt-prod makes cert-manager open an ACME order for that hostname."
+      },
+      {
+       "e": [
+        "o_txt"
+       ],
+       "t": "cert-manager proves domain control with DNS-01: it writes an _acme-challenge TXT record to Route 53 using its IRSA role."
+      },
+      {
+       "e": [
+        "o_val"
+       ],
+       "t": "Let's Encrypt checks the TXT record, then signs the certificate. cert-manager stores it as a Secret that NGINX serves. Let's Encrypt allows 5 duplicate certificates per week, which matters on repeated rebuilds."
+      }
+     ]
+    },
+    {
+     "label": "DNS records appear",
+     "steps": [
+      {
+       "e": [
+        "o_rec"
+       ],
+       "t": "ExternalDNS watches Ingresses and Services and upserts A/ALIAS records for their hosts in whitehats-ctf.com, plus TXT ownership records (owner id wh-2026-eks). policy: sync means it also deletes records it owns once the Ingress is gone."
+      }
+     ]
+    },
+    {
+     "label": "Add a node",
+     "steps": [
+      {
+       "e": [
+        "o_scale"
+       ],
+       "t": "When a pod is Pending because no node has room for its requests, Cluster Autoscaler raises the node group's desired size, up to the max. A node that stays under 50% requested for 10 minutes is drained and removed."
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "nodes": {
+  "players": {
+   "title": "Players",
+   "sub": "412 players · 106 teams",
+   "cat": "ext",
+   "glyph": "USR",
+   "body": "Everyone reaches the platform over the public internet: the browser for the scoreboard and web challenges, nc for pwn challenges. Every player gets the same URL or nc command for a challenge; nothing in the network knows which team a player is on. Teams exist only inside CTFd, for scoring.",
+   "facts": [
+    "412 users in 142 teams created; 106 teams scored at least one flag",
+    "Peak: 1,962 submissions between 10:00 and 11:00 SGT",
+    "Registration was open, so 6 automated 'codex' teams also joined"
+   ],
+   "src": [
+    "docs/wh-2026-postmortem.md"
+   ]
+  },
+  "r53": {
+   "title": "Route 53",
+   "sub": "zone whitehats-ctf.com",
+   "cat": "net",
+   "glyph": "R53",
+   "body": "The public hosted zone existed before this stack, and Terraform takes its ID as hosted_zone_id. ExternalDNS writes the records for Ingress hosts; cert-manager writes the short-lived _acme-challenge TXT records.",
+   "facts": [
+    "ctf.whitehats-ctf.com → HTTP NLB",
+    "{challenge}.challenges.whitehats-ctf.com → same NLB, one record per Ingress",
+    "Pwn NLBs get no friendly name; players see the raw *.elb.amazonaws.com hostname",
+    "Route 53 is a global service; it's drawn inside the region only for space"
+   ],
+   "src": [
+    "utils/eks/helm.tf",
+    "utils/eks/variables.tf",
+    "utils/eks/cert-manager.tf"
+   ]
+  },
+  "nlbh": {
+   "title": "NLB · HTTP(S)",
+   "sub": "ingress-nginx Service",
+   "cat": "net",
+   "glyph": "NLB",
+   "body": "The AWS Load Balancer Controller creates this internet-facing Network Load Balancer from the ingress-nginx LoadBalancer Service. It works at layer 4: it passes TCP 80 and 443 through to NGINX pod IPs and never sees HTTP.",
+   "facts": [
+    "Annotations: aws-load-balancer-type nlb, scheme internet-facing, nlb-target-type ip",
+    "No proxy protocol and no client-IP preservation are configured, so NGINX likely sees the NLB's private IP as the source",
+    "Not in Terraform state; the destroy script deletes it before VPC deletion"
+   ],
+   "src": [
+    "utils/eks/helm.tf",
+    "utils/eks/main.tf"
+   ]
+  },
+  "nlbt": {
+   "title": "5 × NLB · TCP",
+   "sub": "one per pwn challenge",
+   "cat": "net",
+   "glyph": "NLB",
+   "body": "Each shared-tcp challenge's Service has type LoadBalancer, so the LB controller creates a dedicated internet-facing NLB per challenge. Listener port = challenge port.",
+   "facts": [
+    "loop :7331 · xoph :1337 · library :9001 · postman :1111 · another :9999",
+    "ip targets → the 3 pod IPs directly",
+    "Hostname is exported from the Pulumi stack and written to CTFd connection_info",
+    "Recreating the stack changes every hostname (healthcheck config must then be updated)"
+   ],
+   "src": [
+    "utils/shared-tcp/main.go",
+    "utils/builder/builder.py",
+    "CTFDD-HANDOFF.md"
+   ]
+  },
+  "nginx": {
+   "title": "NGINX ×2",
+   "sub": "TLS · host routing",
+   "cat": "k8s",
+   "glyph": "NGX",
+   "body": "The single HTTP front door for the cluster. It terminates TLS, routes by Host header to CTFd or a web challenge, and enforces the per-client rate limits set as Ingress annotations.",
+   "facts": [
+    "2 replicas since 8bcebde (2026-06-27), preferred anti-affinity on kubernetes.io/hostname",
+    "--default-ssl-certificate ingress-nginx/wildcard-challenges-tls is the fallback cert",
+    "Each NGINX pod keeps its own rate-limit counters",
+    "CloudWatch alarm fires if running containers drop below 1"
+   ],
+   "src": [
+    "utils/eks/helm.tf",
+    "docs/ops/rate-limits.md"
+   ]
+  },
+  "ctfd": {
+   "title": "CTFd ×1",
+   "sub": "3.8.5 · 2 workers",
+   "cat": "app",
+   "glyph": "CTF",
+   "body": "The scoreboard, API and admin UI. A custom image built from a separate CTFd checkout, with the Discord first-blood plugin. It runs as one pod because its upload and log volumes are ReadWriteOnce EBS disks.",
+   "facts": [
+    "Requests 500m CPU / 512Mi, limit 2 CPU / 2Gi",
+    "WORKERS=2, REVERSE_PROXY=true, SECRET_KEY from the ctfd-admin Secret",
+    "Recreate strategy and a PDB with maxUnavailable 0: an update means a short outage",
+    "An init container chowns the volumes to uid 1001"
+   ],
+   "src": [
+    "utils/ctfd/main.go",
+    "utils/Makefile"
+   ]
+  },
+  "web": {
+   "title": "Web challenges",
+   "sub": "5 Deployments × 2 pods",
+   "cat": "app",
+   "glyph": "WEB",
+   "body": "xssive-login :3000, pokemon-portal :3000, inspectpost :80, a-thousand-suns :5000, base64converter :5000. Each has a ClusterIP Service and an Ingress at {name}.challenges.whitehats-ctf.com. Every player shares the same 2 pods.",
+   "facts": [
+    "Requests 100m / 128Mi, limits 500m / 512Mi per pod",
+    "Rate limit: 20 rps, burst ×1, 15 connections, 503 on excess",
+    "Replicas raised 1 → 2 during the event (committed in the 2026-09-02 archive)",
+    "3 of the 5 keep state inside the pod; see section 05"
+   ],
+   "src": [
+    "utils/web-shared/main.go",
+    "utils/web-shared/Pulumi.wh-2026.yaml"
+   ]
+  },
+  "pwn": {
+   "title": "Pwn challenges",
+   "sub": "5 Deployments × 3 pods",
+   "cat": "app",
+   "glyph": "PWN",
+   "body": "Each container runs socat TCP-LISTEN,fork, which starts a new process of the challenge binary for every connection on a PTY. Two connections never share a process, even from teammates, but every player shares the container.",
+   "facts": [
+    "Default 3 replicas (shared_tcp_replicas in config.ini)",
+    "socat -T60 closes idle connections after 60 s",
+    "No rate limit or connection cap",
+    "automountServiceAccountToken: false, so a shell gets no Kubernetes credentials"
+   ],
+   "src": [
+    "utils/shared-tcp/main.go",
+    "pwn/loop/Dockerfile"
+   ]
+  },
+  "mariadb": {
+   "title": "MariaDB ×1",
+   "sub": "10.11 · :3306 · 10Gi",
+   "cat": "db",
+   "glyph": "DB",
+   "body": "CTFd's database: users, teams, challenges, submissions, solves, awards, config. Runs in the cluster as a Deployment on a 10 GiB gp3 volume, not on RDS.",
+   "facts": [
+    "utf8mb4, wait_timeout 28800",
+    "Requests 250m / 512Mi, limit 1 CPU / 1Gi",
+    "PDB maxUnavailable 0; Recreate strategy",
+    "Alarm when pod memory > 80%"
+   ],
+   "src": [
+    "utils/ctfd/main.go",
+    "utils/eks/observability.tf"
+   ]
+  },
+  "redis": {
+   "title": "Redis ×1",
+   "sub": "7 · :6379 · 1Gi",
+   "cat": "db",
+   "glyph": "RDS",
+   "body": "CTFd's cache and session store. Kept at one replica on purpose: a second Redis on the same volume caused split-brain and 403 errors from broken sessions.",
+   "facts": [
+    "Requests 100m / 128Mi, limit 500m / 512Mi",
+    "Data on a 1 GiB gp3 volume"
+   ],
+   "src": [
+    "utils/ctfd/main.go"
+   ]
+  },
+  "pvc": {
+   "title": "CTFd volumes",
+   "sub": "uploads + logs",
+   "cat": "store",
+   "glyph": "EBS",
+   "body": "Challenge attachments and CTFd logs on gp3 EBS volumes. ReadWriteOnce means only one node can mount them, which pins CTFd to one pod.",
+   "facts": [
+    "StorageClass gp3: encrypted, WaitForFirstConsumer, expansion allowed",
+    "Mounted at /var/uploads and /var/log/CTFd"
+   ],
+   "src": [
+    "utils/ctfd/main.go",
+    "utils/eks/storage.tf"
+   ]
+  },
+  "igw": {
+   "title": "Internet GW",
+   "sub": "VPC module default",
+   "cat": "net",
+   "glyph": "IGW",
+   "body": "The VPC's route to the internet. Public subnets route 0.0.0.0/0 here; NLB nodes and the NAT gateway live in those subnets.",
+   "facts": [
+    "Created by terraform-aws-modules/vpc 5.0.0"
+   ],
+   "src": [
+    "utils/eks/vpc.tf"
+   ]
+  },
+  "nat": {
+   "title": "NAT GW",
+   "sub": "single · AZ a",
+   "cat": "net",
+   "glyph": "NAT",
+   "body": "single_nat_gateway = true: one NAT gateway serves the private subnets in all three AZs. Every image pull, Let's Encrypt call and S3 upload from a pod goes out through it.",
+   "facts": [
+    "Losing AZ a cuts outbound traffic for every node",
+    "Cross-AZ NAT traffic is billed as data transfer",
+    "There are no VPC endpoints for ECR or S3"
+   ],
+   "src": [
+    "utils/eks/vpc.tf"
+   ]
+  },
+  "nlbenia": {
+   "title": "NLBs",
+   "sub": "6 × AZ a",
+   "cat": "net",
+   "glyph": "NLB",
+   "body": "Every NLB (the HTTP one and the 5 pwn ones) places a node with a public IP in each public subnet, so each AZ box holds a slice of all 6 load balancers.",
+   "facts": [
+    "Subnet discovery uses the tag kubernetes.io/role/elb = 1"
+   ],
+   "src": [
+    "utils/eks/vpc.tf"
+   ]
+  },
+  "nlbenib": {
+   "title": "NLBs",
+   "sub": "6 × AZ b",
+   "cat": "net",
+   "glyph": "NLB",
+   "body": "Same 6 load balancers, AZ b slice.",
+   "facts": [],
+   "src": [
+    "utils/eks/vpc.tf"
+   ]
+  },
+  "nlbenic": {
+   "title": "NLBs",
+   "sub": "6 × AZ c",
+   "cat": "net",
+   "glyph": "NLB",
+   "body": "Same 6 load balancers, AZ c slice.",
+   "facts": [],
+   "src": [
+    "utils/eks/vpc.tf"
+   ]
+  },
+  "workera": {
+   "title": "Worker node",
+   "sub": "t3.medium · 2 vCPU 4 GiB",
+   "cat": "compute",
+   "glyph": "EC2",
+   "body": "EKS managed node group 'default'. Desired 3 nodes, so normally one per AZ. The scheduler decides which pods land where; this view doesn't show pod placement because it changed between deploys.",
+   "facts": [
+    "Max 17 pods per node (VPC CNI limit for t3.medium)",
+    "Node role adds SSM, EBS CSI and CloudWatch agent policies",
+    "Pre-destroy state shows 4 nodes, so one AZ held two"
+   ],
+   "src": [
+    "utils/eks/main.tf",
+    "docs/wh-2026-claim-audit.md"
+   ]
+  },
+  "workerb": {
+   "title": "Worker node",
+   "sub": "t3.medium · 2 vCPU 4 GiB",
+   "cat": "compute",
+   "glyph": "EC2",
+   "body": "Same node group, AZ b.",
+   "facts": [],
+   "src": [
+    "utils/eks/main.tf"
+   ]
+  },
+  "workerc": {
+   "title": "Worker node",
+   "sub": "t3.medium · 2 vCPU 4 GiB",
+   "cat": "compute",
+   "glyph": "EC2",
+   "body": "Same node group, AZ c. The edges from this node to the API server, ECR and S3 stand for all nodes.",
+   "facts": [],
+   "src": [
+    "utils/eks/main.tf"
+   ]
+  },
+  "ebs": {
+   "title": "EBS gp3 volumes",
+   "sub": "4 PVCs · one AZ each",
+   "cat": "store",
+   "glyph": "EBS",
+   "body": "mariadb-data 10Gi, redis-data 1Gi, ctfd-uploads 5Gi, ctfd-logs 2Gi. Each volume exists in a single AZ. It's drawn in AZ a only as an example; the real AZ was wherever each pod first scheduled.",
+   "facts": [
+    "Encrypted at rest",
+    "If that AZ fails, CTFd can't start elsewhere without restoring from the S3 backup"
+   ],
+   "src": [
+    "utils/eks/storage.tf",
+    "utils/ctfd/main.go"
+   ]
+  },
+  "secrets": {
+   "title": "Secrets Manager",
+   "sub": "wh-2026/config",
+   "cat": "sec",
+   "glyph": "SM",
+   "body": "Holds non-IaC secrets: Docker Hub login, CTFd admin credentials, DB password, Pulumi passphrase. Terraform creates the empty secret; values are filled by migrate_secrets.py and read by secrets.py during make targets.",
+   "facts": [
+    "Never written into Terraform state",
+    "make deploy-eks restores it if a teardown left it pending deletion"
+   ],
+   "src": [
+    "utils/eks/secrets.tf",
+    "utils/secrets.py",
+    "utils/Makefile"
+   ]
+  },
+  "iam": {
+   "title": "IAM · IRSA",
+   "sub": "OIDC + 5 roles",
+   "cat": "sec",
+   "glyph": "IAM",
+   "body": "Controllers get short-lived AWS credentials through their Kubernetes service account (IAM Roles for Service Accounts). No static keys live in the cluster.",
+   "facts": [
+    "wh-2026-aws-lbc: create and manage load balancers",
+    "wh-2026-external-dns: Route 53 records",
+    "wh-2026-cert-manager: Route 53 TXT for DNS-01",
+    "wh-2026-cluster-autoscaler: change node group size",
+    "wh-2026-ctfd-backup: write to the backups bucket"
+   ],
+   "src": [
+    "utils/eks/iam.tf"
+   ]
+  },
+  "cw": {
+   "title": "CloudWatch",
+   "sub": "metrics + alarms",
+   "cat": "mgmt",
+   "glyph": "CW",
+   "body": "Receives node and pod metrics from the observability add-on, and holds an 8-widget ops dashboard and the alarms.",
+   "facts": [
+    "Dashboard: ingress containers, node count, node CPU and memory, MariaDB memory, node filesystem, CTFd memory",
+    "Metrics and alarm history were deleted with the account"
+   ],
+   "src": [
+    "utils/eks/observability.tf"
+   ]
+  },
+  "eksapi": {
+   "title": "EKS API",
+   "sub": "AWS-managed API",
+   "cat": "compute",
+   "glyph": "EKS",
+   "body": "The Kubernetes API server and etcd, run by AWS outside the VPC. kubelets on every node, the operator's kubectl, Terraform's Helm provider and Pulumi all talk to it.",
+   "facts": [
+    "Public endpoint enabled; the creator gets cluster-admin",
+    "Add-ons: coredns, kube-proxy, vpc-cni (kept during destroy), aws-ebs-csi-driver"
+   ],
+   "src": [
+    "utils/eks/main.tf"
+   ]
+  },
+  "ecr": {
+   "title": "ECR",
+   "sub": "wh-2026 · wh-2026-ctfd",
+   "cat": "compute",
+   "glyph": "ECR",
+   "body": "Private image registry. Challenge images are tagged with the challenge name in one repo; the CTFd image has its own repo.",
+   "facts": [
+    "Nodes pull with the node role's ECR read permissions",
+    "wh-2026-ctfd keeps the last 5 images"
+   ],
+   "src": [
+    "utils/eks/main.tf",
+    "utils/builder/builder.py"
+   ]
+  },
+  "s3": {
+   "title": "S3",
+   "sub": "backups + Pulumi state",
+   "cat": "store",
+   "glyph": "S3",
+   "body": "Two buckets. ctfd-backups gets the hourly database dumps. The Pulumi state bucket holds state for the ctfd, web-shared and shared-tcp stacks.",
+   "facts": [
+    "Both versioned, SSE-S3 encrypted, all public access blocked",
+    "Backups expire after 30 days",
+    "The backups bucket was kept out of the final destroy"
+   ],
+   "src": [
+    "utils/eks/main.tf",
+    "docs/wh-2026-postmortem.md"
+   ]
+  },
+  "operator": {
+   "title": "Operator laptop",
+   "sub": "make in utils/ · terraform ≥1.9, pulumi, go, python3, docker, kubectl, ctfcli",
+   "cat": "tool",
+   "glyph": "OPS",
+   "body": "Every deploy ran from an operator's machine with AWS credentials. CI never deployed. config.ini and Secrets Manager supply the inputs.",
+   "facts": [
+    "Pulumi backend: s3://wh-2026-pulumi-state; passphrase from Secrets Manager",
+    "On 2026-06-23 a local safety tool blocked make and pulumi up, so commands were run through Python subprocess instead"
+   ],
+   "src": [
+    "utils/Makefile",
+    "docs/ops/deploy-2026-06-23/phase-2-eks.md"
+   ]
+  },
+  "tf": {
+   "title": "Terraform",
+   "sub": "utils/eks · AWS 5.x",
+   "cat": "tool",
+   "glyph": "TF",
+   "body": "One root module for the whole AWS foundation and the cluster add-ons. Kubernetes and Helm providers authenticate with aws eks get-token.",
+   "facts": [
+    "Modules: eks ~>20.0, vpc 5.0.0, iam-role-for-service-accounts-eks",
+    "Destroy runs a cleanup script first (NLBs, security groups, ENIs)"
+   ],
+   "src": [
+    "utils/eks/main.tf",
+    "utils/Makefile"
+   ]
+  },
+  "awsres": {
+   "title": "AWS resources",
+   "sub": "VPC, EKS, IAM, S3, ECR, SM",
+   "cat": "tool",
+   "glyph": "AWS",
+   "body": "Created by the targeted first apply: the network, the cluster and node group, and the buckets and registries that later steps need.",
+   "facts": [],
+   "src": [
+    "utils/Makefile"
+   ]
+  },
+  "helm": {
+   "title": "Helm releases",
+   "sub": "LBC, DNS, nginx, certs, CA",
+   "cat": "tool",
+   "glyph": "HLM",
+   "body": "Installed by the second apply: AWS LB Controller 3.4.0, ExternalDNS 1.21.1, ingress-nginx 4.15.1, cert-manager 1.18.2, Cluster Autoscaler 9.46.2, plus the ClusterIssuer and wildcard Certificate.",
+   "facts": [],
+   "src": [
+    "utils/eks/helm.tf",
+    "utils/eks/cert-manager.tf"
+   ]
+  },
+  "ci": {
+   "title": "GitHub Actions",
+   "sub": "PR checks · never deploys",
+   "cat": "tool",
+   "glyph": "CI",
+   "body": "validate.yml runs on pull requests: challenge schema validation, terraform validate, builder unit tests and a docker functional test. It doesn't touch AWS. Only 5 of its 16 runs passed.",
+   "facts": [
+    "Nothing in CI built or deployed the shared-web or shared-tcp stacks"
+   ],
+   "src": [
+    ".github/workflows/validate.yml",
+    "docs/wh-2026-claim-audit.md"
+   ]
+  },
+  "pctfd": {
+   "title": "Pulumi · ctfd",
+   "sub": "Go program · 1 stack",
+   "cat": "tool",
+   "glyph": "PUL",
+   "body": "make deploy-ctfd: builds and pushes the CTFd image, then runs pulumi up with the secrets in stack config.",
+   "facts": [
+    "Config: db_password, admin_*, secret_key, discord_webhook_url, backup_irsa_arn (all secret except the ARN)"
+   ],
+   "src": [
+    "utils/ctfd/Pulumi.yaml",
+    "utils/Makefile"
+   ]
+  },
+  "ecrc": {
+   "title": "ECR wh-2026-ctfd",
+   "sub": "tag latest · keep 5",
+   "cat": "compute",
+   "glyph": "ECR",
+   "body": "The CTFd image repository. Deployments reference :latest, so a new push needs a pod restart to take effect.",
+   "facts": [],
+   "src": [
+    "utils/eks/main.tf",
+    "utils/ctfd/main.go"
+   ]
+  },
+  "nsctfd": {
+   "title": "ns ctfd",
+   "sub": "CTFd · MariaDB · Redis",
+   "cat": "k8s",
+   "glyph": "NS",
+   "body": "Everything the scoreboard needs, in one namespace. See the Player traffic view for the internals.",
+   "facts": [],
+   "src": [
+    "utils/ctfd/main.go"
+   ]
+  },
+  "builder": {
+   "title": "builder.py",
+   "sub": "make build-images",
+   "cat": "tool",
+   "glyph": "PY",
+   "body": "The challenge pipeline. It walks every category directory, reads challenge.yml, and branches on challenge_type: shared-web, shared-tcp or static text.",
+   "facts": [
+    "Fills connection_info: the URL for web, the NLB hostname for pwn",
+    "Calls ctf challenge install, then PATCHes connection_info as a safety net"
+   ],
+   "src": [
+    "utils/builder/builder.py"
+   ]
+  },
+  "docker": {
+   "title": "docker build",
+   "sub": "one image per challenge",
+   "cat": "tool",
+   "glyph": "DKR",
+   "body": "Builds each challenge's root Dockerfile. another, loop and xoph moved to multi-stage builds in b402cc4.",
+   "facts": [],
+   "src": [
+    "utils/builder/builder.py"
+   ]
+  },
+  "ecrw": {
+   "title": "ECR wh-2026",
+   "sub": "tag = challenge name",
+   "cat": "compute",
+   "glyph": "ECR",
+   "body": "One repository, one tag per challenge, for example wh-2026:pokemon-portal.",
+   "facts": [],
+   "src": [
+    "utils/web-shared/Pulumi.wh-2026.yaml"
+   ]
+  },
+  "pstacks": {
+   "title": "Pulumi stacks",
+   "sub": "web-shared · shared-tcp",
+   "cat": "tool",
+   "glyph": "PUL",
+   "body": "Two small Go programs driven by a JSON challenge list in stack config. builder.py sets that config and runs pulumi up on each.",
+   "facts": [
+    "web-shared: Deployment + ClusterIP Service + Ingress",
+    "shared-tcp: Deployment + LoadBalancer Service, exports {name}-hostname"
+   ],
+   "src": [
+    "utils/web-shared/main.go",
+    "utils/shared-tcp/main.go"
+   ]
+  },
+  "nsch": {
+   "title": "ns challenges-*",
+   "sub": "10 Deployments · 5 NLBs",
+   "cat": "k8s",
+   "glyph": "NS",
+   "body": "challenges-web and challenges-tcp. The NLBs for pwn challenges are created by the LB controller after the Services appear.",
+   "facts": [],
+   "src": [
+    "utils/web-shared/main.go",
+    "utils/shared-tcp/main.go"
+   ]
+  },
+  "ctfcli": {
+   "title": "ctfcli",
+   "sub": "challenge install / sync",
+   "cat": "tool",
+   "glyph": "CLI",
+   "body": "CTFd's official CLI. It reads challenge.yml (name, category, description, flags, hints, files, dynamic scoring) and creates or updates challenges through the admin API.",
+   "facts": [
+    "All 39 live challenges were type dynamic, 1000 → 100 over 31 solves",
+    "2 pwn challenges ended up linear with decay 1; the cause is unknown"
+   ],
+   "src": [
+    "README.md",
+    "utils/convert_to_dynamic.py",
+    "docs/wh-2026-postmortem.md"
+   ]
+  },
+  "ctfdapi": {
+   "title": "CTFd API",
+   "sub": "/api/v1 · admin token",
+   "cat": "app",
+   "glyph": "API",
+   "body": "The same CTFd pod, reached over HTTPS with the preset admin token. Both ctfcli and builder.py write here.",
+   "facts": [],
+   "src": [
+    "utils/builder/builder.py"
+   ]
+  },
+  "cia": {
+   "title": "CW agents",
+   "sub": "CW agent + Fluent Bit",
+   "cat": "mgmt",
+   "glyph": "CI",
+   "body": "EKS add-on amazon-cloudwatch-observability, installed by Terraform. Runs a DaemonSet on every node.",
+   "facts": [
+    "Worker role has CloudWatchAgentServerPolicy"
+   ],
+   "src": [
+    "utils/eks/observability.tf"
+   ]
+  },
+  "alarms": {
+   "title": "5 alarms",
+   "sub": "pods · nodes · DB · disk",
+   "cat": "mgmt",
+   "glyph": "ALM",
+   "body": "ingress-nginx pod down, node count below minimum, MariaDB memory > 80%, node filesystem > 85%, node memory > 85%.",
+   "facts": [
+    "state_value was None in the pre-destroy state; whether any fired is unknown"
+   ],
+   "src": [
+    "utils/eks/observability.tf"
+   ]
+  },
+  "sns": {
+   "title": "SNS topic",
+   "sub": "wh-2026-eks-alerts",
+   "cat": "mgmt",
+   "glyph": "SNS",
+   "body": "Fans alarms out to email subscribers and to the Discord relay Lambda.",
+   "facts": [],
+   "src": [
+    "utils/eks/observability.tf",
+    "utils/eks/lambda.tf"
+   ]
+  },
+  "email": {
+   "title": "Email",
+   "sub": "alarm_notification_emails",
+   "cat": "ext",
+   "glyph": "@",
+   "body": "Each address must confirm the SNS subscription before it receives anything.",
+   "facts": [],
+   "src": [
+    "utils/eks/observability.tf"
+   ]
+  },
+  "lambda": {
+   "title": "Lambda",
+   "sub": "sns_to_discord",
+   "cat": "compute",
+   "glyph": "λ",
+   "body": "A small function (zip in utils/eks/lambda/) that turns the SNS alarm JSON into a Discord message.",
+   "facts": [],
+   "src": [
+    "utils/eks/lambda.tf"
+   ]
+  },
+  "discord": {
+   "title": "Discord",
+   "sub": "alerts + first blood",
+   "cat": "ext",
+   "glyph": "DSC",
+   "body": "Receives three kinds of message: CloudWatch alarms via Lambda, healthcheck failures, and CTFd first-blood announcements.",
+   "facts": [],
+   "src": [
+    "utils/eks/lambda.tf",
+    "utils/healthcheck.py",
+    "utils/ctfd/main.go"
+   ]
+  },
+  "backup": {
+   "title": "Backup CronJob",
+   "sub": "0 * * * * · mariadb:10.11",
+   "cat": "k8s",
+   "glyph": "CRN",
+   "body": "Hourly mysqldump of the CTFd database, gzipped and copied to S3 by an aws-cli container. Runs as service account ctfd-backup (IRSA).",
+   "facts": [
+    "Keeps the last 3 successful and 3 failed jobs",
+    "make backup-ctfd and make restore-ctfd do the same by hand"
+   ],
+   "src": [
+    "utils/ctfd/backup-cronjob.yaml",
+    "utils/Makefile"
+   ]
+  },
+  "s3b": {
+   "title": "S3 ctfd-backups",
+   "sub": "SSE-S3 · 30-day expiry",
+   "cat": "store",
+   "glyph": "S3",
+   "body": "Versioned bucket for the hourly dumps. It was deliberately kept when the rest of the account was destroyed.",
+   "facts": [
+    "One verified artifact: ctfd-20260628-120001.sql"
+   ],
+   "src": [
+    "utils/eks/main.tf"
+   ]
+  },
+  "health": {
+   "title": "Healthcheck",
+   "sub": "*/5 · curl + nc -z",
+   "cat": "k8s",
+   "glyph": "CRN",
+   "body": "python:3.12-alpine running healthcheck.py: HTTP check per web challenge, TCP connect per pwn challenge, and a heartbeat summary.",
+   "facts": [
+    "Keeps 2 successful and 5 failed jobs",
+    "NLB hostnames are configured in the CronJob env, so they go stale if the stack is recreated"
+   ],
+   "src": [
+    "utils/ctfd/healthcheck-cronjob.yaml",
+    "utils/healthcheck.py"
+   ]
+  },
+  "endpoints": {
+   "title": "Endpoints",
+   "sub": "5 HTTPS URLs · 5 NLBs",
+   "cat": "app",
+   "glyph": "EP",
+   "body": "The same public endpoints players use, probed from inside the cluster. A pass means 'answers', not 'solvable': pokemon-portal passed and still had 0 solves.",
+   "facts": [],
+   "src": [
+    "utils/healthcheck.py",
+    "docs/wh-2026-postmortem.md"
+   ]
+  },
+  "certm": {
+   "title": "cert-manager",
+   "sub": "1.18.2 · letsencrypt-prod",
+   "cat": "k8s",
+   "glyph": "CRT",
+   "body": "Issues and renews every certificate in the cluster: ctfd-tls, one {name}-tls per web challenge, and the wildcard-challenges default certificate for *.whitehats-ctf.com.",
+   "facts": [
+    "ClusterIssuer and Certificate are applied by kubectl inside Terraform null_resources",
+    "A wildcard covers one label only, so *.whitehats-ctf.com doesn't cover x.challenges.whitehats-ctf.com; per-Ingress certificates do that job"
+   ],
+   "src": [
+    "utils/eks/cert-manager.tf",
+    "utils/web-shared/main.go"
+   ]
+  },
+  "le": {
+   "title": "Let's Encrypt",
+   "sub": "ACME · DNS-01",
+   "cat": "ext",
+   "glyph": "LE",
+   "body": "The public CA that signs the certificates. Production endpoint, with rate limits: 5 duplicate certificates per week per name set.",
+   "facts": [],
+   "src": [
+    "utils/eks/cert-manager.tf",
+    "docs/ops/event-runbook.md"
+   ]
+  },
+  "extdns": {
+   "title": "ExternalDNS",
+   "sub": "1.21.1 · policy sync",
+   "cat": "k8s",
+   "glyph": "DNS",
+   "body": "Keeps Route 53 in step with the cluster. Restricted to the whitehats-ctf.com domain and tagged with owner id wh-2026-eks, so it only deletes records it created.",
+   "facts": [],
+   "src": [
+    "utils/eks/helm.tf"
+   ]
+  },
+  "ca": {
+   "title": "Autoscaler",
+   "sub": "9.46.2 · auto-discovery",
+   "cat": "k8s",
+   "glyph": "CA",
+   "body": "Watches for unschedulable pods and resizes the node group. Scale-down: node under 50% requested for 10 min, no sooner than 10 min after a scale-up. New nodes get 5 min to join.",
+   "facts": [
+    "skip-nodes-with-local-storage=false, skip-nodes-with-system-pods=false"
+   ],
+   "src": [
+    "utils/eks/helm.tf"
+   ]
+  },
+  "asg": {
+   "title": "EC2 Auto Scaling",
+   "sub": "t3.medium · 2 to 6",
+   "cat": "compute",
+   "glyph": "ASG",
+   "body": "The Auto Scaling group behind the EKS managed node group. Desired size started at 3 and was 4 in the pre-destroy state; scaling history is gone.",
+   "facts": [],
+   "src": [
+    "utils/eks/main.tf",
+    "docs/wh-2026-claim-audit.md"
+   ]
+  }
+ }
+}
