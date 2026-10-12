@@ -1,0 +1,37 @@
+out: deploy/ctfd-setup
+crop: [240, 100, 960, 800]
+frames:
+  - src: ctfd/02-general.png
+    caption: "1. General: the event name and a short description"
+    seconds: 4
+    marks:
+      - {box: [288, 360, 864, 45], n: 1}
+      - {box: [288, 469, 864, 134], n: 2}
+  - src: ctfd/03-mode.png
+    caption: "2. Mode: Team Mode"
+    seconds: 3
+    marks:
+      - {box: [280, 404, 436, 208], n: 3}
+  - src: ctfd/04-settings.png
+    caption: "3. Settings: leave visibility as it is; set Team Size"
+    seconds: 4
+    marks:
+      - {box: [288, 651, 864, 45], n: 4}
+  - src: ctfd/05-admin.png
+    caption: "4. Administration: the admin login; untick the newsletter"
+    seconds: 5
+    marks:
+      - {blur: [290, 472, 400, 40]}
+      - {box: [288, 360, 864, 264], n: 5}
+      - {box: [288, 666, 545, 24], n: 6}
+  - src: ctfd/07-date.png
+    caption: "5. Date & Time: optional, can be set later"
+    seconds: 3
+  - src: ctfd/08-integrations.png
+    caption: "6. Integrations: click Finish"
+    seconds: 3
+    marks:
+      - {box: [1089, 644, 63, 45], n: 7}
+  - src: ctfd/09-done.png
+    caption: "7. Setup done: you are signed in as the admin"
+    seconds: 3

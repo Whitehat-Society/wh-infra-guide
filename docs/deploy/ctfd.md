@@ -38,7 +38,7 @@ This stage starts CTFd, the scoreboard, with its database (**MariaDB**) and its 
 
 The first time CTFd starts, it asks for basic details such as the event name. You answer them once, in a browser.
 
---8<-- "rec-pending.md"
+<video controls preload="metadata" poster="../../assets/video/deploy/ctfd-setup.jpg" src="../../assets/video/deploy/ctfd-setup.mp4"></video>
 
 1. Print the admin login you stored in Secrets Manager:
     ```bash
@@ -47,9 +47,11 @@ The first time CTFd starts, it asks for basic details such as the event name. Yo
 2. Open `https://ctf.<your-domain>`. It sends you to the setup page.
 3. **General:** enter the event name, e.g. `Whitehacks 2027`, and a short description.
 4. **Mode:** choose **Team Mode**, so players register as teams.
-5. **Administration:** enter exactly the name, email and password from step 1.
-6. **Style, Date & Time, Integrations:** set the start and end times now, or later under **Admin → Config**. Leave everything else as it is and click **Finish**.
-7. Go to **Admin → Config → Theme**, choose **core**, and click **Update**. CTFd 3.8 renamed its themes, and **core** is the current one.
+5. **Settings:** leave the visibility options as they are. Set **Team Size** to the largest team allowed, e.g. `4`.
+6. **Administration:** enter exactly the name, email and password from step 1, and untick the newsletter box. CTFd also knows this login from its settings, and both lead to the same admin account.
+7. **Style, Date & Time, Integrations:** keep the theme **core**. Set the start and end times now, or later under **Admin → Config**. Click **Finish**.
+
+CTFd opens its home page with your event name, and the top bar shows **Admin Panel**.
 
 ## Let the scripts talk to CTFd
 
