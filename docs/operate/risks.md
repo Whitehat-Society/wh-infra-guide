@@ -4,11 +4,38 @@ WH-2026's review after the event found these weak spots. They are ranked by how 
 
 ## Parts with no backup copy
 
-1. **The scoreboard has one copy of everything.** CTFd, its database and its cache each run as one pod, with data on a disk that sits in one availability zone. If that computer or zone fails, the whole event stops until Kubernetes restarts the pods in the same zone. The fix is to move the database and cache to AWS's managed services (RDS and ElastiCache), and uploaded files to S3, so CTFd can run several copies.
-2. **Request limits probably count many players as one.** Each web challenge allows 20 requests a second per address. The load balancer doesn't pass on players' real addresses, so NGINX may see one address for many players and limit them together. The fix is to turn on the setting that passes real addresses through (*proxy protocol*), then test the limits again.
+1. **The scoreboard has one copy of everything.** CTFd, its database and its cache each run as one pod, with data on a disk that sits in one availability zone. If the computer holding one of them fails, the pod can only restart on another computer **in the same zone**, and the cluster doesn't add one there by itself. A test took the only zone-`1b` computer out of service: CTFd was down for 13 minutes, until someone added a computer by hand. See [When a computer fails](#when-a-computer-fails). The lasting fix is to move the database and cache to AWS's managed services (RDS and ElastiCache), and uploaded files to S3, so CTFd can run several copies.
+2. **Request limits count all players as one.** Each web challenge allows 20 requests a second per address, but the load balancer doesn't pass on players' real addresses. A test confirmed that NGINX and CTFd see every player as the same internal address. See [Rate limits](#rate-limits) for the check and the fix.
 3. **Copies of a web challenge don't share data.** Each copy has its own logins and data. Keep such challenges at one copy, make NGINX send each player to the same copy every time (*sticky sessions*), or move their data out of the pod.
 4. **Nothing adds pods by itself.** Copy counts only change when someone edits them. The fix is a Kubernetes add-on that adds pods when they get busy (a *HorizontalPodAutoscaler*), for the challenges that can safely have several copies.
 5. **One NAT gateway for the whole network.** It sits in one availability zone. If that zone fails, no computer can download images, renew certificates or upload backups.
+
+## When a computer fails
+
+**Symptoms:** CTFd doesn't load, or answers very slowly. `kubectl get pods -n ctfd` shows `ctfd`, `redis` or `mariadb` as `Pending`, and `kubectl describe pod -n ctfd <pod>` ends with `volume node affinity conflict` or `didn't match PersistentVolume's node affinity`.
+
+**Cause:** the pod's disk is in one zone, no working computer is left in that zone, and the cluster's automatic scaling won't add one there (`pod didn't trigger scale-up`).
+
+**Fix:** ask AWS for one more computer. AWS spreads new computers across zones, so it lands in the empty zone. In the test it was ready in under a minute, and CTFd answered 20 seconds later.
+
+```bash
+cd ~/wh/wh-2026/utils
+EVENT=$(jq -r .event_name eks/terraform.tfvars.json)
+NG=$(aws eks list-nodegroups --cluster-name "$EVENT-eks" --query 'nodegroups[0]' --output text)
+aws eks describe-nodegroup --cluster-name "$EVENT-eks" --nodegroup-name "$NG" --query 'nodegroup.scalingConfig'
+```
+
+Add 1 to the `desiredSize` it prints, and use the result here, e.g. `desiredSize=5`:
+
+```bash
+aws eks update-nodegroup-config --cluster-name "$EVENT-eks" --nodegroup-name "$NG" \
+  --scaling-config minSize=2,maxSize=6,desiredSize=5
+kubectl get nodes -L topology.kubernetes.io/zone -w
+```
+
+When a new line shows the empty zone and `Ready`, press Ctrl+C. Within a minute `kubectl get pods -n ctfd` shows every pod `Running`.
+
+**Planned replacements are blocked.** CTFd and MariaDB have a rule that none of their pods may be stopped on purpose (a *PodDisruptionBudget* with `MAX UNAVAILABLE 0`). `kubectl drain` on their computer waits forever and stops with `global timeout reached`. That protects them from accidental restarts; to move them on purpose, at a quiet moment, delete the pod instead: `kubectl delete pod -n ctfd <pod>`.
 
 ## Many players on one challenge
 

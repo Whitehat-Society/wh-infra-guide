@@ -16,7 +16,7 @@ aws sts get-caller-identity
 
 | Status | What it means | What to do |
 |---|---|---|
-| `Pending` | Kubernetes can't find room for the pod, or can't attach its disk | `kubectl describe pod <pod> -n <namespace>` and read **Events** at the bottom. If it says `Insufficient cpu` or `Insufficient memory`, wait 5 minutes for a new computer, or [add one now](../operate/scaling.md) |
+| `Pending` | Kubernetes can't find room for the pod, or can't attach its disk | `kubectl describe pod <pod> -n <namespace>` and read **Events** at the bottom. If it says `Insufficient cpu`, `Insufficient memory` or `Too many pods`, wait 5 minutes for a new computer, or [add one now](../operate/scaling.md). If it says `volume node affinity conflict`, see [When a computer fails](../operate/risks.md#when-a-computer-fails) |
 | `ImagePullBackOff` | Kubernetes can't download the pod's image | `kubectl describe pod` shows the image address. Check the account ID in it is yours, and that the image exists: `aws ecr describe-images --repository-name <repository>` |
 | `CrashLoopBackOff` | The program starts and then exits, over and over | `kubectl logs <pod> -n <namespace> --previous` shows the output of the last failed start |
 | `OOMKilled` | The program used more memory than allowed (512 MB for challenges), so Kubernetes stopped it | Raise the memory limit in `utils/web-shared/main.go` or `utils/shared-tcp/main.go`, then `make build-images` |

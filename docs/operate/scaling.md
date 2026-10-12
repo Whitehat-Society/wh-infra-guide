@@ -15,6 +15,8 @@ When players report slow challenges, the fix is usually more copies of a program
 </div>
 </div>
 
+Each computer (a `t3.medium`) holds at most 17 pods, whatever their size, and that limit is usually reached before memory or processor. With 15 pwn pods, 5 web pods, CTFd and the cluster's own helpers, the test system ran on 4 computers.
+
 Busy pods alone never trigger a new computer. A new computer is rented only when a new pod can't start. So during a rush, more capacity means you raise a copy count, and the new pods then trigger new computers if they need them.
 
 ## How to add capacity

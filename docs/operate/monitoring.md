@@ -51,6 +51,7 @@ Most fixes are a **restart**: Kubernetes replaces a Deployment's pods with fresh
 | Database memory high | The dashboard's MariaDB graph | At a quiet moment, raise MariaDB's memory limit in `utils/ctfd/main.go` and run `make deploy-ctfd`. CTFd is down for about a minute |
 | Node memory or disk high | `kubectl describe node <name>` | Add a node: see [Adding capacity](scaling.md) |
 | Players see "503" on a web challenge | Nothing to check | That challenge limits each address to 20 requests per second. See [Rate limits](risks.md#rate-limits) |
+| CTFd doesn't load at all, and a `ctfd`, `redis` or `mariadb` pod is `Pending` | `kubectl describe pod -n ctfd <pod>` | [When a computer fails](risks.md#when-a-computer-fails) |
 | CTFd is slow or shows errors | `kubectl logs -n ctfd deploy/ctfd --tail=100` | [Take a backup](backups.md), then `kubectl rollout restart deploy/ctfd -n ctfd` |
 
 !!! danger "Back up before you touch the database"
