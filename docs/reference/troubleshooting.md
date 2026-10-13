@@ -32,6 +32,25 @@ Find the group that matches what you were doing, and then the line that matches 
 | Python scripts: `Missing Dependency: Using the login credential provider requires an additional dependency` | This has the same cause as the line above, but in `secrets.py` and `builder.py`. | Run `pip install "botocore[crt]"`. |
 | `explicit deny in a service control policy` | Your account is a Free-plan project that only allows one region. | Use that region everywhere, as described in [Which kind of account you have](../accounts/aws.md#which-kind-of-account-you-have). |
 | `Unable to connect to the server` from `kubectl` | `kubectl` doesn't know the cluster's address, or the cluster has been deleted. | Run `cd ~/wh/wh-2027/utils && make kubeconfig`. |
+| `You must be logged in to the server (Unauthorized)` from `kubectl`, while `aws` commands work | The cluster only lets in the AWS role that created it, and you signed in as a different one, for example with another permission set or with `aws login`. | Sign in through the same permission set as whoever ran `make deploy-eks`. If you can't, follow [Let another role into the cluster](#let-another-role-into-the-cluster). |
+
+#### Let another role into the cluster
+
+1. On the teammate's computer, print the full name of the role they sign in as, and send the output to whoever deployed the cluster:
+    ```bash
+    aws iam get-role --role-name "$(aws sts get-caller-identity --query Arn --output text | cut -d/ -f2)" --query Role.Arn --output text
+    ```
+2. On the deployer's computer, give that role full access to the cluster, replacing `<role>` with the output from step 1:
+    ```bash
+    cd ~/wh/wh-2027/utils
+    CLUSTER=$(python3 settings.py cluster)
+    aws eks create-access-entry --cluster-name "$CLUSTER" --principal-arn <role>
+    aws eks associate-access-policy --cluster-name "$CLUSTER" --principal-arn <role> \
+      --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy --access-scope type=cluster
+    ```
+3. On the teammate's computer, run `make kubeconfig` and then `kubectl get nodes`, which should now list the nodes.
+
+The access lasts until the cluster is deleted, so repeat these steps after each fresh deploy.
 
 ### Names and addresses
 

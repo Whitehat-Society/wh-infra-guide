@@ -85,4 +85,6 @@ You'll create a personal login through **IAM Identity Center**, the AWS service 
 !!! tip "Adding teammates"
     Repeat steps 3 and 5 for each person. Everyone gets a login of their own, so removing one person later doesn't affect anyone else.
 
+    Give everyone the same **AdministratorAccess** permission set. Everyone who signs in through it acts as the same AWS role, and the cluster only lets in the role that created it, so a teammate who signs in any other way can use AWS but not `kubectl`. [Let another role into the cluster](../reference/troubleshooting.md#let-another-role-into-the-cluster) covers that case.
+
 **Next:** [Sign in from the terminal](cli-login.md).
