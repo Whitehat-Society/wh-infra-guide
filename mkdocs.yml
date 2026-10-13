@@ -3,7 +3,6 @@ site_description: Build and run the Whitehacks CTF infrastructure from a blank P
 site_url: https://lampardnk.github.io/wh-infra-guide/
 repo_url: https://github.com/Whitehat-Society/wh-base
 repo_name: Whitehat-Society/wh-base
-edit_uri: https://github.com/lampardnk/wh-infra-guide/edit/main/docs/
 
 theme:
   name: material
@@ -23,7 +22,6 @@ theme:
     - navigation.footer
     - navigation.top
     - content.code.copy
-    - content.action.edit
     - search.highlight
 
 extra_css:
@@ -51,7 +49,7 @@ markdown_extensions:
   - pymdownx.snippets: { base_path: [snippets, docs/assets/scripts], check_paths: true }
 
 nav:
-  - Start here: index.md
+  - 0 · Introduction: index.md
   - 1 · How the system works:
       - What we're building: concepts/big-picture.md
       - 1. The account and the domain: concepts/account.md

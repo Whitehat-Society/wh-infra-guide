@@ -71,3 +71,25 @@ On macOS, replace `date -d '-3 days' +%F` with `date -v-3d +%F`. After teardown 
 | `ExpiredTokenException` or `Your session has expired` | Your login has ended. Sign in again and run `make destroy` again, and Terraform and Pulumi will continue with whatever is left. |
 | The deletion was interrupted, and the cluster still exists | Run `make destroy` again. Terraform keeps its records in `utils/eks/terraform.tfstate` on the computer that deployed, so run it on that computer. |
 | All checks are empty, but charges continue | In the AWS console, open **Billing and Cost Management → Bills**, which lists each charge by service and region. |
+
+## Check your understanding
+
+These questions also use what you learned in the earlier sections. Work out your answer before you open the hidden one.
+
+!!! question "1. The laptop that deployed is gone"
+    The day after the event, the laptop you deployed from stops working, and a teammate has to delete everything from theirs. They have the settings file and their own login. What can they do, and what can't they?
+
+    ??? success "Answer"
+        The Pulumi steps work, because Pulumi keeps its records in an S3 bucket, so the challenges and CTFd can be deleted from any computer. Terraform's records, `utils/eks/terraform.tfstate`, were only on your laptop. Without them Terraform doesn't know what it built, so `make destroy` can't delete the cluster, the network or the NAT gateway, and those keep billing until someone deletes them by hand in the console. That is why you copy the state file to the club's shared drive after every deploy.
+
+!!! question "2. Skipping straight to Terraform"
+    To save time, someone runs `terraform -chdir=eks destroy -var-file=terraform.tfvars.json` instead of `make destroy`. Terraform finishes without an error. What is left behind, and who notices?
+
+    ??? success "Answer"
+        Terraform only deletes what it built itself. The DNS records that ExternalDNS made for the scoreboard and the web challenges stay in Route 53, still owned by `<event>-eks`, and next year's deploy prints a `[dns] WARNING` until someone runs `make dns-clean OWNER=<event>-eks`. CTFd's disks stay behind as unattached disks that still cost money, and the log groups stay too. The checks in [Check the bill has stopped](#check-the-bill-has-stopped) show the disks and the log groups, and the bill shows the rest a few days later.
+
+!!! question "3. A rerun three days later"
+    You deleted everything on Monday after downloading the final backup. On Thursday the club decides to reopen the CTF for a weekend, using the same event name and the same scores. What comes back by itself, and what do you have to do?
+
+    ??? success "Answer"
+        The secret comes back by itself with its old values, because a deleted secret is kept for 7 days, so every password stays the same. The scores don't, because the backup bucket was deleted with the system. Deploy as usual, upload your saved file into the new backup bucket with `aws s3 cp`, and then run `make restore-ctfd FILE=<that file>`, followed by the `redis-cli FLUSHALL` from [Restore a backup](operate/backups.md#restore-a-backup). Because the restore brings back CTFd's settings too, it replaces whatever you entered on the setup page. Finally, run `make deploy-healthcheck-cronjob`, because the pwn challenges have new addresses.

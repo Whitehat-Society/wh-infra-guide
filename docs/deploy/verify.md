@@ -58,4 +58,32 @@ kubectl logs -n challenges-web deploy/<name> --tail=50
 kubectl logs -n challenges-tcp deploy/<name> --tail=50
 ```
 
+## Check your understanding
+
+These questions also use what you learned in sections 1 to 4. Work out your answer before you open the hidden one.
+
+!!! question "1. The overnight build"
+    Late at night you add a challenge and start `make build-images`, and then go to bed without reading the end. In the morning, the last line says `FAILED, and left out of this run:` followed by lost-cookie's folder. `lost-cookie` was deployed and working the day before. What state is it in now, and what will players notice?
+
+    ??? success "Answer"
+        It is down. The builder couldn't build its image, so it left the challenge out of the list it gave Pulumi, and Pulumi deleted the challenge's pods because the list no longer contained it. CTFd still shows the challenge with its old address, so players can open it and get an error, and the health check has been posting `lost-cookie unreachable` to the alerts channel every 5 minutes. Fix the build, run `make build-images` again, and always read the last lines of a run before you walk away.
+
+!!! question "2. The alerts channel was deleted"
+    Someone deletes `#infra-alerts` by mistake. You create a new channel and a new webhook. Where does the new address go, and once it's there, does every alert use it?
+
+    ??? success "Answer"
+        It goes into Secrets Manager, never into the code. Run `make secrets`, paste the new address at `discord_alert_webhook_url`, and press Enter at the other questions to keep their values. The alarms pick up the new address straight away, because the program that posts them reads the secret each time it runs. The health check doesn't, because `make deploy-healthcheck-cronjob` copied the old address into the cluster when you ran it. Run that command again, and then test the new channel by stopping a challenge for one run, as in [Health checks](day2.md#health-checks).
+
+!!! question "3. Deployed four days early"
+    The deploy passes every final check on Monday evening, and the event starts on Friday morning. Should you leave the system running until then, and what do you need to redo if you don't?
+
+    ??? success "Answer"
+        Delete it. At about US$0.45 an hour, four days cost around US$43, which nearly uses up a US$50 budget before the event starts, while a fresh deploy takes about 1.5 hours. If you redeploy on Thursday, you redo CTFd's setup page, because the new database is empty, and the pwn challenges get new load balancer addresses, which `make build-images` and `make deploy-healthcheck-cronjob` pick up. Don't rebuild the system many times in the same week, because Let's Encrypt issues at most 5 identical certificates a week, and a sixth build would have no `https`.
+
+!!! question "4. It works for you but not for a friend"
+    `make smoke-test` passes and the scoreboard opens on your laptop. A friend at home says `ctf.<your-domain>` "doesn't exist". What are the two likely causes, and how do you tell them apart?
+
+    ??? success "Answer"
+        Either your friend looked the name up before its record existed, and their network is still remembering "doesn't exist" for up to 15 minutes, or their internet provider blocks the free domain service your test domain comes from. Ask them to run `nslookup ctf.<your-domain>` and `nslookup ctf.<your-domain> 8.8.8.8`. If the first fails and the second works, their network is at fault, and waiting 15 minutes fixes the first cause but not the second. A blocked domain affects every player on that provider, which is one more reason to buy a real domain for the event.
+
 Once every check passes, the system is live, and the next thing to read is [Run the event](../operate/index.md). If the event is more than a day away, [delete everything](../teardown.md) and deploy again the day before, which saves about US$11 for every day in between.

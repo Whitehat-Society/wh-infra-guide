@@ -45,7 +45,9 @@ html{font-size:calc(125% * var(--wh-zoom,1))}
 /* Sidebar toggle (javascripts/sidebar.js). Below 76.25em Material already uses a drawer. */
 .wh-navtoggle{display:none;margin:0 .2rem 0 .4rem;padding:.4rem;border:0;background:none;color:inherit;cursor:pointer;border-radius:.2rem}
 .wh-navtoggle:hover{background:rgba(255,255,255,.12)}
-.wh-navtoggle svg{width:1.2rem;height:1.2rem;fill:currentColor;display:block}
+.wh-navtoggle svg{width:1.2rem;height:1.2rem;display:block}
+/* Three bars with < on their right while the sidebar is open, mirrored to > while it's hidden */
+body.wh-nav-hidden .wh-navtoggle svg{transform:scaleX(-1)}
 @media screen and (min-width:76.25em){
   .wh-navtoggle{display:inline-block}
   body.wh-nav-hidden .md-sidebar--primary{display:none}

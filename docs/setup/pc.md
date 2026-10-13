@@ -156,4 +156,20 @@ No line should say `MISSING`, `terraform` should be at `v1.9` or newer, and `go`
 | `go` older than 1.25 | An older copy of Go is installed somewhere else. `which -a go` lists every copy, so you can remove the old one. |
 | `ctf` is MISSING | The virtual environment isn't active. Run `source ~/.venvs/wh/bin/activate`. |
 
+## Check your understanding
+
+Work out your answer before you open the hidden one.
+
+!!! question "1. The variable that vanished"
+    A page starts with `DOMAIN=$(python3 settings.py domain)`. Halfway down, you open a second terminal window to watch the pods, and later you paste the page's `curl -sI "https://ctf.$DOMAIN"` into that second window. `curl` answers `Could not resolve host: ctf.`. What went wrong, and how do you fix it?
+
+    ??? success "Answer"
+        A variable only exists in the window that set it. In the second window `$DOMAIN` is empty, so `curl` tried to reach a computer called `ctf.`. Either run the command in the first window, or run the page's first command box in the second window as well.
+
+!!! question "2. Only one tool is missing"
+    You're on macOS. Yesterday the tool check passed. Today, in a new Terminal window, `ctf` says `command not found`, while `aws`, `terraform` and every other tool still work. What is the likely cause, and why does it affect only `ctf`?
+
+    ??? success "Answer"
+        `ctf` was installed inside the virtual environment, so the terminal only finds it while that environment is active, whereas the other tools were installed for the whole computer. A new window activates the environment only if its start-up file says so, and on macOS that file is `~/.zshrc`. If the `source ~/.venvs/wh/bin/activate` line went into `~/.bashrc`, it never runs. Run the `source` line now, and add it to `~/.zshrc` so that every new window gets it.
+
 **Next:** [Accounts: overview](../accounts/index.md).

@@ -1,4 +1,4 @@
-# Start here
+# Introduction
 
 This guide shows you how to put the Whitehacks CTF online and how to take it down again afterwards. All it assumes is that you have a computer and an internet connection. You don't need a cloud account, any tools installed, or any experience with servers, because the guide covers each of those as you reach it.
 
@@ -54,6 +54,8 @@ Every page that asks you to do something is laid out the same way.
 Commands appear in grey boxes. To copy a command, click the copy icon at the right edge of its box, then paste it into your terminal. Text in angle brackets, like `<your-domain>`, is a placeholder, which means you replace the whole thing, brackets included, with your own value.
 
 Some steps can only be done in a web browser, such as creating the AWS account. Those steps list each page to open and each button to click.
+
+The last page of most sections ends with *Check your understanding*, a few problems from real deploys that use everything you have read so far. Each answer stays hidden until you open it, so try to work it out first.
 
 ## Getting help
 

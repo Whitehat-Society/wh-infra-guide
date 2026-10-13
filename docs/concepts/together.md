@@ -55,4 +55,26 @@ The passwords and tokens themselves are kept in Secrets Manager, and `utils/secr
 
 If you prefer to explore, the [Architecture explorer](../reference/architecture.md) is an interactive map of the whole system.
 
+## Check your understanding
+
+Each question describes a situation you could meet on a real deploy. Work out your answer before you open the hidden one, because the answers rely on how the parts fit together rather than on any single page.
+
+!!! question "1. The web challenge works, but the pwn challenge doesn't"
+    During a test, a teammate opens `https://example-web.challenges.<your-domain>` without any trouble, but `nc <address> 7331` for a pwn challenge just hangs. Which parts of the chain do you now know are working, and where would you look first?
+
+    ??? success "Answer"
+        The web page proves a lot. DNS answers for your domain (part 1), the network and the computers are running (part 2), and NGINX and the web load balancer are passing traffic on (part 3). None of that is on the pwn challenge's path, though. An `nc` connection carries no name, so NGINX can't sort it, and each pwn challenge has a load balancer of its own instead. Look at that challenge's own pieces in part 5. `kubectl get svc -n challenges-tcp` shows whether its load balancer has an address, and `kubectl get pods -n challenges-tcp` shows whether its pods are running.
+
+!!! question "2. A quick fix in the console"
+    During a test run, the alarm `<event>-mariadb-memory-high` keeps firing, so someone opens the CloudWatch console and raises its limit from 80% to 95%. A week later, a teammate runs `make deploy-eks` to change something unrelated. What happens to the alarm, and what would have been the better fix?
+
+    ??? success "Answer"
+        Terraform makes AWS match the files, so the next `make deploy-eks` quietly puts the limit back to 80%. A lasting change to an alarm belongs in `utils/eks/observability.tf`. The better fix, however, is usually to leave the alarm alone. It fires because MariaDB is close to its own memory limit, and a container that goes over its limit is stopped and restarted, which takes the scoreboard down with it. Raising the alarm's limit only hides that warning. Giving MariaDB more memory in `utils/ctfd/main.go` and running `make deploy-ctfd` removes the cause.
+
+!!! question "3. Every pod is running, but nobody can reach the scoreboard"
+    The club bought its domain from another company. You created the hosted zone in Route 53 but forgot to change the name servers at that company. The deploy finishes, and `kubectl get pods -n ctfd` shows all three pods running. What do players see, and why don't the running pods help?
+
+    ??? success "Answer"
+        Players can't reach the site at all. ExternalDNS writes `ctf.<your-domain>` into the Route 53 hosted zone, but the rest of the internet still asks the other company's name servers, which have never heard of that record. The certificate fails as well, because cert-manager proves to Let's Encrypt that the club owns the domain by adding a record in Route 53, and Let's Encrypt can't see that record either. Running pods only show that parts 3 and 4 work, and every player's request has to pass through part 1 before it gets anywhere near them.
+
 **Next:** [Your computer: overview](../setup/index.md).

@@ -11,7 +11,7 @@
   var btn = document.createElement("button");
   btn.className = "wh-navtoggle";
   btn.type = "button";
-  btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18v2H3V4m0 7h18v2H3v-2m0 7h18v2H3v-2z"/></svg>';
+  btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h13M3 12h7M3 19h13"/><path d="M21 4l-8 8 8 8"/></svg>';
   function label() {
     var hidden = document.body.classList.contains("wh-nav-hidden");
     btn.title = hidden ? "Show the sidebar" : "Hide the sidebar";

@@ -115,3 +115,25 @@ kubectl annotate ingress <name> -n challenges-web \
   nginx.ingress.kubernetes.io/limit-burst-multiplier=1 \
   nginx.ingress.kubernetes.io/limit-connections=15
 ```
+
+## Check your understanding
+
+These questions also use what you learned in the earlier sections. Work out your answer before you open the hidden one.
+
+!!! question "1. Players get 503 on a web challenge"
+    An hour into the event, several players report that a web challenge keeps answering `503`, while the health check says it passes and the pod is `Running`. A teammate wants to set `shared_web_replicas` to `2`. Is that the right fix?
+
+    ??? success "Answer"
+        Probably not. `503` is what NGINX answers when one address sends more than 20 requests a second, so the challenge isn't overloaded. Either a player's script is sending too many requests, or several players share one address, as a whole campus network often does, and their requests add up. A second copy wouldn't change the limit for either. A second copy can also break the challenge, because each copy keeps its own logins and data, and the setting changes every web challenge at once. Check that NGINX sees each player's own address, as in [Rate limits](#rate-limits). If the intended solution really needs more requests than the limit allows, lift the limit on that one challenge.
+
+!!! question "2. A code fix for a challenge with saved data"
+    A writer sends a fix for the server code of a web challenge that keeps players' accounts in a database file inside its pod, as `pokemon-portal` does. What happens to those accounts when you deploy the fix, and what do you check after the run?
+
+    ??? success "Answer"
+        `make build-images` builds a new image, and Pulumi replaces the challenge's pod with one that runs it. The database file lived inside the old pod, so every account that players registered on the challenge disappears. CTFd's solves and scores are untouched, because they live in MariaDB. Warn players in Discord before you deploy. After the run, check that the last lines don't say `FAILED, and left out of this run:`, because a failed build deletes the challenge's pods, and then check that the pod runs the new image as described in [Old code still running](data.md#old-code-still-running).
+
+!!! question "3. MariaDB stuck after a computer failed"
+    The computer that ran MariaDB failed. Ten minutes later CTFd still doesn't load, `mariadb` is `Pending`, and `kubectl describe pod` ends with `volume node affinity conflict`. A teammate suggests restoring the latest hourly backup. What is the better plan, and why?
+
+    ??? success "Answer"
+        Add a computer to the right zone instead, as in [When a computer fails](#when-a-computer-fails). The data isn't lost. It is on MariaDB's disk, which can only attach to a computer in its own zone, and that zone has no computer with room for it. Once a computer joins that zone, MariaDB starts with every solve it had. A restore wouldn't even start, because `make restore-ctfd` loads the file into the running MariaDB pod. Once it could run, it would throw away up to an hour of solves and registrations, and clearing the cache afterwards would log every player out.

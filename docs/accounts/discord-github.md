@@ -57,4 +57,26 @@ gh repo view Whitehat-Society/wh-base --json name -q .name
 
 The output should be `wh-base`.
 
+## Check your understanding
+
+These questions also use what you learned in section 1. Work out your answer before you open the hidden one.
+
+!!! question "1. A deploy late in the day"
+    You signed in with `aws configure sso` at 2 pm. At 9.30 pm you start a deploy step that takes about 20 minutes. What is likely to happen, and what should you do before you start?
+
+    ??? success "Answer"
+        The login lasts 8 hours, so it runs out at about 10 pm, partway through the step, and the command fails with `ExpiredToken` or `SSO session … expired`. Run `aws sso login` before you start, so that the login covers the whole run. If it does run out halfway, nothing is lost. Sign in again and run the same command again, and Terraform and Pulumi carry on from where they stopped, because each keeps a record of what it has already built.
+
+!!! question "2. A teammate asks for the root password"
+    A new teammate needs to help with the deploy from their own laptop, and asks you to send them the root user's password so that they can sign in. What do you do instead, and why is it better for the club?
+
+    ??? success "Answer"
+        Keep the root password in the password manager, and give the teammate a login of their own by repeating steps 3 and 5 of [Create your everyday login](aws.md#part-3-create-your-everyday-login). The root user can close the account, and sharing it means sharing its second factor too. A personal login has the AdministratorAccess the deploy needs, its terminal keys expire after 8 hours by themselves, and when the teammate leaves the committee you remove their login without changing anyone else's.
+
+!!! question "3. The name servers haven't changed yet"
+    It's Friday night, and the deploy is planned for Saturday morning. You've just entered the four Route 53 name servers at the company that sold the club its domain, and `dig +short NS <your-domain>` still prints the old ones. What depends on this change, and what do you check before Saturday?
+
+    ??? success "Answer"
+        Two things depend on it. Players' browsers only find `ctf.<your-domain>` once the internet asks Route 53 about the domain, and Let's Encrypt only issues the certificate once it can see the records that cert-manager adds there. The change can take up to two days to spread, and your own network may remember the old answer for hours. Check on Saturday morning with Google's public DNS, as in [Check it worked](domain.md#check-it-worked), which tells you whether the wider internet has the change even if your own network doesn't yet. If the certificate isn't ready after the deploy, this is the first place to look.
+
 **Next:** [Code and settings: overview](../code/index.md).

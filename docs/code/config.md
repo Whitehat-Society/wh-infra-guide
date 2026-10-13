@@ -56,4 +56,26 @@ It prints nine names, from `admin_email` to `secret_key`. If `make secrets` ende
 | `Restored <event>/config, which a teardown had scheduled for deletion.` | This isn't an error. A teardown in the last 7 days deleted the secret, and the command brought it back with its old values. |
 | `fill in … first (they still say CHANGE-ME)` | The settings file isn't finished, so go back to [Your settings](make-it-yours.md). |
 
+## Check your understanding
+
+These questions also use what you learned in sections 1 and 3. Work out your answer before you open the hidden one.
+
+!!! question "1. Reusing last year's settings file"
+    To save time, you copy last year's `terraform.tfvars.json`, whose `event_name` is `wh-2026`, and change only the domain. You use the same AWS account as last year, and last year's system was deleted three days ago. What happens when you run `make secrets`, and what else goes wrong?
+
+    ??? success "Answer"
+        Every name comes from `event_name`, so the new event takes over all of last year's names. `make secrets` finds `wh-2026/config` still waiting out its 7 days of deletion, and it restores the secret instead of creating a new one. Your event would then run with last year's passwords, including the admin password that last year's committee knows. The buckets would also be named `wh-2026-pulumi-state` and `wh-2026-ctfd-backups`, and if another account holds those names, `make deploy-eks` fails with `BucketAlreadyExists`. Give each event a new `event_name`, and check every name with `make settings` before you go on.
+
+!!! question "2. A teammate builds from their own laptop"
+    During the event, a teammate has to run `make build-images` from their own laptop. They have cloned the event's repository and installed the tools. What else do they need, and what don't they need?
+
+    ??? success "Answer"
+        They need two things. The first is your filled-in `utils/eks/terraform.tfvars.json`, sent to them privately, because git no longer tracks it, so their copy of the repository doesn't contain it, and without it `settings.py` can't work out any names. The second is a login of their own through the same **AdministratorAccess** permission set that you deployed with. Everyone who signs in through that permission set acts as the same AWS role, and the cluster only lets in the role that created it, so a login made some other way can reach AWS but not the cluster. They don't need any password or token, because the build reads the Pulumi passphrase and CTFd's admin token from Secrets Manager. That is the reason secrets live there rather than in files.
+
+!!! question "3. The settings file reached GitHub"
+    You skipped step 2 of [Your settings](make-it-yours.md), and a teammate notices that your filled-in `terraform.tfvars.json` is in the event's repository on GitHub. What did that expose, and what didn't it?
+
+    ??? success "Answer"
+        It exposed your email addresses, the domain and the hosted zone's ID, which is why the file stays out of git. It exposed no passwords, tokens or webhook addresses, because those are only ever in Secrets Manager. Do step 2 now so that later changes stay on your computer. The old version stays in the repository's history, so if the repository could become public, ask the infra lead about removing it.
+
 **Next:** [Deploy overview](../deploy/index.md).
