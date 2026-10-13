@@ -24,7 +24,7 @@ When you finish this page, the only charges left are for the few things that sta
     cd ~/wh/wh-2027/utils
     make destroy
     ```
-    It runs the three steps in the diagram above. First it deletes the challenges and CTFd with Pulumi, deletes any DNS records the cluster made that are still there, so that they can't block next year's event, and waits for the load balancers to go. Then Terraform deletes the cluster, the network, the buckets and both image registries, and lines like `module.vpc.aws_vpc.this[0]: Still destroying...` can continue for 10 minutes, so don't interrupt them. Last, it deletes the log groups and prints one `deleted` line for each, usually 9 to 11 in all. It ends with `Done.`
+    It runs the three steps in the diagram above. First it deletes the challenges and CTFd with Pulumi, deletes any DNS records the cluster made that are still there, so that they can't block next year's event, and waits for the load balancers to go. Then Terraform deletes the cluster, the network, the buckets and both image registries, and lines like `module.vpc.aws_vpc.this[0]: Still destroying...` can continue for 10 minutes, so don't interrupt them. Last, it deletes the log groups and prints one `deleted` line for each, usually 6 to 11 in all. It ends with `Done.`
 
 ## Check the bill has stopped
 
