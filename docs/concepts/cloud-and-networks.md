@@ -17,15 +17,17 @@ AWS has data centres in many cities, and the group of data centres in one city i
 
 <figure class="diagram">
 --8<-- "diagrams/network.svg"
-<figcaption>The load balancer is the only way in. The computers can make outgoing connections through the NAT gateway, but nobody on the internet can reach them directly.</figcaption>
+<figcaption>The load balancer is the only way in for players. All three computers reach the internet through the one NAT gateway, and the replies come back the same way.</figcaption>
 </figure>
+
+The computers have no public address, so nothing on the internet can start a conversation with them. They still need to download software and challenge images, and the NAT gateway makes that possible. When a computer asks a website for a file, the request goes through the NAT gateway, which sends it on with its own public address and notes which computer asked. The website sends the file back to the NAT gateway, and the NAT gateway looks at its notes and passes the file on to the computer that asked. A download is simply the reply to a request, so it comes back along the same path. The NAT gateway only refuses connections that someone outside tries to open first, because no computer asked for them and its notes have no match.
 
 | Term | What it is |
 |---|---|
 | **VPC** | The club's own private network inside the region. |
 | **Subnet** | A slice of the VPC. A **public** subnet can be reached from the internet, and a **private** subnet can't. |
 | **EC2** | The service that rents out computers. Each one is a **virtual machine**, which is a slice of a large physical server. This system uses three `t3.medium` machines, each with 2 processor cores and 4 GB of memory. |
-| **NAT gateway** | A device that lets computers in private subnets download software without accepting any incoming connections, much like a home router. |
+| **NAT gateway** | A device that sends the private computers' requests out to the internet and passes the replies back to them, while refusing any connection that starts outside. A home router works the same way. |
 | **Load balancer** | A service that receives incoming connections and passes each one to a computer that is working. AWS's **NLB** (Network Load Balancer) does this without reading the traffic. |
 
 ## Disks and storage
