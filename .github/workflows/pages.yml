@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # gitleaks scans every commit in the push
       - run: scripts/scan.sh
       - uses: gitleaks/gitleaks-action@v2
         env:
