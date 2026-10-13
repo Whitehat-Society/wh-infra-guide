@@ -1,6 +1,8 @@
 # Delete everything
 
-AWS keeps billing for the system until it no longer exists, so delete it the day after the event, or whenever it will sit unused for more than a day. This page deletes everything except the domain and its DNS records, and rebuilding the system later with [Deploy](deploy/index.md) takes about 1.5 hours.
+## The goal
+
+When you finish this page, the only charges left are for the few things that stay on purpose, mainly the domain and its hosted zone, which cost about US$0.50 a month plus the domain's yearly fee. [What stays, on purpose](#what-stays-on-purpose) lists them. AWS keeps billing for the system until it no longer exists, so delete it the day after the event, or whenever it will sit unused for more than a day. The domain and its hosted zone stay, so rebuilding the system later with [Deploy](deploy/index.md) takes about 1.5 hours.
 
 !!! danger "This can't be undone"
     Deleting the system deletes the database, every uploaded file and every challenge image, so make sure you keep the final backup in step 2.

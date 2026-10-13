@@ -55,4 +55,4 @@ The passwords and tokens themselves are kept in Secrets Manager, and `utils/secr
 
 If you prefer to explore, the [Architecture explorer](../reference/architecture.md) is an interactive map of the whole system.
 
-**Next:** [Open a terminal](../setup/terminal.md).
+**Next:** [Your computer: overview](../setup/index.md).

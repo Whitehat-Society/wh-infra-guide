@@ -61,10 +61,12 @@ nav:
       - 6. Alarms and backups: concepts/safety.md
       - Putting it together: concepts/together.md
   - 2 · Your computer:
+      - Overview: setup/index.md
       - Open a terminal: setup/terminal.md
       - Terminal basics: setup/terminal-basics.md
       - Install the tools: setup/pc.md
   - 3 · Accounts:
+      - Overview: accounts/index.md
       - AWS account: accounts/aws.md
       - Prepare the account: accounts/prepare.md
       - Sign in from the terminal: accounts/cli-login.md
@@ -72,6 +74,7 @@ nav:
       - Domain name: accounts/domain.md
       - Discord and GitHub: accounts/discord-github.md
   - 4 · Code and settings:
+      - Overview: code/index.md
       - Get the code: code/clone.md
       - Make it yours: code/make-it-yours.md
       - Settings and secrets: code/config.md
@@ -83,6 +86,7 @@ nav:
       - 4. Backups and health checks: deploy/day2.md
       - 5. Final checks: deploy/verify.md
   - 6 · Run the event:
+      - Overview: operate/index.md
       - Watching the system: operate/monitoring.md
       - Adding capacity: operate/scaling.md
       - Change a challenge: operate/change.md

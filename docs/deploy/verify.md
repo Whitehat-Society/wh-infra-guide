@@ -66,4 +66,4 @@ kubectl logs -n challenges-web deploy/<name> --tail=50
 kubectl logs -n challenges-tcp deploy/<name> --tail=50
 ```
 
-Once every check passes, the system is live, and the next thing to read is [Run the event](../operate/monitoring.md). If the event is more than a day away, [delete everything](../teardown.md) and deploy again the day before, which saves about US$11 for every day in between.
+Once every check passes, the system is live, and the next thing to read is [Run the event](../operate/index.md). If the event is more than a day away, [delete everything](../teardown.md) and deploy again the day before, which saves about US$11 for every day in between.

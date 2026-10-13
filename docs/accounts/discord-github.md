@@ -57,4 +57,4 @@ gh repo view Whitehat-Society/wh-2026 --json name -q .name
 
 The output should be `wh-2026`.
 
-**Next:** [Get the code](../code/clone.md).
+**Next:** [Code and settings: overview](../code/index.md).

@@ -103,7 +103,7 @@ python3 secrets.py list | wc -l
 git check-ignore config.ini eks/terraform.tfvars.json ecr/terraform.tfvars
 ```
 
-The first command prints `12`, or `10` if you skipped Docker Hub. The second prints all three file names, which confirms that git will never upload them.
+The first command prints `12`, or `10` if you skipped Docker Hub, which is one line for each secret. The second prints all three file names, which confirms that git will never upload them.
 
 ## If it fails
 

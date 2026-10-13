@@ -1,6 +1,21 @@
 # Your challenge folder
 
-This section is for challenge writers. It describes what to put in your challenge folder so that the infra team can deploy it without changing anything. You don't need any AWS access to write a challenge, only Git, plus Docker if your challenge has a server.
+This section is for challenge writers.
+
+## The goal
+
+When you finish, your challenge appears in CTFd with its text, files and points, players who find the flag score, and, if it has a server, every player can reach that server. The infra team should be able to deploy it without changing anything in your folder. You don't need any AWS access to write a challenge, only Git, plus Docker if your challenge has a server.
+
+## The order
+
+| Page | What you'll have afterwards |
+|---|---|
+| Your challenge folder, this page | The right type for your challenge, and the folder laid out the way the deploy expects. |
+| [challenge.yml](challenge-yml.md) | The file that describes the challenge to CTFd and to the deploy. |
+| [Challenges with a server](server.md) | A Dockerfile that you have tested on your own computer. Skip this page for a `text` challenge. |
+| [Hand it in](submit.md) | A folder that passes the checklist and the validator, handed to the infra team. |
+
+## How a challenge gets deployed
 
 Each challenge is one folder in the `wh-2026` repository, placed inside its category's folder such as `web/` or `crypto/`. A file in that folder named `challenge.yml` describes the challenge, including its name, text, points, flag and type. The deploy tools read this file and nothing else, so anything they need has to be in it.
 

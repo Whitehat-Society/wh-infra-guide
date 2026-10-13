@@ -163,4 +163,4 @@ No line should say `MISSING`, `terraform` should be at `v1.9` or newer, and `go`
 | `go` older than 1.25 | An older copy of Go is installed somewhere else. `which -a go` lists every copy, so you can remove the old one. |
 | `ctf` is MISSING | The virtual environment isn't active. Run `source ~/.venvs/wh/bin/activate`. |
 
-**Next:** [Create the AWS account](../accounts/aws.md).
+**Next:** [Accounts: overview](../accounts/index.md).
