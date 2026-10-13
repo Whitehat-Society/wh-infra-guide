@@ -1,6 +1,6 @@
 # Code map
 
-This page is for whoever maintains `wh-base`. It lists every file, command and setting, and says which page of the guide explains it, so that a change to the code also shows you which page to update. The guide's `scripts/check_code.py` compares this guide with the code, and the repository's checks run it on every pull request, so a change that leaves the guide behind fails before it is merged.
+This page is for whoever maintains `wh-base`. It lists every file, command and setting, and says which page of the guide explains it, so that a change to the code also shows you which page to update. The guide's `scripts/check_code.py` compares this guide with the code, and the repository's checks run it on every pull request to `Whitehat-Society/wh-base`, so a change that leaves the guide behind fails before it is merged. Forks skip this check, because a fork's code may differ from this guide.
 
 ## Commands
 

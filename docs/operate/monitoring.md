@@ -41,7 +41,7 @@ If the result is empty, no alarm is active.
 
 ## When an alert fires
 
-Most fixes are a **restart**, in which Kubernetes replaces a Deployment's pods with fresh ones, and that clears most stuck programs. `kubectl rollout restart` does this without any downtime when there is more than one copy, and with a few seconds of downtime when there is only one.
+Most fixes are a **restart**, in which Kubernetes replaces a Deployment's pods with fresh ones, and that clears most stuck programs. With `kubectl rollout restart`, a web challenge with more than one copy keeps answering, because a new pod gets traffic only once it accepts connections. A pwn challenge also keeps answering, but players who are connected to an old pod lose their `nc` session. CTFd, MariaDB and Redis have one copy each, so they are down until the new pod has started.
 
 | Alert or report | Look first | Usual fix |
 |---|---|---|

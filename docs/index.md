@@ -36,7 +36,7 @@ The system runs on computers rented from Amazon Web Services (AWS). AWS charges 
 |---|---|
 | The running system | about US$0.45 per hour, or US$11 per day |
 | The domain name, e.g. `example-ctf.com` | about US$15 per year |
-| Database backups kept after the event | a few cents per month |
+| The final database backup, which you download before deleting everything | nothing, since the backup bucket is deleted with the system |
 
 These figures come from WH-2026, so check the current AWS prices before you set a budget. A typical event keeps the system running for two or three days, which covers one day for a test run and one or two days for the event itself.
 

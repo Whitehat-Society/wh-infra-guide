@@ -2810,7 +2810,7 @@
    "sub": "1.18.2 · letsencrypt-prod",
    "cat": "k8s",
    "glyph": "CRT",
-   "body": "Issues and renews every certificate in the cluster: ctfd-tls, one {name}-tls per web challenge, and the wildcard-challenges default certificate for *.whitehats-ctf.com.",
+   "body": "Issues and renews every certificate in the cluster: ctfd-tls, one {name}-tls per web challenge, and the wildcard-challenges fallback certificate for *.challenges.whitehats-ctf.com.",
    "facts": [
     "ClusterIssuer and Certificate are applied by kubectl inside Terraform null_resources",
     "A wildcard covers one label only, so *.whitehats-ctf.com doesn't cover x.challenges.whitehats-ctf.com; per-Ingress certificates do that job"
