@@ -28,9 +28,14 @@
 .md-typeset h1,.md-typeset h2,.md-typeset h3{font-family:var(--f-display);font-weight:700;color:var(--ink)}
 .md-typeset h1{font-weight:800;letter-spacing:-.01em}
 .md-header{background:var(--md-primary-fg-color)}
-/* One column width for everything on the page: prose, tables, diagrams and videos
-   share the same left and right edges. Wider diagrams and tables scroll inside it. */
-.md-content__inner{max-width:1080px}
+/* Text size follows --wh-zoom (overrides/main.html), on top of Material's own steps for wide screens */
+html{font-size:calc(125% * var(--wh-zoom,1))}
+@media screen and (min-width:100em){html{font-size:calc(137.5% * var(--wh-zoom,1))}}
+@media screen and (min-width:125em){html{font-size:calc(150% * var(--wh-zoom,1))}}
+/* The explainer blocks and diagrams are sized in px, so they scale with zoom instead. The font-size
+   undoes the zoom on the inherited rem size, which already follows --wh-zoom. */
+.wh,.md-typeset figure.diagram{zoom:var(--wh-zoom,1)}
+.wh{font-size:calc(.8rem / var(--wh-zoom,1))}
 .md-typeset video{width:100%;border:1px solid var(--line);border-radius:10px;background:#000}
 .md-typeset .md-typeset__table{display:block;max-width:100%}
 .md-typeset .md-typeset__table table:not([class]){display:table;width:100%}

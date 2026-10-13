@@ -14,6 +14,7 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 - Pages: `docs/` (Markdown). Sidebar order: `nav` in `mkdocs.yml`
 - Reusable blocks: `snippets/`, included with `--8<-- "name"`
 - Interactive explorer, diagrams and glossary: `docs/javascripts/`, data in `docs/assets/infra-diagram-data.json`. They come from the WH-2026 infra explainer (`docs/infra.html` in the wh-2026 repo)
+- Text zoom: `overrides/main.html` makes Ctrl + scroll and Ctrl + plus or minus scale the text instead of the page, so the layout keeps the full width
 
 ## Diagrams, screenshots and videos
 
