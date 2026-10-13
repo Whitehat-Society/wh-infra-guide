@@ -109,7 +109,7 @@ All players use the same copies of your server, so think through what happens in
 
 - **A player changes stored data**, such as a profile or a database row. Every other player sees the change, so reset the data for each session, or keep it separate for each player.
 - **A player crashes the program.** For a pwn challenge, `socat` starts a fresh program for each connection, so a crash only affects that one player. For a web challenge, the whole site restarts and everyone waits a few seconds.
-- **A player sends thousands of requests.** The cluster limits each address to 20 requests per second to a web challenge and answers `503` beyond that, so design the intended solution to need fewer requests than that.
+- **A player sends thousands of requests.** The cluster limits each address to 20 requests per second to a web challenge, for each of the two NGINX copies, and answers `503` beyond that, so design the intended solution to need fewer requests than that.
 - **A player logs in on one copy and then reaches another.** During a rush the infra team may run two copies of a web challenge, each with its own memory. Keep logins in a signed cookie rather than only in the program's memory, or say in your README that the challenge has to stay at one copy.
 
 Write your answers in the README, so that the infra team knows the challenge's limits.

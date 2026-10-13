@@ -17,7 +17,7 @@ AWS has data centres in many cities, and the group of data centres in one city i
 
 ## The domain name
 
-Every computer on the internet has an **IP address**, such as `13.250.10.4`. A **port** is a number from 1 to 65535 that says which program on that computer a connection is meant for. Websites use port 443, for example, and the pwn challenge `loop` uses port 7331. Most connections use **TCP**, which is a reliable way to send data between two programs, and the `nc` command that pwn players use opens a plain TCP connection.
+Every computer on the internet has an **IP address**, such as `13.250.10.4`. A **port** is a number from 1 to 65535 that says which program on that computer a connection is meant for. Websites use port 443, for example, and the pwn challenge `example-tcp` uses port 1337. Most connections use **TCP**, which is a reliable way to send data between two programs, and the `nc` command that pwn players use opens a plain TCP connection.
 
 People remember names more easily than numbers, so the club rents a **domain name** such as `example-ctf.com` from a **registrar**, and it can then create any name under that domain. **DNS** is the system that turns those names into addresses.
 

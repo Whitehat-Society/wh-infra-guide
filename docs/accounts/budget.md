@@ -1,6 +1,6 @@
 # Budget alert
 
-A **budget** in AWS is a spending limit that emails you as your spending approaches it. It doesn't stop any spending, but it does warn you in time to act. This page creates a monthly budget that emails you twice, first when actual spending passes half the limit, and again when AWS predicts that you'll pass the whole limit by the end of the month.
+A **budget** in AWS is a spending threshold that emails you as your spending approaches it. It doesn't stop any spending, but it does warn you in time to act. This page creates a monthly budget that emails you twice, first when actual spending passes half the threshold, and again when AWS predicts that you'll pass the whole threshold by the end of the month.
 
 1. Set your email address and the monthly limit in US dollars, replacing the example address with your own:
     ```bash

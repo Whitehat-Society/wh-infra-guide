@@ -18,7 +18,7 @@ Suppose the club owns the domain `example-ctf.com`. The numbers in the diagram m
 | 3 | The load balancer passes the connection on to NGINX. | 3 · Kubernetes and its helpers |
 | 4 | NGINX looks at the name the player typed and sends the request on. A name starting with `ctf.` goes to CTFd, and `example-web.challenges.…` goes to that web challenge. | 3, using the Ingresses from parts 4 and 5 |
 | 5 | CTFd reads the player's team and score from its database and sends the finished page back. | 4 · the scoreboard |
-| A, B | A pwn player runs `nc <address> 7331` instead, and that challenge's own load balancer connects them straight to the challenge. | 5 · the challenges |
+| A, B | A pwn player runs `nc <address> 1337` instead, and that challenge's own load balancer connects them straight to the challenge. | 5 · the challenges |
 
 All the while, part 6 is checking every challenge every 5 minutes and copying the database every hour.
 
@@ -60,7 +60,7 @@ If you prefer to explore, the [Architecture explorer](../reference/architecture.
 Each question describes a situation you could meet on a real deploy. Work out your answer before you open the hidden one, because the answers rely on how the parts fit together rather than on any single page.
 
 !!! question "1. The web challenge works, but the pwn challenge doesn't"
-    During a test, a teammate opens `https://example-web.challenges.<your-domain>` without any trouble, but `nc <address> 7331` for a pwn challenge just hangs. Which parts of the chain do you now know are working, and where would you look first?
+    During a test, a teammate opens `https://example-web.challenges.<your-domain>` without any trouble, but `nc <address> 1337` for a pwn challenge just hangs. Which parts of the chain do you now know are working, and where would you look first?
 
     ??? success "Answer"
         The web page proves a lot. DNS answers for your domain (part 1), the network and the computers are running (part 2), and NGINX and the web load balancer are passing traffic on (part 3). None of that is on the pwn challenge's path, though. An `nc` connection carries no name, so NGINX can't sort it, and each pwn challenge has a load balancer of its own instead. Look at that challenge's own pieces in part 5. `kubectl get svc -n challenges-tcp` shows whether its load balancer has an address, and `kubectl get pods -n challenges-tcp` shows whether its pods are running.

@@ -8,7 +8,7 @@ The scoreboard lists the challenges, but many challenges also need a server of t
 |---|---|---|
 | **text** | Read the description and download files, as in crypto, forensics, OSINT and most misc challenges. | Nothing. The challenge lives entirely inside CTFd. |
 | **shared-web** | Open a website such as `https://example-web.challenges.<your-domain>` in the browser. | Pods behind NGINX, which share the one web load balancer. |
-| **shared-tcp** | Connect from the terminal with a command such as `nc <address> 7331`. | Pods behind a load balancer of their own. |
+| **shared-tcp** | Connect from the terminal with a command such as `nc <address> 1337`. | Pods behind a load balancer of their own. |
 
 "Shared" means that every player uses the same running copies of the challenge, so a player who crashes the server crashes it for everyone until Kubernetes restarts it. [Known weak spots](../operate/risks.md) explains what that means during an event.
 
@@ -41,9 +41,9 @@ name: "example-web"
 category: Web
 value: 1000
 challenge_type: shared-web
-port_number: 3000
+port_number: 8080
 flags:
-    "WH2026{...}"
+  - WH2027{...}
 ```
 
 `challenge_type` decides which of the three kinds the challenge is, and `port_number` tells the deploy which port the server listens on.

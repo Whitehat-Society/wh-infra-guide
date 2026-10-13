@@ -27,11 +27,11 @@ Two more safety nets run inside the cluster as **CronJobs**, which are Kubernete
 | Job | Schedule | What it does |
 |---|---|---|
 | `ctfd-backup` | Every hour | Copies the whole database to an S3 bucket, which keeps 30 days of copies. |
-| `challenge-healthcheck` | Every 5 minutes | Connects to every web and pwn challenge, and posts in Discord when one doesn't answer. |
+| `challenge-healthcheck` | Every 5 minutes | Connects to every web and pwn challenge, posts in Discord when one doesn't answer, and posts a summary of every challenge once an hour. |
 
 <figure class="diagram">
 --8<-- "diagrams/day2.svg"
-<figcaption><code>ctfd-backup</code> keeps 30 days of hourly copies, and <code>challenge-healthcheck</code> stays silent as long as every challenge answers.</figcaption>
+<figcaption><code>ctfd-backup</code> keeps 30 days of hourly copies, and <code>challenge-healthcheck</code> posts only when a challenge fails, plus one summary every hour.</figcaption>
 </figure>
 
 Unlike the other parts, these jobs are written as plain Kubernetes files rather than through Terraform or Pulumi. The schedule is a single line, written in the format that `cron`, the classic Linux scheduler, uses. This is the start of `utils/ctfd/backup-cronjob.yaml`:

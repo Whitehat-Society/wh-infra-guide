@@ -42,7 +42,7 @@ Busy pods on their own never trigger a new computer, because a computer is only 
         ```
     3. Check that `kubectl get pods -n challenges-tcp` shows the new number of pods for each challenge.
 
-    Extra pwn copies are always safe, because every connection already gets its own run of the program.
+    Extra pwn copies are safe for the usual socat challenge, because every connection already gets its own run of the program. They aren't safe for a program that keeps anything between connections, such as a file it writes, because each copy keeps its own.
 
 === "More NGINX copies"
 

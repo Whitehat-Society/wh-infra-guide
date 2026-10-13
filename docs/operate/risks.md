@@ -81,7 +81,7 @@ A **rate limit** caps how many requests one address may send, and NGINX enforces
 
 | Service | Limit per address | Over the limit |
 |---|---|---|
-| Each web challenge | 20 requests a second, at most 15 open connections | `503` (busy) |
+| Each web challenge | 20 requests a second per address, for each NGINX copy, and at most 15 open connections | `503` (busy) |
 | CTFd | None. A limit of 100 a second was tried at WH-2026 and then removed. | — |
 | Pwn challenges | None, because they don't go through NGINX. | — |
 

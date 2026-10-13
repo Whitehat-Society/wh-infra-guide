@@ -84,11 +84,11 @@ Removing a challenge deletes its solves, and every team that solved it loses tho
 
 1. [Take a backup](backups.md#take-a-backup-now).
 2. Delete the challenge from CTFd by opening **Admin → Challenges →** the challenge, clicking **Delete** (the bin icon) and confirming. ctfcli can't delete challenges, so this step has to happen in the browser.
-3. For a web or pwn challenge, take it off the cluster. Either move its folder out of the category folder, or set `challenge_type: text` in its `challenge.yml`, and then run:
+3. Move the challenge's folder out of its category folder, for example to `~/wh/removed/`, whatever type it is. A folder left in place is loaded into CTFd again by the next `make build-images`. Then run:
     ```bash
     make build-images
     ```
-    Pulumi deletes the challenge's pods and Service, and for a pwn challenge its load balancer too, and ExternalDNS deletes its address within a few minutes. A warning ending in `DependencyViolation: resource sg-… has a dependent object` is harmless, because the load balancer controller tries again and the leftover security group is gone a minute later.
+    For a web or pwn challenge, Pulumi deletes the challenge's pods and Service, and for a pwn challenge its load balancer too, and ExternalDNS deletes its address within a few minutes. A warning ending in `DependencyViolation: resource sg-… has a dependent object` is harmless, because the load balancer controller tries again and the leftover security group is gone a minute later.
 4. Give the health check the new list with `make deploy-healthcheck-cronjob`.
 5. If you like, delete the challenge's image as well, which otherwise stays in ECR until teardown:
     ```bash

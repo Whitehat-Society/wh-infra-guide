@@ -74,7 +74,7 @@ For a test, a name from a free service such as [DigitalPlat FreeDomain](https://
 
 ## Check it worked
 
-1. Print the **hosted zone ID**, which you'll need on [Settings and secrets](../code/config.md):
+1. Print the **hosted zone ID**, which you'll need on [Your settings](../code/make-it-yours.md):
     ```bash
     aws route53 list-hosted-zones-by-name --dns-name "$DOMAIN" \
       --query 'HostedZones[0].Id' --output text | sed 's#/hostedzone/##'

@@ -56,6 +56,7 @@ If you followed [Prepare the account](prepare.md), you already sign in to AWS wi
     echo 'export AWS_PROFILE=wh' >> ~/.bashrc
     export AWS_PROFILE=wh
     ```
+    On macOS, use `~/.zshrc` instead of `~/.bashrc`.
 3. When a command later says that the session has expired, run step 1 again. The keys only last as long as your browser session for that project, so a session you signed in to 11 hours ago will expire within the hour. Before a long job such as a deploy or a teardown, sign out of the project in the browser, sign in again, and then run step 1.
 
 !!! tip "If the browser page stops after you pick the project"
@@ -71,7 +72,7 @@ If you followed [Prepare the account](prepare.md), you already sign in to AWS wi
 aws sts get-caller-identity
 ```
 
-The output shows three fields. `Account` is a 12-digit number, which is the club's **account ID**, and `Arn` contains `AWSReservedSSO_AdministratorAccess`, or `AccountFullAccessRole` if you used `aws login`. Write down the account ID, because [Make it yours](../code/make-it-yours.md) needs it.
+The output shows three fields. `Account` is a 12-digit number, which is the club's **account ID**, and `Arn` contains `AWSReservedSSO_AdministratorAccess`, or `AccountFullAccessRole` if you used `aws login`.
 
 ## Signing in again
 
@@ -81,12 +82,14 @@ The login lasts 8 hours. When a command says `Token has expired` or `The SSO ses
 aws sso login
 ```
 
+If you signed in with `aws login`, run `aws login --profile wh-login --region ap-southeast-1` instead.
+
 ## If it fails
 
 | Message | Fix |
 |---|---|
 | `Unable to locate credentials` | This terminal doesn't know about the profile. Run `export AWS_PROFILE=wh`. |
 | `ForbiddenException: No access` | Your user isn't assigned to the account yet. Redo step 5 of [Part 3](aws.md#part-3-create-your-everyday-login). |
-| The browser says the code is invalid | Codes expire after about 10 minutes, so run `aws sso login` to get a new one. |
+| The browser says the code is invalid | Codes expire after about 10 minutes, so run `aws sso login`, or `aws login --profile wh-login --region ap-southeast-1`, to get a new one. |
 
 **Next:** [Budget alert](budget.md).

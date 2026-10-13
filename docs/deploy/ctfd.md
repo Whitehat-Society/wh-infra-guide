@@ -62,7 +62,7 @@ The first command prints `HTTP/2 200` or `HTTP/2 302`, which means that CTFd ans
 
 | Message | Fix |
 |---|---|
-| The `ctfd` pod shows `ImagePullBackOff` | Kubernetes can't download the CTFd image, usually because the upload didn't finish. Run `make build-ctfd` and then `kubectl rollout restart deploy/ctfd -n ctfd`. |
+| The `ctfd` pod shows `ImagePullBackOff` | Kubernetes can't download the CTFd image, usually because the upload didn't finish. Run `make deploy-ctfd` again, which uploads the image and points CTFd at it. |
 | A pod stays `Pending`, and `kubectl get pvc -n ctfd` also shows `Pending` | The disk type is missing, so run `make deploy-eks` again. |
 | `Cannot connect to the Docker daemon` | Docker Desktop isn't running, so start it and run `make deploy-ctfd` again. |
 | The `dig` in step 3 still prints nothing after 5 minutes | An earlier event's cluster probably left a record with the same name behind. Run `python3 dns_records.py check`, and if it names an old cluster, remove its records with the `make dns-clean` command it prints. |

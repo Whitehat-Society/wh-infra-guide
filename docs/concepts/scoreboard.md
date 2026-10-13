@@ -1,6 +1,6 @@
 # 4 · The scoreboard
 
-With Kubernetes running, the club can put the first program that players see onto the cluster. That program is **CTFd**, the free scoreboard software where players register, read the challenges, submit flags and follow the rankings. The club runs the official CTFd release with one addition, a plugin that announces each challenge's first solve in Discord.
+With Kubernetes running, the club can put the first program that players see onto the cluster. That program is **CTFd**, the free scoreboard software where players register, read the challenges, submit flags and follow the rankings. The club runs the official CTFd release with one addition, a plugin that announces each challenge's first three solves in Discord.
 
 ## What the scoreboard is made of
 
@@ -45,13 +45,13 @@ Kubernetes doesn't take a list of programs. It takes a set of **objects**, each 
 These objects are created by **Pulumi**, a tool that does the same job as Terraform, except that its description is a program written in the Go language. The scoreboard's program is `utils/ctfd/main.go`. These excerpts read the domain from Pulumi's settings, which `make deploy-ctfd` fills in from your settings file, and create the Ingress that sends `ctf.<your-domain>` to CTFd:
 
 ```go
-ctfHost := "ctf." + cfg.Require("domain")
+host := "ctf." + cfg.Require("domain")
 
 networkingv1.NewIngress(ctx, "ingress", &networkingv1.IngressArgs{
     Spec: networkingv1.IngressSpecArgs{
         Rules: networkingv1.IngressRuleArray{
             networkingv1.IngressRuleArgs{
-                Host: pulumi.String(ctfHost),
+                Host: pulumi.String(host),
                 ...
 ```
 

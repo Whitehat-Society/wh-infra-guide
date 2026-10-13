@@ -27,6 +27,6 @@ The stages build the chain from [What we're building](../concepts/big-picture.md
 ## Two habits that save time
 
 1. **Use one terminal window for the whole deploy.** Some pages set a variable such as `EVENT` that later commands on the same page rely on. If you do open a new window, run the first command box of the page you're on again.
-2. **Sign in again if your AWS login expires halfway.** When that happens, a command fails with `ExpiredToken` or `SSO session ... expired`. Run `aws sso login` and then the same `make` command again, and Terraform and Pulumi will both carry on from where they stopped.
+2. **Sign in again if your AWS login expires halfway.** When that happens, a command fails with `ExpiredToken` or `SSO session ... expired`. Run `aws sso login`, or `aws login --profile wh-login --region ap-southeast-1` if you signed in that way, and then the same `make` command again, and Terraform and Pulumi will both carry on from where they stopped.
 
 **Next:** [1. The cluster](eks.md).

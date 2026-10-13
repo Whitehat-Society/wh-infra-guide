@@ -17,7 +17,7 @@ During the event, keep three things open on your screen. Together they tell you 
 
 <figure class="diagram">
 --8<-- "diagrams/monitoring.svg"
-<figcaption>Everything that goes wrong ends up in the Discord alerts channel. Alarms also arrive by email, so they still reach you if Discord itself is down.</figcaption>
+<figcaption>Failed health checks and CloudWatch alarms end up in the Discord alerts channel, but a problem that neither one checks, such as a wrong flag, doesn't. Alarms also arrive by email, so they still reach you if Discord itself is down.</figcaption>
 </figure>
 
 ## What raises an alert
@@ -50,7 +50,7 @@ Most fixes are a **restart**, in which Kubernetes replaces a Deployment's pods w
 | NGINX pod down | `kubectl get pods -n ingress-nginx` | `kubectl rollout restart deploy/ingress-nginx-controller -n ingress-nginx` |
 | Database memory high | The dashboard's MariaDB graph | At a quiet moment, raise MariaDB's memory limit in `utils/ctfd/main.go` and run `make deploy-ctfd`. CTFd is down for about a minute while it restarts. |
 | Node memory or disk high | `kubectl describe node <name>` | Add a node, as described in [Adding capacity](scaling.md). |
-| Players see "503" on a web challenge | Nothing to check | The challenge limits each address to 20 requests per second, as [Rate limits](risks.md#rate-limits) explains. |
+| Players see "503" on a web challenge | `kubectl get pods -n challenges-web` | If the challenge's pods show `READY 0/1`, none is ready, so read their logs. Otherwise the player went over the limit of 20 requests per second per address, as [Rate limits](risks.md#rate-limits) explains. |
 | CTFd doesn't load at all, and a `ctfd`, `redis` or `mariadb` pod is `Pending` | `kubectl describe pod -n ctfd <pod>` | [When a computer fails](risks.md#when-a-computer-fails) |
 | CTFd is slow or shows errors | `kubectl logs -n ctfd deploy/ctfd --tail=100` | [Take a backup](backups.md), and then run `kubectl rollout restart deploy/ctfd -n ctfd`. |
 

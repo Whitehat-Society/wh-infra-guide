@@ -54,8 +54,8 @@ The easiest way to start is to copy the template folder for your type, as [Start
       decay: 31
       minimum: 100
     challenge_type: shared-web
-    port_number: 80
-    exposed_port_number: 80
+    port_number: 8080
+    exposed_port_number: 8080
     protocol: http
 
     flags:

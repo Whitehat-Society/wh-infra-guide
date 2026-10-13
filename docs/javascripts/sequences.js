@@ -49,11 +49,11 @@ scaleup:{actors:[
   {self:'c',t:'a node has been less than half used for 10 minutes'},
   {m:['c','a'],t:'moves its copies elsewhere and returns it, never going below 2'}]},
 pwnshare:{actors:[
-  {id:'a',l:'Player A',s:'nc <address> 7331'},{id:'b',l:'Player B',s:'the same command'},
-  {id:'n',l:'Load balancer',s:'for loop only'},{id:'p',l:'loop copy',s:'one pod'},
+  {id:'a',l:'Player A',s:'nc <address> 1337'},{id:'b',l:'Player B',s:'the same command'},
+  {id:'n',l:'Load balancer',s:'for example-tcp only'},{id:'p',l:'example-tcp copy',s:'one pod'},
   {id:'pa',l:'Run for A',s:'started for A'},{id:'pb',l:'Run for B',s:'started for B'}],
  rows:[
-  {m:['a','n'],t:'connects to port 7331'},
+  {m:['a','n'],t:'connects to port 1337'},
   {m:['n','p'],t:'picks this copy'},
   {m:['p','pa'],t:'starts a fresh run of the program'},
   {m:['b','n'],t:'connects a few seconds later'},
@@ -65,7 +65,7 @@ pwnshare:{actors:[
   {note:['p','pb'],tone:'warn',t:'Both runs share the copy\'s files, including the flag file, and its processor and memory allowance.'},
   {sec:'If player A takes over the program'},
   {m:['pa','a'],t:'A gets a command prompt inside the copy'},
-  {note:['p','pb'],tone:'crit',t:'In loop and xoph, that prompt can change or delete files that every other player on this copy uses, until the copy restarts.'},
+  {note:['p','pb'],tone:'crit',t:'In a challenge whose files the program can write to, as in loop and xoph at WH-2026, that prompt can change or delete files that every other player on this copy uses, until the copy restarts.'},
   {sec:'When a player stops typing'},
   {self:'pb',t:'after 60 seconds of silence the connection closes and the run ends'}]},
 webshare:{actors:[

@@ -4,7 +4,7 @@ This stage sets up two jobs that run on a schedule, which Kubernetes calls **Cro
 
 <figure class="diagram">
 --8<-- "diagrams/day2.svg"
-<figcaption><code>ctfd-backup</code> keeps 30 days of hourly copies, and <code>challenge-healthcheck</code> stays silent as long as every challenge answers.</figcaption>
+<figcaption><code>ctfd-backup</code> keeps 30 days of hourly copies, and <code>challenge-healthcheck</code> posts only when a challenge fails, plus one summary every hour.</figcaption>
 </figure>
 
 ## Backups
@@ -44,7 +44,7 @@ The health check tests every web and pwn challenge every 5 minutes, and it posts
     ```
     It waits up to 2 minutes for the check to start, prints each challenge's result as it goes, and ends with `=== Results: 2 passed, 0 failed ===`, with your own numbers.
 
-**Check it worked:** every web and pwn challenge shows `PASS`, and nothing appears in the alerts channel.
+**Check it worked:** every web and pwn challenge shows `PASS`, and no failure appears in the alerts channel. The **Hourly health check** summary at the top of each hour is expected.
 
 !!! tip "Rerun step 1 after the challenges change"
     The list of challenges is copied into the cluster when you run `make deploy-healthcheck-cronjob`, so run it again whenever you add or remove a web or pwn challenge. Also run it after the pwn challenges have been deleted and deployed again, because that gives their load balancers new addresses.

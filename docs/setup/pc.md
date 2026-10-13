@@ -116,7 +116,7 @@ source ~/.venvs/wh/bin/activate
 pip install boto3 docker PyYAML requests pytest ctfcli
 ```
 
-On macOS, replace `~/.bashrc` with `~/.zshrc`. Your prompt now starts with `(wh)`, which shows that the environment is active, and the `echo` line makes sure it is activated in every new window too.
+On macOS, Homebrew's Python is `python3.12`, while `python3` may still be the older one that came with macOS. Create the environment with `python3.12 -m venv ~/.venvs/wh` instead of the first line, and replace `~/.bashrc` with `~/.zshrc`. After activating it, `python --version` should print `Python 3.12`. Your prompt now starts with `(wh)`, which shows that the environment is active, and the `echo` line makes sure it is activated in every new window too.
 
 ## 4. Tell git who you are
 

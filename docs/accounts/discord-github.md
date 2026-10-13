@@ -16,7 +16,7 @@ Do these steps once for each of the two channels:
 1. In Discord, hover over the channel and click the gear icon, which is labelled **Edit Channel**.
 2. Open **Integrations** and click **Create Webhook**. If the channel already has webhooks, click **Webhooks** and then **New Webhook** instead.
 3. Click the new webhook to open it, change its name to `CTFd` or `Infra alerts`, and click **Save Changes** in the bar at the bottom.
-4. Click **Copy Webhook URL** and paste the address into a temporary note. You'll store it properly on [Settings and secrets](../code/config.md).
+4. Click **Copy Webhook URL** and paste the address into a temporary note. You'll store it properly on [Secrets](../code/config.md).
 
 These steps need the **Manage Webhooks** permission on the server, so if **Integrations** is missing, ask a server admin to give you that permission.
 
@@ -65,7 +65,7 @@ These questions also use what you learned in section 1. Work out your answer bef
     You signed in with `aws configure sso` at 2 pm. At 9.30 pm you start a deploy step that takes about 20 minutes. What is likely to happen, and what should you do before you start?
 
     ??? success "Answer"
-        The login lasts 8 hours, so it runs out at about 10 pm, partway through the step, and the command fails with `ExpiredToken` or `SSO session … expired`. Run `aws sso login` before you start, so that the login covers the whole run. If it does run out halfway, nothing is lost. Sign in again and run the same command again, and Terraform and Pulumi carry on from where they stopped, because each keeps a record of what it has already built.
+        The login lasts 8 hours, so it runs out at about 10 pm, partway through the step, and the command fails with `ExpiredToken` or `SSO session … expired`. Run `aws sso login`, or `aws login --profile wh-login --region ap-southeast-1`, before you start, so that the login covers the whole run. If it does run out halfway, nothing is lost. Sign in again and run the same command again, and Terraform and Pulumi carry on from where they stopped, because each keeps a record of what it has already built.
 
 !!! question "2. A teammate asks for the root password"
     A new teammate needs to help with the deploy from their own laptop, and asks you to send them the root user's password so that they can sign in. What do you do instead, and why is it better for the club?

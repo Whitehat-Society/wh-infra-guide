@@ -29,7 +29,7 @@ When a run seems stuck, the cause is almost always the situation in the last row
     cd ~/wh/wh-2027/utils
     make build-images
     ```
-    The builder logs Docker in to ECR, builds and uploads each image, runs Pulumi for the pwn and then the web challenges, loads every challenge into CTFd, and finally fills in each challenge's address.
+    The builder logs Docker in to ECR, builds and uploads each image, runs Pulumi once for the web and pwn challenges together, loads every challenge into CTFd, and finally fills in each challenge's address.
 3. While it runs, watch for these lines, which mean that each step has finished:
     - `[challenges] Pulumi deploy complete.`
     - `Done: 3 added to CTFd, 0 already there, 1 web and 1 pwn deployed`, with your own numbers once you add challenges. A later run counts the same challenges as `already there`, because the builder only adds challenges that CTFd doesn't have yet.
