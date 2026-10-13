@@ -1,6 +1,6 @@
 # AWS account
 
-This page creates the club's AWS account, protects its master login, and gives you an everyday login of your own. All three parts happen in a web browser, so each one has a screen recording followed by the same steps in writing.
+This page creates the club's AWS account, protects its master login, and gives you an everyday login of your own. All three parts happen in a web browser, so each one lists the pages to open and the buttons to click.
 
 Before you start, make sure you have these three things:
 
@@ -12,8 +12,6 @@ Before you start, make sure you have these three things:
     The email and password you sign up with become the account's **root user**, which can spend money, delete everything and close the account. Once you finish part 3 you won't need it day to day. Keep its password in the club's password manager, and never paste it into a chat.
 
 ## Part 1: Sign up
-
---8<-- "rec-pending.md"
 
 1. Open <https://signin.aws.amazon.com/signup?request_type=register>.
 2. Enter the club email and an account name, such as `whitehacks-2027`, and click **Verify email address**.
@@ -59,8 +57,6 @@ Once you have [signed in from the terminal](cli-login.md), you can also print th
 
 With a second factor, a stolen password on its own can't open the account, because signing in also needs a phone app or a security key.
 
---8<-- "rec-pending.md"
-
 1. Sign in at <https://console.aws.amazon.com/>. Choose **Root user** and enter the club email and password.
 2. Click the account name at the top right, and then click **Security credentials**.
 3. Under **Multi-factor authentication (MFA)**, click **Assign MFA device**.
@@ -75,8 +71,6 @@ With a second factor, a stolen password on its own can't open the account, becau
     Preparing the account already sets up logins through your AWS Builder ID. Go straight to [Prepare the account](prepare.md), and then use `aws login` as described in [Sign in from the terminal](cli-login.md#accounts-prepared-through-aws-settings).
 
 You'll create a personal login through **IAM Identity Center**, the AWS service that manages people's logins. It gives the terminal temporary passwords that expire after a few hours, so a password that leaks stops working on its own.
-
---8<-- "rec-pending.md"
 
 1. While you are still signed in as root, check the region name at the top right. It should say **Asia Pacific (Singapore)**, or on a Free-plan project, the region shown in AWS Settings. If it shows something else, click it and choose that region.
 2. Type **IAM Identity Center** into the search bar at the top, open it, and click **Enable**. If AWS asks, choose **Enable with AWS Organizations**.

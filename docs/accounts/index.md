@@ -9,7 +9,7 @@ By the end of this section, the club has everything that has to exist before any
 3. A domain name whose DNS records are kept in Route 53.
 4. Two Discord webhooks for announcements and alerts, and access to the club's code on GitHub.
 
-Signing up, protecting the root user, creating your everyday login and creating the webhooks all happen in a web browser, because AWS and Discord offer no other way. Each of those steps has a screen recording, and the rest of the section uses the terminal.
+Signing up, protecting the root user, creating your everyday login and creating the webhooks all happen in a web browser, because AWS and Discord offer no other way. The rest of the section uses the terminal.
 
 ## The order
 

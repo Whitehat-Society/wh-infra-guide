@@ -53,7 +53,7 @@ Every page that asks you to do something is laid out the same way.
 
 Commands appear in grey boxes. To copy a command, click the copy icon at the right edge of its box, then paste it into your terminal. Text in angle brackets, like `<your-domain>`, is a placeholder, which means you replace the whole thing, brackets included, with your own value.
 
-Some steps can only be done in a web browser, such as creating the AWS account. Those steps have a screen recording above the written instructions.
+Some steps can only be done in a web browser, such as creating the AWS account. Those steps list each page to open and each button to click.
 
 ## Getting help
 

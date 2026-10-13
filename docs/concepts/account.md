@@ -40,7 +40,7 @@ This is the only part that isn't described by files in the repository, because a
 
 | Kind | What you touch |
 |---|---|
-| Web dashboards | The AWS sign-up page, the root user's MFA settings, IAM Identity Center, and the registrar's nameserver form if you bought the domain elsewhere. Each has a screen recording in section 3. |
+| Web dashboards | The AWS sign-up page, the root user's MFA settings, IAM Identity Center, and the registrar's nameserver form if you bought the domain elsewhere. Section 3 walks through each one. |
 | Commands | `aws configure sso` to sign in from the terminal, `aws budgets create-budget` for the spending alert, and `aws route53 create-hosted-zone` for the domain. |
 | Files on your computer | `~/.aws/config` remembers how to sign in. It stays on your computer and never goes into the repository. |
 

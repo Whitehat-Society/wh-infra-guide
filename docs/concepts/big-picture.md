@@ -38,7 +38,7 @@ Each part is set up in one or more of three ways. Every page in this section end
 |---|---|---|
 | **Files in the repository** | Text files in the club's code repository, `wh-base` on GitHub, which every event copies. They describe what should exist, and you change the system by editing them. | `utils/eks/vpc.tf` describes the private network. |
 | **Commands** | Lines you type into a terminal. A command either reads those files and makes the real system match them, or it asks the system a question. | `make deploy-eks` builds parts 2 and 3. |
-| **Web dashboards** | Websites where you click buttons. The guide uses them only when there is no other way, and each one has a screen recording. | Signing up for AWS happens on aws.amazon.com. |
+| **Web dashboards** | Websites where you click buttons. The guide uses them only when there is no other way. | Signing up for AWS happens on aws.amazon.com. |
 
 Most of the system is files, because a file can be read, reviewed and reused next year. Commands turn the files into the running system, and only the account setup needs a dashboard.
 
