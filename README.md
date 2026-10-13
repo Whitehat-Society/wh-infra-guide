@@ -32,7 +32,9 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 This repo is **public**. Never commit account IDs, tokens, webhook URLs or real hostnames. Use placeholders like `<your-domain>`.
 
 ```bash
-scripts/scan.sh && .venv/bin/python scripts/diagrams.py && .venv/bin/mkdocs build --strict
+scripts/scan.sh && .venv/bin/python scripts/diagrams.py && .venv/bin/python scripts/check_code.py ../wh-base && .venv/bin/mkdocs build --strict
 ```
 
-CI runs all three, plus gitleaks, and publishes `main` to GitHub Pages.
+`check_code.py` compares the guide with a wh-base checkout: every command, path, setting and quoted message in the guide must exist in the code, and every file, command and setting in the code must appear in the guide ([Code map](docs/reference/code.md) lists them). wh-base's own pull-request checks run it too, so a code change that leaves the guide behind fails there.
+
+CI runs the scan, the diagrams and the build, plus gitleaks, and publishes `main` to GitHub Pages. It also runs `check_code.py` once a token that can read the private wh-base is saved as the `WH_BASE_TOKEN` secret.

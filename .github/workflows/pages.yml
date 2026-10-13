@@ -28,6 +28,13 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Diagrams pass the geometry lint and match their sources
         run: python scripts/diagrams.py && git diff --exit-code snippets/diagrams
+      # wh-base is private, so this runs once a token that can read it is saved as WH_BASE_TOKEN.
+      - name: The guide still matches wh-base
+        env: {WH_BASE_TOKEN: '${{ secrets.WH_BASE_TOKEN }}'}
+        if: env.WH_BASE_TOKEN != ''
+        run: |
+          git clone -q "https://x-access-token:$WH_BASE_TOKEN@github.com/Whitehat-Society/wh-base" ../wh-base
+          python scripts/check_code.py ../wh-base
       - run: mkdocs build --strict
       - uses: actions/upload-pages-artifact@v3
         with:

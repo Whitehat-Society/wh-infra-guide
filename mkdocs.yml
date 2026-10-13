@@ -105,6 +105,7 @@ nav:
       - Architecture explorer: reference/architecture.md
       - Glossary: reference/glossary.md
       - Troubleshooting: reference/troubleshooting.md
+      - Code map: reference/code.md
       - "Appendix: chall-manager": reference/chall-manager.md
 
 validation:

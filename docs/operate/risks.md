@@ -107,4 +107,11 @@ kubectl annotate ingress <name> -n challenges-web \
   nginx.ingress.kubernetes.io/limit-connections-
 ```
 
-The limits are stored as *annotations*, which are notes attached to the challenge's Ingress, and the `-` at the end of each name removes that note. The next `make build-images` puts the limits back.
+The limits are stored as *annotations*, which are notes attached to the challenge's Ingress, and the `-` at the end of each name removes that note. `make build-images` doesn't notice the change, because Pulumi compares the code with its own records rather than with the cluster, so put the limits back yourself with the values from `utils/challenges/main.go`:
+
+```bash
+kubectl annotate ingress <name> -n challenges-web \
+  nginx.ingress.kubernetes.io/limit-rps=20 \
+  nginx.ingress.kubernetes.io/limit-burst-multiplier=1 \
+  nginx.ingress.kubernetes.io/limit-connections=15
+```

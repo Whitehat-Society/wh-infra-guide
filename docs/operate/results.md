@@ -74,7 +74,7 @@ These statistics show how much load the system carried, which helps when sizing 
 
 === "Memory, processor, node count"
 
-    Open the CloudWatch dashboard from [Watching the system](monitoring.md), set the time range to cover the event, and use **Actions → Download as .png** on each graph. The peak memory for each pod tells you how close it came to the 512 MB limit.
+    Open the CloudWatch dashboard from [Watching the system](monitoring.md), set the time range to cover the event, and use **Actions → Download as .png** on each graph. The CTFd and MariaDB memory graphs show how close each came to its memory limit, and the node graphs show how full the computers got.
 
 If a query prints nothing, or prints `"status": "Running"`, it hasn't finished yet, because large queries take longer. Wait 30 seconds and run only its last line again.
 

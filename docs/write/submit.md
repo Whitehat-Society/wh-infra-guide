@@ -22,6 +22,8 @@ python3 utils/validate_challenges.py
 
 It should end with `validate_challenges: OK (N challenges checked)`. Each `ERROR:` line names a folder and the field you need to fix. `WARNING:` lines don't block the deploy, but you should still read them.
 
+If it stops with `No module named 'yaml'`, install the one library it needs with `python3 -m pip install pyyaml`, and run it again.
+
 If the command fails with `yaml.scanner.ScannerError` or `yaml.parser.ParserError`, your `challenge.yml` isn't valid YAML, and the message gives the line number. The usual causes are a tab where there should be spaces, or a `:` inside a value without quotes, which you fix by putting the value in quotes.
 
 ## Hand it in

@@ -49,7 +49,7 @@ All the commands start in `~/wh/wh-2027/utils`. They assume that you are signed 
 
 1. Check the writer's folder against the checklist in [Hand it in](../write/submit.md), and then validate every challenge:
     ```bash
-    make validate-challenges
+    python3 validate_challenges.py
     ```
     It should end with `validate_challenges: OK`.
 2. Deploy the new challenge:
@@ -76,7 +76,7 @@ Hiding a challenge takes effect at once and keeps every solve, so prefer it to d
 
     Set `state: hidden` in its `challenge.yml`, and then run `cd ~/wh/wh-2027 && ctf challenge sync <category>/<folder>`.
 
-The challenge's server keeps running, so players who saved its address can still reach it. To stop the server as well, scale it to zero copies with `kubectl scale deploy/<name> -n challenges-web --replicas=0`. The next `make build-images` starts it again.
+The challenge's server keeps running, so players who saved its address can still reach it. To stop the server as well, scale it to zero copies with `kubectl scale deploy/<name> -n challenges-web --replicas=0`. Start it again with the same command and `--replicas=1`, or the number in `utils/config.ini`. `make build-images` doesn't do it for you, because Pulumi compares the code with its own records rather than with the cluster.
 
 ## Remove a challenge for good
 
