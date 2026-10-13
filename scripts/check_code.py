@@ -93,7 +93,7 @@ def main():
                 fail(page, f'namespace {ns}: nothing creates it')
         for message in re.findall(r'`(\[(?:dns|ctfd|challenges)\][^`]*|Done: [^`]*|validate_challenges: [^`]*|=== Results[^`]*|'
                                   r'Healthcheck CronJob[^`]*|Created the empty secret[^`]*|Restored [^`]*|Still empty[^`]*|'
-                                  r'FAILED, and left out[^`]*|fill in [^`]*)`', text):
+                                  r'FAILED, so nothing[^`]*|Restore [^`]*|fill in [^`]*)`', text):
             fixed = [part for part in re.split(r'<[^>]+>\S*|…|\d+|\bN\b', message) if len(part.strip()) > 3]
             if not all(part.strip() in source for part in fixed):
                 fail(page, f'message "{message}": wh-base never prints it')

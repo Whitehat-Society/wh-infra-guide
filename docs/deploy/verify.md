@@ -63,10 +63,10 @@ kubectl logs -n challenges-tcp deploy/<name> --tail=50
 These questions also use what you learned in sections 1 to 4. Work out your answer before you open the hidden one.
 
 !!! question "1. The overnight build"
-    Late at night you add a challenge and start `make build-images`, and then go to bed without reading the end. In the morning, the last line says `FAILED, and left out of this run:` followed by lost-cookie's folder. `lost-cookie` was deployed and working the day before. What state is it in now, and what will players notice?
+    Late at night you add a challenge and start `make build-images`, and then go to bed without reading the end. In the morning, the last line says `FAILED, so nothing was deployed and the running challenges are unchanged:` followed by your new challenge's folder. `lost-cookie` was deployed and working the day before. What state is it in now, and what about the new challenge?
 
     ??? success "Answer"
-        It is down. The builder couldn't build its image, so it left the challenge out of the list it gave Pulumi, and Pulumi deleted the challenge's pods because the list no longer contained it. CTFd still shows the challenge with its old address, so players can open it and get an error, and the health check has been posting `lost-cookie unreachable` to the alerts channel every 5 minutes. Fix the build, run `make build-images` again, and always read the last lines of a run before you walk away.
+        `lost-cookie` is still up with its old version, because a failed build stops the run before Pulumi changes anything. The new challenge isn't deployed and isn't in CTFd, and neither is any other change from that run. Fix the build using the `ERROR <folder>:` line further up, run `make build-images` again, and always read the last lines of a run before you walk away.
 
 !!! question "2. The alerts channel was deleted"
     Someone deletes `#infra-alerts` by mistake. You create a new channel and a new webhook. Where does the new address go, and once it's there, does every alert use it?

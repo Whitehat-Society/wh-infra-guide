@@ -24,7 +24,11 @@ When you finish this page, the only charges left are for the few things that sta
     cd ~/wh/wh-2027/utils
     make destroy
     ```
-    It runs the three steps in the diagram above. First it deletes the challenges and CTFd with Pulumi, deletes any DNS records the cluster made that are still there, so that they can't block next year's event, and waits for the load balancers to go. Then Terraform deletes the cluster, the network, the buckets and both image registries, and lines like `module.vpc.aws_vpc.this[0]: Still destroying...` can continue for 10 minutes, so don't interrupt them. Last, it deletes the log groups and prints one `deleted` line for each, usually 6 to 11 in all. It ends with `Done.`
+    It runs the three steps in the diagram above. First it deletes the challenges and CTFd with Pulumi, deletes any DNS records the cluster made that are still there, so that they can't block next year's event, and waits for the load balancers to go. Then Terraform deletes the cluster, the network, the buckets and both image registries, and lines like `module.vpc.aws_vpc.this[0]: Still destroying...` can continue for 10 minutes, so don't interrupt them. Last, it deletes the event's own log groups and prints one `deleted` line for each. It ends with `Done.`
+
+    If Pulumi can't delete a stack, the command stops before Terraform runs, because Terraform would delete the bucket that holds Pulumi's records, and nothing could then track what is left. The *If it fails* table below covers the messages.
+
+    The log groups named `/aws/service-events/…` and `/aws/application-signals/…` stay, because every cluster in the region writes to the same ones. If this was the only cluster in the account, delete them by hand with `aws logs delete-log-group --log-group-name <name>`.
 
 ## Check the bill has stopped
 
@@ -68,6 +72,9 @@ On macOS, replace `date -d '-3 days' +%F` with `date -v-3d +%F`. After teardown 
 |---|---|
 | `DependencyViolation` while deleting the network | A load balancer made by the cluster still exists. List them with `aws elbv2 describe-load-balancers --query 'LoadBalancers[].[LoadBalancerName,LoadBalancerArn]' --output text`, delete each leftover with `aws elbv2 delete-load-balancer --load-balancer-arn <arn>`, and then run `make destroy` again. |
 | `module.vpc.aws_vpc.this[0]: Still destroying...` for more than 12 minutes | A security group the load balancer controller made, named `k8s-traffic-…`, is still in the network. In a second terminal, list the network's groups with `aws ec2 describe-security-groups --filters Name=vpc-id,Values=<the vpc-… id from the line> --query 'SecurityGroups[].[GroupId,GroupName]' --output text`, and delete each one except `default` with `aws ec2 delete-security-group --group-id <sg-…>`. The deletion then finishes within a minute. |
+| `pulumi destroy failed for <stack>` | Pulumi couldn't delete something, and nothing after it ran. Read Pulumi's error above the line, fix it, and run `make destroy` again. |
+| `Pulumi can't read its records for <stack>` | Pulumi couldn't reach its bucket, usually because your login expired or the passphrase is wrong. Sign in again, check `python3 secrets.py get pulumi_passphrase` works, and run `make destroy` again. |
+| `No <stack> stack, but the <namespace> namespace exists` | Pulumi's records for that stack are gone, but its programs still run. Ask the infra lead before you go on, because whatever that stack made, such as disks and load balancers, has to be deleted by hand. |
 | `ExpiredTokenException` or `Your session has expired` | Your login has ended. Sign in again and run `make destroy` again, and Terraform and Pulumi will continue with whatever is left. |
 | The deletion was interrupted, and the cluster still exists | Run `make destroy` again. Terraform keeps its records in `utils/eks/terraform.tfstate` on the computer that deployed, so run it on that computer. |
 | All checks are empty, but charges continue | In the AWS console, open **Billing and Cost Management → Bills**, which lists each charge by service and region. |

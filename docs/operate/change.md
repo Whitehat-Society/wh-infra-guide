@@ -42,8 +42,8 @@ All the commands start in `~/wh/wh-2027/utils`. They assume that you are signed 
 
 **Check it worked:** the challenge behaves like the new version. If it still behaves like the old one, follow [Old code still running](data.md#old-code-still-running).
 
-!!! danger "A challenge that fails to build is removed"
-    If one challenge's image fails to build, the builder leaves that challenge out of the list it gives Pulumi, and Pulumi then deletes the challenge's pods. The run then ends with `FAILED, and left out of this run:` followed by the challenge's folder, so read the last lines before you walk away, and if you see that line, fix the challenge and run the build again straight away.
+!!! warning "A challenge that fails to build stops the whole run"
+    If any challenge fails to build, the builder deploys nothing and ends with `FAILED, so nothing was deployed and the running challenges are unchanged:` followed by the folder. Every running challenge keeps its old version, so the fix you wanted to ship isn't live yet. Fix the challenge named in its `ERROR <folder>:` line and run the build again.
 
 ## Add a challenge
 

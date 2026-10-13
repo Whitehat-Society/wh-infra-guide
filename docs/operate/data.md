@@ -88,7 +88,7 @@ kubectl exec -n ctfd deploy/redis -- sh -c \
   "redis-cli --scan --pattern 'flask_cache_*' | grep -v '^flask_cache_session' | xargs -r redis-cli DEL"
 ```
 
-It prints how many copies it deleted. After a restore, clear everything instead. That also logs every player out, which is necessary because their logins may belong to accounts that no longer exist.
+It prints how many copies it deleted. `make restore-ctfd` already clears everything after a restore. If you changed the database some other way, clear everything with the command below. That also logs every player out, which is necessary because their logins may belong to accounts that no longer exist.
 
 ```bash
 kubectl exec -n ctfd deploy/redis -- redis-cli FLUSHALL

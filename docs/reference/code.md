@@ -20,13 +20,13 @@ Every command runs from `utils/`, and `make` on its own prints the main ones.
 | `make build-images` | Runs `builder/builder.py`. | [3. The challenges](../deploy/challenges.md) |
 | `make deploy-ctfd-backup-cronjob` | Applies the hourly backup job with the event's bucket and region filled in. | [4. Backups and health checks](../deploy/day2.md) |
 | `make backup-ctfd` | Runs one backup now. | [Backup and restore](../operate/backups.md) |
-| `make restore-ctfd FILE=<backup>` | Loads a backup into MariaDB. With no `FILE`, it lists the backups. | [Backup and restore](../operate/backups.md) |
+| `make restore-ctfd FILE=<backup>` | Runs `utils/restore-ctfd.sh`, which loads a backup into MariaDB with CTFd stopped. With no `FILE`, it lists the backups. | [Backup and restore](../operate/backups.md) |
 | `make deploy-healthcheck-cronjob` | Uploads the health check, the list of challenges and the alert webhook, and applies the job. | [4. Backups and health checks](../deploy/day2.md) |
 | `make run-healthcheck` | Runs one health check now. | [4. Backups and health checks](../deploy/day2.md) |
 | `make smoke-test` | Runs the health check from your computer, without posting to Discord. | [5. Final checks](../deploy/verify.md) |
 | `make validate` | Checks every `challenge.yml`, the Terraform files and the Go programs, with no AWS account needed. | [Hand it in](../write/submit.md) |
 | `make test` | Runs the builder's tests. | This page |
-| `make destroy` | Pulumi, the DNS records, Terraform and the log groups, in that order. | [Delete everything](../teardown.md) |
+| `make destroy` | Pulumi, the DNS records, Terraform and the event's log groups, in that order. It stops if Pulumi fails. | [Delete everything](../teardown.md) |
 
 ## Files
 
@@ -54,6 +54,7 @@ Every command runs from `utils/`, and `make` on its own prints the main ones.
 | `utils/eks/iam.tf` | The AWS permissions each helper and the backup job run with. | [3 · Kubernetes](../concepts/kubernetes.md) |
 | `utils/eks/observability.tf` | The alarms, the dashboard and the program that reposts alarms in Discord, whose code is `utils/eks/lambda/sns_to_discord.py`. | [6 · Alarms and backups](../concepts/safety.md) |
 | `utils/eks/outputs.tf` | The one value Terraform hands on, the backup job's role, which `make deploy-ctfd` reads. | This page |
+| `utils/restore-ctfd.sh` | Checks a backup, pauses the backups, stops CTFd, loads the file, clears the cache and starts everything again. A failure after CTFd stops leaves it stopped. | [Backup and restore](../operate/backups.md) |
 | `utils/eks/pre-destroy.sh` | Run by `terraform destroy` before the cluster goes. It deletes the load balancers, security groups and network interfaces that the cluster's controllers made. | [Delete everything](../teardown.md#why-the-order-matters) |
 | `.github/workflows/validate.yml` | The checks on every pull request. | [Hand it in](../write/submit.md) |
 

@@ -33,22 +33,21 @@ Restoring a backup replaces the whole database with the backup's contents.
 !!! danger "Every change since the backup is lost"
     Any solves and registrations made after the backup was taken disappear. Take a fresh backup first, so that you can undo the restore if you need to.
 
-1. List the available backups:
+1. [Take a backup now](#take-a-backup-now).
+2. List the available backups:
     ```bash
     make restore-ctfd
     ```
     Without a file name, the command only prints the list.
-2. Restore the backup you want, using its name from the list:
+3. Restore the backup you want, using its name from the list:
     ```bash
     make restore-ctfd FILE=ctfd-20270628-120000.sql.gz
     ```
-3. Clear CTFd's cache, which still holds scores and pages from before the restore. Restarting CTFd isn't enough, because the cache lives in Redis on a disk of its own. Clearing it also logs every player out.
-    ```bash
-    kubectl exec -n ctfd deploy/redis -- redis-cli FLUSHALL
-    ```
-    The command prints `OK`.
+    The command downloads the file and checks it before it touches anything. It then pauses the hourly backups, stops CTFd so nobody plays on a half-loaded database, loads the file, prints how many users, teams and solves the database now holds, and clears CTFd's cache, which also logs every player out. Last, it starts CTFd and the backups again and prints `Restore complete: <file>`.
 
-**Check it worked:** the scoreboard shows the scores as they were when the backup was taken.
+**Check it worked:** the counts it printed look right, and the scoreboard shows the scores as they were when the backup was taken.
+
+If the command stops with `Restore FAILED. CTFd is left stopped and backups paused.`, the site stays down on purpose. Read the error above that line, fix it, and run the same command again. A failure while downloading or checking the file stops before CTFd does, so the site keeps running.
 
 ## Keep a copy after the event
 
