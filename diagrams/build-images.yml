@@ -5,7 +5,7 @@ nodes:
   - {id: yml, x: 20, y: 140, w: 220, title: "challenge.yml", sub: "one per challenge", glyph: YML, cat: tool}
   - {id: bld, x: 300, y: 140, w: 220, title: "builder.py", sub: "reads challenge_type", glyph: PY, cat: tool}
   - {id: dock, x: 600, y: 40, w: 240, title: "Docker", sub: "builds, uploads image", glyph: DKR, cat: tool}
-  - {id: pul, x: 600, y: 140, w: 240, title: "Pulumi", sub: "web-shared, shared-tcp", glyph: PUL, cat: tool}
+  - {id: pul, x: 600, y: 140, w: 240, title: "Pulumi", sub: "utils/challenges", glyph: PUL, cat: tool}
   - {id: ctf, x: 600, y: 240, w: 240, title: "ctfcli", sub: "text, files, flag", glyph: CTF, cat: tool}
   - {id: ecr, x: 900, y: 40, w: 220, title: "ECR registry", sub: "challenge images", glyph: ECR, cat: compute}
   - {id: pods, x: 900, y: 140, w: 220, title: "Challenge pods", sub: "on the cluster", glyph: POD, cat: k8s}

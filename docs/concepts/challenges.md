@@ -59,7 +59,7 @@ A program called `builder.py` turns the folders into running challenges. It read
 
 | Kind | What you touch |
 |---|---|
-| Files in the repository | One folder per challenge, such as `web/example-web/`. `utils/web-shared/main.go` and `utils/shared-tcp/main.go` are the Pulumi programs that turn the folders into pods, and `utils/builder/builder.py` runs everything. |
+| Files in the repository | One folder per challenge, such as `web/example-web/`. `utils/challenges/main.go` is the Pulumi program that turns the folders into pods, and `utils/builder/builder.py` runs everything. |
 | Commands | `make build-images` builds, deploys and loads every challenge in one go. `kubectl get pods -n challenges-web` and `kubectl get pods -n challenges-tcp` show the running servers. |
 | Web dashboards | CTFd's admin panel, where you show the challenges to players when the event starts. |
 

@@ -66,7 +66,7 @@ You rarely type these commands yourself. The file `utils/Makefile` gives each lo
 
 | Kind | What you touch |
 |---|---|
-| Files in the repository | `utils/eks/vpc.tf` for the network, `utils/eks/main.tf` for the computers and buckets, and `utils/eks/secrets.tf` for the Secrets Manager entry. |
+| Files in the repository | `utils/eks/vpc.tf` for the network, `utils/eks/main.tf` for the computers and buckets, including the Secrets Manager entry. |
 | Settings file | `utils/eks/terraform.tfvars.json`, which holds your event name, domain and number of computers. You tell git to ignore it, so it is never uploaded. |
 | Commands | `make deploy-eks` builds this part together with part 3. `make secrets` fills in the secrets. |
 | Web dashboards | None. You can look at the result in the AWS console, but you never change it there, because Terraform would undo the change the next time it runs. |

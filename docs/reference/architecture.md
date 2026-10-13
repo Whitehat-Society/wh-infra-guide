@@ -27,8 +27,8 @@ The map describes WH-2026 as it ran on event day, so a few numbers differ from a
 | Network | Terraform, `utils/eks/vpc.tf` | The private network, with three public and three private subnets across three availability zones, and one NAT gateway |
 | Cluster | Terraform, `utils/eks/main.tf` | The Kubernetes cluster and one group of rented `t3.medium` computers in each availability zone, 3 to 6 in all, plus the disk type the database uses |
 | Helper programs | Terraform, `utils/eks/helm.tf` and `cert-manager.tf` | The load balancer controller, ExternalDNS, NGINX with 2 copies, cert-manager with a certificate for every name under your domain, and the Cluster Autoscaler |
-| Other AWS parts | Terraform, `utils/eks/main.tf`, `secrets.tf`, `observability.tf` and `lambda.tf` | The registry for the CTFd image, the buckets for Pulumi's records and for backups, the secret, the alarms and dashboard, and the small program that reposts alarms to Discord |
+| Other AWS parts | Terraform, `utils/eks/main.tf` and `observability.tf` | The registry for the CTFd image, the buckets for Pulumi's records and for backups, the secret, the alarms and dashboard, and the small program that reposts alarms to Discord |
 | Scoreboard | Pulumi, `utils/ctfd/` | CTFd, MariaDB and Redis, one copy of each, with their disks and the Ingress for `ctf.<your-domain>` |
-| Web challenges | Pulumi, `utils/web-shared/` | A Deployment, a Service and an Ingress with request limits for each challenge, at `<name>.challenges.<your-domain>` |
-| Pwn challenges | Pulumi, `utils/shared-tcp/` | A Deployment for each challenge, and a Service that gets its own load balancer |
+| Web challenges | Pulumi, `utils/challenges/` | A Deployment, a Service and an Ingress with request limits for each challenge, at `<name>.challenges.<your-domain>` |
+| Pwn challenges | Pulumi, `utils/challenges/` | A Deployment for each challenge, and a Service that gets its own load balancer |
 | Text challenges | ctfcli | Only the challenge's description, files and flag inside CTFd |

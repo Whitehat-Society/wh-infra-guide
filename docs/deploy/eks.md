@@ -9,7 +9,7 @@ This stage builds the foundation that everything else runs on. That means the pr
     cd ~/wh/wh-2027/utils
     make deploy-eks
     ```
-    It first lets Terraform download its **providers**, which are the plug-ins it uses to talk to AWS, Kubernetes and Helm. Then it creates about 140 resources without asking for confirmation, and prints lines like `Still creating... [5m0s elapsed]` while it waits. The cluster takes about 10 minutes and the computers about 3 more, so let it run until the prompt comes back. Between the two rounds, it prints `[restore-secrets] Handing <event>/config over to Terraform`, which means Terraform takes over the secret you created with `make secrets`. Terraform's part ends with `Apply complete!`, and the very last line should be `[dns] No DNS records left over from another cluster.`
+    It first lets Terraform download its **providers**, which are the plug-ins it uses to talk to AWS, Kubernetes and Helm. Then it creates about 140 resources without asking for confirmation, and prints lines like `Still creating... [5m0s elapsed]` while it waits. The cluster takes about 10 minutes and the computers about 3 more, so let it run until the prompt comes back. Between the two rounds, it prints `Import successful!`, which means Terraform has taken over the secret you created with `make secrets`. Terraform's part ends with `Apply complete!`, and the very last line should be `[dns] No DNS records left over from another cluster.`
 2. Tell `kubectl` how to reach the new cluster. This command saves the cluster's address and login method in a file that `kubectl` reads:
     ```bash
     make kubeconfig

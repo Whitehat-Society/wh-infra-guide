@@ -11,17 +11,14 @@ Parts 1 to 5 are enough for players to compete. This last part is for the organi
 <figcaption>SNS (Simple Notification Service) sends every alarm by email, and also to a small Lambda program that reposts it in Discord.</figcaption>
 </figure>
 
-Each alarm is a block in a Terraform file. This one, from `utils/eks/observability.tf`, fires when fewer computers are working than the minimum you set:
+Each alarm is one line in a list in `utils/eks/observability.tf`, which gives what it measures and when it fires. This one fires when fewer computers are working than the minimum you set:
 
 ```hcl
-resource "aws_cloudwatch_metric_alarm" "node_count_low" {
-  alarm_name          = "${var.event_name}-eks-node-count-low"
-  metric_name         = "cluster_node_count"
-  comparison_operator = "LessThanThreshold"
-  threshold           = local.node_min_per_zone * local.zone_count
-  alarm_actions       = [aws_sns_topic.eks_alerts.arn]
-}
+eks-node-count-low = { about = "Fewer nodes are ready than the minimum", metric = "cluster_node_count",
+                       pod = "", stat = "Minimum", below = true, threshold = local.node_min_per_zone * local.zone_count, periods = 3 }
 ```
+
+Terraform turns every line of the list into an alarm named `<event>-<name>`, such as `wh-2027-eks-node-count-low`.
 
 ## Jobs on a schedule
 
@@ -52,7 +49,7 @@ spec:
 
 | Kind | What you touch |
 |---|---|
-| Files in the repository | `utils/eks/observability.tf` for the alarms and the CloudWatch dashboard, `utils/eks/lambda.tf` for the program that posts to Discord, and `utils/ctfd/backup-cronjob.yaml` and `utils/ctfd/healthcheck-cronjob.yaml` for the two jobs. |
+| Files in the repository | `utils/eks/observability.tf` for the alarms, the CloudWatch dashboard and the program that posts alarms to Discord, and `utils/ctfd/backup-cronjob.yaml` and `utils/ctfd/healthcheck-cronjob.yaml` for the two jobs. |
 | Commands | `make deploy-eks` creates the alarms together with parts 2 and 3. `make deploy-ctfd-backup-cronjob` and `make deploy-healthcheck-cronjob` start the jobs. |
 | Web dashboards | The CloudWatch dashboard, a page of graphs that you watch during the event. You only look at it and never change anything there. In Discord, the channel settings are where you create the webhook address that the alerts are sent to. |
 

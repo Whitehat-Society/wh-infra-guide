@@ -35,7 +35,7 @@ git remote -v
 | `utils/settings.py` | Works out every other name, such as the cluster's and the buckets', from that settings file. |
 | `utils/config.ini` | Which folders hold challenges, and how many copies of each challenge run. |
 | `utils/ctfd/` | The Pulumi program for CTFd, its database and its cache. `image/` holds the recipe for the CTFd image, and the two `*-cronjob.yaml` files are the backup and health-check jobs. |
-| `utils/web-shared/`, `utils/shared-tcp/` | The Pulumi programs for the web and pwn challenges. |
+| `utils/challenges/` | The Pulumi program for the web and pwn challenges. |
 | `utils/builder/builder.py` | The script that builds and uploads the challenge images, deploys them and loads them into CTFd. |
 | `utils/secrets.py` | The script that reads and writes the passwords in Secrets Manager. |
 

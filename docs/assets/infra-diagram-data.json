@@ -2156,7 +2156,7 @@
     "Recreating the stack changes every hostname (healthcheck config must then be updated)"
    ],
    "src": [
-    "utils/shared-tcp/main.go",
+    "utils/challenges/main.go",
     "utils/builder/builder.py",
     "CTFDD-HANDOFF.md"
    ]
@@ -2208,7 +2208,7 @@
     "3 of the 5 keep state inside the pod; see section 05"
    ],
    "src": [
-    "utils/web-shared/main.go",
+    "utils/challenges/main.go",
     "utils/web-shared/Pulumi.wh-2026.yaml"
    ]
   },
@@ -2225,7 +2225,7 @@
     "automountServiceAccountToken: false, so a shell gets no Kubernetes credentials"
    ],
    "src": [
-    "utils/shared-tcp/main.go",
+    "utils/challenges/main.go",
     "pwn/loop/Dockerfile"
    ]
   },
@@ -2272,7 +2272,7 @@
    ],
    "src": [
     "utils/ctfd/main.go",
-    "utils/eks/storage.tf"
+    "utils/eks/main.tf"
    ]
   },
   "igw": {
@@ -2387,7 +2387,7 @@
     "If that AZ fails, CTFd can't start elsewhere without restoring from the S3 backup"
    ],
    "src": [
-    "utils/eks/storage.tf",
+    "utils/eks/main.tf",
     "utils/ctfd/main.go"
    ]
   },
@@ -2402,7 +2402,7 @@
     "make deploy-eks restores it if a teardown left it pending deletion"
    ],
    "src": [
-    "utils/eks/secrets.tf",
+    "utils/eks/main.tf",
     "utils/secrets.py",
     "utils/Makefile"
    ]
@@ -2634,8 +2634,8 @@
     "shared-tcp: Deployment + LoadBalancer Service, exports {name}-hostname"
    ],
    "src": [
-    "utils/web-shared/main.go",
-    "utils/shared-tcp/main.go"
+    "utils/challenges/main.go",
+    "utils/challenges/main.go"
    ]
   },
   "nsch": {
@@ -2646,8 +2646,8 @@
    "body": "challenges-web and challenges-tcp. The NLBs for pwn challenges are created by the LB controller after the Services appear.",
    "facts": [],
    "src": [
-    "utils/web-shared/main.go",
-    "utils/shared-tcp/main.go"
+    "utils/challenges/main.go",
+    "utils/challenges/main.go"
    ]
   },
   "ctfcli": {
@@ -2712,7 +2712,7 @@
    "facts": [],
    "src": [
     "utils/eks/observability.tf",
-    "utils/eks/lambda.tf"
+    "utils/eks/observability.tf"
    ]
   },
   "email": {
@@ -2734,7 +2734,7 @@
    "body": "A small function (zip in utils/eks/lambda/) that turns the SNS alarm JSON into a Discord message.",
    "facts": [],
    "src": [
-    "utils/eks/lambda.tf"
+    "utils/eks/observability.tf"
    ]
   },
   "discord": {
@@ -2745,7 +2745,7 @@
    "body": "Receives three kinds of message: CloudWatch alarms via Lambda, healthcheck failures, and CTFd first-blood announcements.",
    "facts": [],
    "src": [
-    "utils/eks/lambda.tf",
+    "utils/eks/observability.tf",
     "utils/healthcheck.py",
     "utils/ctfd/main.go"
    ]
@@ -2817,7 +2817,7 @@
    ],
    "src": [
     "utils/eks/cert-manager.tf",
-    "utils/web-shared/main.go"
+    "utils/challenges/main.go"
    ]
   },
   "le": {
