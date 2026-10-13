@@ -1,0 +1,19 @@
+title: The chain of parts that puts a CTF online, from the goal down to the foundation
+w: 1000
+h: 530
+nodes:
+  - {id: goal, x: 20, y: 20, w: 600, title: "The goal: players use the CTF", sub: "open ctf.<domain>, solve challenges, submit flags", glyph: USR, cat: you}
+  - {id: n4, x: 20, y: 130, w: 290, title: "4 · The scoreboard", sub: "Pulumi code in utils/ctfd", glyph: "4", cat: app}
+  - {id: n5, x: 330, y: 130, w: 290, title: "5 · The challenges", sub: "one folder per challenge", glyph: "5", cat: app}
+  - {id: n3, x: 20, y: 240, w: 600, title: "3 · Kubernetes and its helpers", sub: "Terraform files in utils/eks", glyph: "3", cat: k8s}
+  - {id: n2, x: 20, y: 350, w: 600, title: "2 · The network and the computers", sub: "Terraform files in utils/eks", glyph: "2", cat: compute}
+  - {id: n1, x: 20, y: 460, w: 600, title: "1 · The AWS account and the domain", sub: "web dashboards and a few commands", glyph: "1", cat: net}
+  - {id: n6, x: 700, y: 240, w: 280, title: "6 · Alarms and backups", sub: "Terraform and Kubernetes files", glyph: "6", cat: sec}
+edges:
+  - {from: goal, to: n4, x: 165, label: "needs", lx: 165, ly: 107}
+  - {from: goal, to: n5, x: 475, label: "needs", lx: 475, ly: 107}
+  - {from: n4, to: n3, x: 165, label: "runs on", lx: 165, ly: 217}
+  - {from: n5, to: n3, x: 475, label: "runs on", lx: 475, ly: 217}
+  - {from: n3, to: n2, x: 320, label: "runs on", lx: 320, ly: 327}
+  - {from: n2, to: n1, x: 320, label: "lives in", lx: 320, ly: 437}
+  - {from: n6, to: n3, style: dash, label: "watches", lx: 660, ly: 252}

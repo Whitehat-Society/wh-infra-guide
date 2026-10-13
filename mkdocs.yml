@@ -52,10 +52,14 @@ markdown_extensions:
 nav:
   - Start here: index.md
   - 1 · How the system works:
-      - The big picture: concepts/big-picture.md
-      - Cloud, networks and names: concepts/cloud-and-networks.md
-      - Containers and Kubernetes: concepts/containers-and-kubernetes.md
-      - Infrastructure as code: concepts/infrastructure-as-code.md
+      - What we're building: concepts/big-picture.md
+      - 1. The account and the domain: concepts/account.md
+      - 2. The network and the computers: concepts/network.md
+      - 3. Kubernetes and its helpers: concepts/kubernetes.md
+      - 4. The scoreboard: concepts/scoreboard.md
+      - 5. The challenges: concepts/challenges.md
+      - 6. Alarms and backups: concepts/safety.md
+      - Putting it together: concepts/together.md
   - 2 · Your computer:
       - Open a terminal: setup/terminal.md
       - Terminal basics: setup/terminal-basics.md

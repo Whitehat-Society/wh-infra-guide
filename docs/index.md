@@ -57,4 +57,4 @@ Some steps can only be done in a web browser, such as creating the AWS account. 
 
 If you get stuck, post in the club's tech and infra channel. Mention the page you're on, the step number, the command you ran and the first line of the error, because those four things are usually enough for someone to help you.
 
-**Next:** [The big picture](concepts/big-picture.md).
+**Next:** [What we're building](concepts/big-picture.md).

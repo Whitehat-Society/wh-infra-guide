@@ -1,6 +1,6 @@
 # 1. The cluster
 
-This stage builds the foundation that everything else runs on. That means the private network, the three rented computers, the Kubernetes cluster that manages them, and the helper programs described in [Containers and Kubernetes](../concepts/containers-and-kubernetes.md#helper-programs-inside-the-cluster). It also creates the backup bucket, the alarms, and the bucket where Pulumi keeps its records.
+This stage builds the foundation that everything else runs on. That means the private network, the three rented computers, the Kubernetes cluster that manages them, and the helper programs described in [Kubernetes and its helpers](../concepts/kubernetes.md#the-helpers). It also creates the backup bucket, the alarms, and the bucket where Pulumi keeps its records.
 
 `make deploy-eks` runs Terraform on the files in `utils/eks/` in two rounds. The first round creates the network and the cluster, and the second installs the programs that run inside the cluster, because Terraform can only plan those once the cluster exists.
 

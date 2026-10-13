@@ -1,6 +1,6 @@
 # Domain name
 
-Players reach the CTF through names under the club's domain, with `ctf.<your-domain>` for the scoreboard and `<challenge>.challenges.<your-domain>` for each web challenge. The system creates those names by itself, but only if the domain's DNS records are kept in **Route 53**, which is AWS's DNS service. [Cloud, networks and names](../concepts/cloud-and-networks.md#addresses-ports-and-names) explains what a domain and DNS are, if you need a reminder.
+Players reach the CTF through names under the club's domain, with `ctf.<your-domain>` for the scoreboard and `<challenge>.challenges.<your-domain>` for each web challenge. The system creates those names by itself, but only if the domain's DNS records are kept in **Route 53**, which is AWS's DNS service. [The account and the domain](../concepts/account.md#the-domain-name) explains what a domain and DNS are, if you need a reminder.
 
 There are two ways to set this up, so choose whichever option below fits your situation.
 
