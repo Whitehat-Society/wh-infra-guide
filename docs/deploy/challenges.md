@@ -9,7 +9,7 @@ This stage builds every challenge, starts the web and pwn challenges on the clus
 
 The first run takes the longest. Docker keeps the parts of each image it builds in its **cache**, so later runs only rebuild what has changed.
 
-There is no command for deploying a single challenge, because every run handles all of them. A run is still quick, though, since the unchanged parts are skipped. These times were measured on the test deploy:
+There is no command for deploying a single challenge, because every run handles all of them. A run is still quick, though, since the unchanged parts are skipped. These times were measured on WH-2026's test deploy, with 10 challenges:
 
 | Part of the run | Time |
 |---|---|
@@ -23,29 +23,17 @@ When a run seems stuck, the cause is almost always the situation in the last row
 
 ## Run it
 
-1. Log Docker in to ECR so that it may upload images there. The login lasts 12 hours.
+1. Make sure Docker Desktop is running, because the builder uses it to build the images. `docker info --format '{{.ServerVersion}}'` prints a version number when it is.
+2. Build and deploy the challenges:
     ```bash
-    cd ~/wh/wh-2026/utils
-    ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-    aws ecr get-login-password | docker login --username AWS --password-stdin "$ACCOUNT.dkr.ecr.$(aws configure get region).amazonaws.com"
-    ```
-    The last line should read `Login Succeeded`.
-2. Prepare Terraform for the image registry. You only need to do this once, but `make build-images` doesn't do it for you:
-    ```bash
-    terraform -chdir=ecr init
-    ```
-    It ends with `Terraform has been successfully initialized!`
-3. Build and deploy the challenges:
-    ```bash
+    cd ~/wh/wh-2027/utils
     make build-images
     ```
-    Near the start, Terraform asks `Do you want to perform these actions?`, so type `yes` and press Enter.
-4. While it runs, watch for these two lines, which mean that the web and pwn challenges are up:
-    - `[shared-web] Pulumi deploy complete.`
+    The builder logs Docker in to ECR, builds and uploads each image, runs Pulumi for the pwn and then the web challenges, loads every challenge into CTFd, and finally fills in each challenge's address.
+3. While it runs, watch for these lines, which mean that each step has finished:
     - `[shared-tcp] Pulumi deploy complete.`
-
-!!! note "One error is expected: filelocker"
-    `filelocker` gives each team its own copy of the challenge, which needs the optional chall-manager. This deploy leaves chall-manager out, so the builder prints an error for `filelocker`, possibly after its image build fails as well, and moves on to the next challenge. Keep `filelocker` hidden in CTFd, or set it up with the [chall-manager appendix](../reference/chall-manager.md).
+    - `[shared-web] Pulumi deploy complete.`
+    - `Done: 3 challenge(s) loaded, 1 web and 1 pwn deployed.`, with your own numbers once you add challenges
 
 ## Check it worked
 
@@ -70,12 +58,12 @@ Each `challenge.yml` contains `state: hidden`, so when the CTF starts you need t
 === "All at once, from the terminal"
 
     ```bash
-    cd ~/wh/wh-2026
-    git grep -l '^state: hidden' -- '*/*/challenge.yml' | grep -v filelocker | xargs perl -pi -e 's/^state: hidden/state: visible/'
+    cd ~/wh/wh-2027
+    git grep -l '^state: hidden' -- '*/*/challenge.yml' | grep -v /example- | xargs perl -pi -e 's/^state: hidden/state: visible/'
     ctf challenge sync
     ```
 
-    The first command changes `hidden` to `visible` in every file except `filelocker`'s, and `ctf challenge sync` sends the change to CTFd.
+    The first command changes `hidden` to `visible` in every file except the templates', and `ctf challenge sync` sends the change to CTFd.
 
 === "One at a time, in the browser"
 
@@ -83,7 +71,7 @@ Each `challenge.yml` contains `state: hidden`, so when the CTF starts you need t
 
 ## Changing a challenge later
 
-Edit the files in the challenge's folder first. If you only changed text, flags or attached files, send the change to CTFd with `cd ~/wh/wh-2026 && ctf challenge sync <category>/<challenge-folder>`. If you changed the challenge's code or Dockerfile, run `make build-images` again, which rebuilds unchanged challenges quickly from the cache and only restarts the ones that changed.
+Edit the files in the challenge's folder first. If you only changed text, flags or attached files, send the change to CTFd with `cd ~/wh/wh-2027 && ctf challenge sync <category>/<challenge-folder>`. If you changed the challenge's code or Dockerfile, run `make build-images` again, which rebuilds unchanged challenges quickly from the cache and only restarts the ones that changed.
 
 [Change a challenge](../operate/change.md) covers every kind of change, including renaming and removing.
 
@@ -91,11 +79,10 @@ Edit the files in the challenge's folder first. If you only changed text, flags 
 
 | Message | Fix |
 |---|---|
-| `Required plugins are not installed` | Step 2 was skipped. Run `terraform -chdir=ecr init` and then `make build-images` again. |
-| `denied: Your authorization token has expired` | The ECR login has expired, so redo step 1. |
-| `JSONDecodeError` at the very end | Either CTFd's setup isn't finished or `.ctf/config` is wrong. Fix the problem, and then run `cd ~/wh/wh-2026 && ctf challenge install`. |
-| `passphrase must be set` or `incorrect passphrase` | Either the `pulumi_passphrase` secret is missing, or WH-2026's old settings file is still there, as described in step 4 of [Make it yours](../code/make-it-yours.md). |
-| `creating failed` for a `Deployment`, then `make: *** [Makefile:29: build-images] Error 1` | One challenge's pods never started, so Pulumi gave up and the builder stopped before reaching the challenges after it. Find the broken pod with `kubectl get pods -A \| grep -v Running`, fix it as the rows below describe, and run `make build-images` again. |
+| `Cannot connect to the Docker daemon` | Docker Desktop isn't running, so start it and run `make build-images` again. |
+| `JSONDecodeError` from `ctf` | CTFd's setup page isn't finished, so ctfcli got the setup page back instead of an answer. Finish [the setup](ctfd.md#finish-setup-in-the-browser) and run `make build-images` again. |
+| `passphrase must be set` or `incorrect passphrase` | The `pulumi_passphrase` secret is missing or was changed. `python3 secrets.py list` shows whether it exists, and [Secrets](../code/config.md) explains why it must never change. |
+| `creating failed` for a `Deployment`, then `make: *** [Makefile: … build-images] Error 1` | One challenge's pods never started, so Pulumi gave up and the builder stopped before loading the challenges into CTFd. Find the broken pod with `kubectl get pods -A \| grep -v Running`, fix it as the rows below describe, and run `make build-images` again. |
 | A pod shows `StartError` or `CrashLoopBackOff`, and `kubectl describe pod` says `executable file not found` | The challenge's Dockerfile starts a program that its image doesn't contain. Fix the Dockerfile, for example by installing `socat`, and run `make build-images` again. |
 | A web pod shows `CrashLoopBackOff` | The challenge program keeps crashing, and `kubectl logs -n challenges-web deploy/<name>` shows its last output. The cause is usually in the challenge's own code. |
 | A pwn `EXTERNAL-IP` stays `<pending>` | The load balancer controller couldn't create the load balancer, and `kubectl logs -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller --tail=50` shows why. |

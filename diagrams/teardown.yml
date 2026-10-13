@@ -2,15 +2,15 @@ title: The order in which teardown deletes things
 w: 1160
 h: 300
 groups:
-  - {x: 10, y: 10, w: 350, h: 280, label: "You run", style: plain}
+  - {x: 10, y: 10, w: 350, h: 280, label: "make destroy runs", style: plain}
   - {x: 430, y: 10, w: 720, h: 280, label: "What it deletes", style: plain}
 nodes:
   - {id: s1, x: 25, y: 45, w: 320, title: "pulumi destroy", sub: "shared-tcp, web-shared, ctfd", glyph: "1", cat: you}
   - {id: s2, x: 25, y: 130, w: 320, title: "terraform destroy", sub: "utils/eks", glyph: "2", cat: you}
-  - {id: s3, x: 25, y: 215, w: 320, title: "terraform destroy", sub: "utils/ecr", glyph: "3", cat: you}
+  - {id: s3, x: 25, y: 215, w: 320, title: "aws logs delete-log-group", sub: "one per monitoring log", glyph: "3", cat: you}
   - {id: d1, x: 445, y: 45, w: 690, title: "Challenges, CTFd, and through the helpers:", sub: "their load balancers, DNS records and disks", glyph: K8S, cat: k8s}
-  - {id: d2, x: 445, y: 130, w: 690, title: "Cluster, computers, network, alarms, buckets", sub: "also the secret, after a 7-day grace period", glyph: AWS, cat: net}
-  - {id: d3, x: 445, y: 215, w: 690, title: "Challenge image registry", sub: "every challenge image", glyph: ECR, cat: compute}
+  - {id: d2, x: 445, y: 130, w: 690, title: "Cluster, network, alarms, buckets, registries", sub: "also the secret, after a 7-day grace period", glyph: AWS, cat: net}
+  - {id: d3, x: 445, y: 215, w: 690, title: "Log groups the monitoring add-ons made", sub: "Terraform doesn't know them, and they never expire", glyph: LOG, cat: mgmt}
 edges:
   - {from: s1, to: d1}
   - {from: s2, to: d2}

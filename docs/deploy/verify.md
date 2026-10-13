@@ -4,28 +4,20 @@ Run these checks after every fresh deploy, and again on the morning of the event
 
 ## Automatic check
 
-`make smoke-test` opens every web challenge and connects to every pwn challenge, and then prints `PASS` or `FAIL` for each one. First set the variables it needs:
-
---8<-- "pulumi-env.md"
-
-Then run the test:
+`make smoke-test` opens every web challenge and connects to every pwn challenge, and then prints `PASS` or `FAIL` for each one:
 
 ```bash
+cd ~/wh/wh-2027/utils
 make smoke-test
 ```
 
 It runs the same check as the health check job against every web and pwn challenge, but from your computer and without posting to Discord. The output should end like this:
 
 ```
-=== Results: 10 passed, 0 failed ===
-
-chall-manager not deployed (api_endpoint empty) — per-player challenges skipped.
-
-Shared challenges: all passed
-Per-player challenges: 0 passed, 0 failed
+=== Results: 2 passed, 0 failed ===
 ```
 
-The count is the number of web and pwn challenges. `filelocker` isn't tested, because it needs the optional chall-manager described in the [appendix](../reference/chall-manager.md).
+The count is the number of web and pwn challenges, which is 2 with only the templates.
 
 ## Checks from the terminal
 
@@ -35,7 +27,7 @@ Replace `example-ctf.com` with your domain and run the box. The list below it de
 DOMAIN=example-ctf.com
 curl -sI "http://ctf.$DOMAIN" | head -1
 curl -sv "https://ctf.$DOMAIN" 2>&1 | grep -m1 'issuer:'
-curl -s -o /dev/null -w '%{http_code}\n' "https://xssive-login.challenges.$DOMAIN"
+curl -s -o /dev/null -w '%{http_code}\n' "https://example-web.challenges.$DOMAIN"
 kubectl get pods -A | grep -v -e Running -e Completed
 kubectl get nodes
 ```
@@ -54,8 +46,8 @@ kubectl get nodes
 - [ ] Each pwn challenge's `nc` command, run in your terminal, shows the challenge's first prompt.
 - [ ] A test team can register, see a visible challenge and submit its flag. Delete the test team afterwards.
 - [ ] The alerts channel received the test alert from [page 4](day2.md).
-- [ ] A backup from the last hour is in S3, which `aws s3 ls s3://$EVENT-ctfd-backups/ | tail -1` shows.
-- [ ] `aws cloudwatch describe-alarms --state-value ALARM --query 'MetricAlarms[].AlarmName'` lists no active alarm except `<event>-chall-manager-pod-down`. That one stays active because chall-manager isn't deployed, and [The cluster](eks.md) already turned off its notifications.
+- [ ] A backup from the last hour is in S3, which `aws s3 ls s3://$(python3 settings.py backup_bucket)/ | tail -1` shows.
+- [ ] `aws cloudwatch describe-alarms --state-value ALARM --query 'MetricAlarms[].AlarmName'` prints `[]`, which means no alarm is active.
 
 ## If a check fails
 

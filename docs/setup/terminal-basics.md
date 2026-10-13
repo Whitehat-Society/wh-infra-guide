@@ -28,12 +28,12 @@ The terminal always works inside one folder, which is called the **current folde
 |---|---|
 | `pwd` | Prints the current folder. |
 | `ls` | Lists the files in the current folder. |
-| `cd wh-2026` | Moves into the folder `wh-2026`. |
+| `cd wh-2027` | Moves into the folder `wh-2027`. |
 | `cd ..` | Moves up one folder. |
 | `cd ~` | Moves to your home folder. `~` is short for your home folder in any command. |
 | `mkdir -p ~/wh` | Creates a folder. The `-p` option stops it from complaining if the folder already exists. |
 
-Most command boxes in this guide start with `cd ~/wh/wh-2026/utils`, so that they work no matter which folder you were in before.
+Most command boxes in this guide start with `cd ~/wh/wh-2027/utils`, so that they work no matter which folder you were in before. `wh-2027` stands for your event's folder, which you create in [Get the code](../code/clone.md), so type your own event's name wherever the guide says `wh-2027`.
 
 ## Editing a file
 

@@ -2,7 +2,7 @@
 
 `challenge.yml` is a **YAML** file, which is plain text where each line reads `field: value` and indented lines belong to the field above them. Always indent with spaces rather than tabs, and put quotes around any value that contains `:`, `#` or `{`, or that starts with `*`.
 
-The easiest way to start is to copy the template for your type below and change its values.
+The easiest way to start is to copy the template folder for your type, as [Start from a template](index.md#start-from-a-template) describes, and change its values. The templates below show the same fields.
 
 ## Templates
 

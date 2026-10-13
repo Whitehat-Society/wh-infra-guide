@@ -2,7 +2,7 @@
 
 Find the kind of change you need below. Each section updates every place that holds a copy of the challenge, so that no old version is left behind, and [Where data is kept](data.md) explains what those copies are.
 
-All the commands start in `~/wh/wh-2026/utils`. They assume that you are signed in to AWS and that Docker is logged in to ECR, as in step 1 of [The challenges](../deploy/challenges.md).
+All the commands start in `~/wh/wh-2027/utils`. They assume that you are signed in to AWS and that Docker Desktop is running, and `make build-images` logs Docker in to ECR by itself.
 
 <figure class="diagram">
 --8<-- "diagrams/change.svg"
@@ -12,9 +12,9 @@ All the commands start in `~/wh/wh-2026/utils`. They assume that you are signed 
 ## Fix text, a flag, a hint or a file
 
 1. Edit `challenge.yml`, or replace the file in the challenge's folder.
-2. Send the change to CTFd, for example with `ctf challenge sync web/inspectpost`:
+2. Send the change to CTFd, for example with `ctf challenge sync web/example-web`:
     ```bash
-    cd ~/wh/wh-2026
+    cd ~/wh/wh-2027
     ctf challenge sync <category>/<folder>
     cd utils
     ```
@@ -43,7 +43,7 @@ All the commands start in `~/wh/wh-2026/utils`. They assume that you are signed 
 **Check it worked:** the challenge behaves like the new version. If it still behaves like the old one, follow [Old code still running](data.md#old-code-still-running).
 
 !!! danger "A challenge that fails to build is removed"
-    If one challenge's image fails to build, the builder leaves that challenge out of the list it gives Pulumi, and Pulumi then deletes the challenge's pods. Read the output for `Error` lines before you walk away, and if you find one, fix it and run the build again straight away.
+    If one challenge's image fails to build, the builder leaves that challenge out of the list it gives Pulumi, and Pulumi then deletes the challenge's pods. The run then ends with `FAILED, and left out of this run:` followed by the challenge's folder, so read the last lines before you walk away, and if you see that line, fix the challenge and run the build again straight away.
 
 ## Add a challenge
 
@@ -74,7 +74,7 @@ Hiding a challenge takes effect at once and keeps every solve, so prefer it to d
 
 === "From the terminal"
 
-    Set `state: hidden` in its `challenge.yml`, and then run `cd ~/wh/wh-2026 && ctf challenge sync <category>/<folder>`.
+    Set `state: hidden` in its `challenge.yml`, and then run `cd ~/wh/wh-2027 && ctf challenge sync <category>/<folder>`.
 
 The challenge's server keeps running, so players who saved its address can still reach it. To stop the server as well, scale it to zero copies with `kubectl scale deploy/<name> -n challenges-web --replicas=0`. The next `make build-images` starts it again.
 
@@ -92,7 +92,7 @@ Removing a challenge deletes its solves, and every team that solved it loses tho
 4. Give the health check the new list with `make deploy-healthcheck-cronjob`.
 5. If you like, delete the challenge's image as well, which otherwise stays in ECR until teardown:
     ```bash
-    aws ecr batch-delete-image --repository-name "$(jq -r .event_name eks/terraform.tfvars.json)" --image-ids imageTag=<name>
+    aws ecr batch-delete-image --repository-name "$(python3 settings.py event)" --image-ids imageTag=<name>
     ```
 
 **Check it worked:**
@@ -111,7 +111,7 @@ Use this when a challenge was loaded so wrongly, for example with the wrong `typ
 2. Fix the folder.
 3. Install it again:
     ```bash
-    cd ~/wh/wh-2026
+    cd ~/wh/wh-2027
     ctf challenge install <category>/<folder>
     cd utils
     ```
@@ -123,7 +123,7 @@ CTFd finds challenges by name, so the name has to change in CTFd first and in th
 
 1. Open **Admin → Challenges →** the challenge, change its **Name**, and click **Update**.
 2. Change `name:` in `challenge.yml` to exactly the same text.
-3. Run `cd ~/wh/wh-2026 && ctf challenge sync <category>/<folder>`, which should end with `Success! All challenges synced!`. If it says `Could not find existing challenge … Perhaps you meant install instead of sync?` instead, the two names differ, so compare them character by character. Don't run `install` at this point, because it would create a second copy of the challenge.
+3. Run `cd ~/wh/wh-2027 && ctf challenge sync <category>/<folder>`, which should end with `Success! All challenges synced!`. If it says `Could not find existing challenge … Perhaps you meant install instead of sync?` instead, the two names differ, so compare them character by character. Don't run `install` at this point, because it would create a second copy of the challenge.
 
 For a web or pwn challenge, the name is also its address, so renaming it gives it a new address and the old one stops working. A pwn challenge also gets a new load balancer. Run `make build-images`, and then update the health check as in step 3 of [Add a challenge](#add-a-challenge). For these reasons, avoid renaming a web or pwn challenge once players have its address.
 
@@ -133,7 +133,7 @@ Make all your edits first, and then run:
 
 ```bash
 make build-images                  # only if any server code changed
-cd ~/wh/wh-2026 && ctf challenge sync && cd utils
+cd ~/wh/wh-2027 && ctf challenge sync && cd utils
 ```
 
 Without a folder name, `ctf challenge sync` syncs every challenge listed in `.ctf/config`.

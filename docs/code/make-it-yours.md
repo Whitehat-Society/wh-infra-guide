@@ -1,71 +1,67 @@
-# Make it yours
+# Your settings
 
-The code still contains four values from WH-2026, and they point at an AWS account that no longer exists. This page replaces all four with your own values, across every file at once.
+Everything that makes a deploy yours is in one file, `utils/eks/terraform.tfvars.json`. It arrives with `CHANGE-ME` in the fields you have to fill in, and every command refuses to run until none is left. The other names the system needs, such as the cluster's, the buckets' and the image registry's, are all worked out from this file by `utils/settings.py`, so you never type them anywhere else.
 
-| Value | WH-2026's value | Your value |
-|---|---|---|
-| AWS account ID | The 12-digit number in `utils/config.ini.example` | The `Account` that `aws sts get-caller-identity` prints |
-| Domain | `whitehats-ctf.com` | The domain from [Domain name](../accounts/domain.md) |
-| Event name | `wh-2026` | A new name such as `wh-2027`, made of lowercase letters, digits and hyphens |
-| Region | `ap-southeast-1` (Singapore) | The same region, unless your account only allows another one ([how to tell](../accounts/aws.md#which-kind-of-account-you-have)) |
+## 1. Fill in the file
 
-The event name begins the name of almost everything the system creates, such as the cluster `wh-2027-eks` and the bucket `wh-2027-ctfd-backups`. Pick a new one each year, because S3 bucket names are shared by every AWS customer and an old name may still be taken from a previous event.
-
-Before you change anything, start a **branch**, which is a separate line of changes in git. Working on a branch means the whole swap can be reviewed, and undone if necessary, as one unit.
-
-1. Start the branch:
+1. Find your hosted zone's ID, which starts with `Z`. You'll paste it into the file in the next step.
     ```bash
-    cd ~/wh/wh-2026
-    NEW_EVENT=wh-2027
-    git switch -c "event/$NEW_EVENT"
+    aws route53 list-hosted-zones --query 'HostedZones[].[Name,Id]' --output text
     ```
-2. Set the old and new values, replacing `example-ctf.com` with your domain:
+2. Open the file:
     ```bash
-    OLD_ACCOUNT=$(grep -oE '[0-9]{12}' utils/config.ini.example | head -1)
-    NEW_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-    NEW_DOMAIN=example-ctf.com
-    NEW_REGION=$(aws configure get region)
+    cd ~/wh/wh-2027/utils
+    nano eks/terraform.tfvars.json
     ```
-3. Replace the values in every file. The commands leave out `docs/` and the Markdown files, because those record WH-2026's history, and they also leave the repository's own address, `Whitehat-Society/wh-2026`, unchanged.
+3. Fill in each field between the quotes:
+
+    | Field | What to enter |
+    |---|---|
+    | `event_name` | Your event's name, such as `wh-2027`, using lowercase letters, digits and hyphens. It begins the name of almost everything the system creates, such as the cluster `wh-2027-eks` and the bucket `wh-2027-ctfd-backups`. |
+    | `aws_region` | Leave it as `ap-southeast-1` (Singapore), unless your account only allows another region ([how to tell](../accounts/aws.md#which-kind-of-account-you-have)). |
+    | `domain_name` | Your domain, such as `example-ctf.com`. The system only creates DNS records under this name. |
+    | `hosted_zone_id` | The ID from step 1, without the `/hostedzone/` in front of it. |
+    | `acme_email` | An email address, which Let's Encrypt writes to if a certificate is about to expire. |
+    | `alarm_notification_emails` | The addresses that should receive alarm emails, such as `["you@example.com"]`. Write `[]` for none, because the alarms also reach Discord. |
+    | `node_min_size`, `node_desired_size`, `node_max_size` | Leave them at `2`, `3` and `6`, which are the fewest, the usual and the most rented computers. They are split over three availability zones with at least one in each, so in practice the fewest is 3. This is enough for about 100 teams. |
+
+    Leave `k8s_version` as it is. Leave `node_instance_type` as `t3.medium` too, unless your account is a [Free-plan project](../accounts/aws.md#which-kind-of-account-you-have), in which case use `c7i-flex.large`. Save with Ctrl+O and Enter, and quit with Ctrl+X.
+
+Pick a new event name each year. S3 bucket names are shared by every AWS customer, and a name from an earlier event may still be taken.
+
+## 2. Keep the file on your computer
+
+`wh-base` includes the settings file so that a fresh copy has every file it needs, but your filled-in copy holds your email addresses and IDs, so stop git from uploading it. The top of `.gitignore`, the file that lists what git leaves out, has the line ready.
+
+1. Open `.gitignore` with `nano ../.gitignore`, delete the `# ` in front of `# utils/eks/terraform.tfvars.json`, and save.
+2. Tell git to stop tracking the file, while keeping it on your computer, and save the change:
     ```bash
-    files() { git grep -lzIF "$1" -- . ':!docs' ':!*.md' ':!*.txt' ':!*.sql' ; }
-    files "$OLD_ACCOUNT"     | xargs -0r perl -pi -e "s/$OLD_ACCOUNT/$NEW_ACCOUNT/g"
-    files whitehats-ctf.com | xargs -0r perl -pi -e "s/whitehats-ctf\\.com/$NEW_DOMAIN/g"
-    files wh-2026           | xargs -0r perl -pi -e "s#Whitehat-Society/wh-2026#\\@REPO\\@#g; s/wh-2026/$NEW_EVENT/g; s#\\@REPO\\@#Whitehat-Society/wh-2026#g"
-    files ap-southeast-1    | xargs -0r perl -pi -e "s/ap-southeast-1/$NEW_REGION/g"
+    git rm --cached eks/terraform.tfvars.json
+    git commit -am "chore: keep the event settings out of git"
     ```
-4. Delete one leftover settings file. It was locked with WH-2026's Pulumi passphrase, which nobody has any more, and Pulumi creates a fresh copy during the deploy anyway.
-    ```bash
-    git rm -qf utils/web-shared/Pulumi.wh-2026.yaml
-    ```
+
+Teammates who deploy from another computer need the same file. Send it to them directly, for example in a private message, rather than through GitHub.
 
 ## Check it worked
 
 ```bash
-git grep -nIF -e "$OLD_ACCOUNT" -e whitehats-ctf.com -- utils web pwn ':!*.md' ':!*.txt' | head
-git grep -nI 'wh-2026' -- utils ':!*.md' ':!*.txt' | grep -v 'Whitehat-Society/wh-2026' | head
-[ "$NEW_REGION" = ap-southeast-1 ] || git grep -nI ap-southeast-1 -- utils web pwn ':!*.md' ':!*.txt' | head
+make settings
+git check-ignore eks/terraform.tfvars.json
 ```
 
-If all three commands print nothing, no old value is left. Next, look at the lines that matter most:
+`make settings` prints every name the deploy will use, starting with `event` and ending with the two image registries, and each one should contain your event's name, region or domain. `git check-ignore` prints the file's name, which confirms that git will never upload it.
 
-```bash
-grep -n 'CTFD_ECR_URI  \|BACKUP_BUCKET  \|PULUMI_STACK ?' utils/Makefile
-grep -n 'DEFAULT_SECRET_NAME =' utils/secrets_helper.py
-grep -n 'ctfdImage\|ctf\.' utils/ctfd/main.go | head -3
-```
+## The other settings file
 
-Every line should show your account ID, your domain or your event name. When everything matches, save the change as a **commit**, which is git's record of one set of changes:
-
-```bash
-git add -A && git commit -m "chore: retarget infra to $NEW_EVENT"
-```
+`utils/config.ini` holds the settings about the challenges rather than the cloud: which top-level folders hold challenges, and how many copies of each web and pwn challenge run. Its values suit most events, so you only change it when you add a category or during the event, as [Adding capacity](../operate/scaling.md) describes. It contains nothing private, so it stays in git.
 
 ## If it fails
 
-| Problem | Fix |
+| Message | Fix |
 |---|---|
-| `perl: command not found` | Install it with `sudo apt-get install -y perl`. |
-| Something changed that shouldn't have | Before you commit, `git diff` shows every change. `git checkout -- <file>` undoes the changes to one file, and `git checkout -- .` undoes everything so that you can start again. |
+| `fill in … first (they still say CHANGE-ME)` | The message names the fields you missed, so open the file again and fill them in. |
+| `json.decoder.JSONDecodeError: … line 5 column 3` | The file is no longer valid JSON, usually because a quote or a comma went missing near the line given. Every field's line ends with a comma except the last one, `node_desired_size`, so check the line given and the one above it. |
+| `Unable to locate credentials` from `make settings` | Your terminal isn't signed in to AWS, so [sign in again](../accounts/cli-login.md#signing-in-again). |
+| `git rm` says `did not match any files` | You already ran it once, so nothing more is needed. |
 
-**Next:** [Settings and secrets](config.md).
+**Next:** [Secrets](config.md).

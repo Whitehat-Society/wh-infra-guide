@@ -2,16 +2,16 @@
 
 ## The goal
 
-By the end of this section, you'll have the club's code on your computer, set up for your event. The files in the repository describe the whole system, as [What we're building](../concepts/big-picture.md#three-ways-a-part-is-defined) explains, but they still name last year's account and domain. This section points them at yours and stores your passwords where every tool can read them.
+By the end of this section, you'll have your own copy of `wh-base` on your computer, set up for your event. The files in it describe the whole system, as [What we're building](../concepts/big-picture.md#three-ways-a-part-is-defined) explains, and they name no particular event. Everything that makes the deploy yours, such as the event's name and domain, lives in one settings file, and the passwords live in AWS Secrets Manager.
 
 ## The order
 
 | Page | What you'll have afterwards | Why it comes here |
 |---|---|---|
-| [Get the code](clone.md) | The `wh-2026` and `CTFd` folders, side by side in `~/wh/`. | There is nothing to change until the files are on your computer. |
-| [Make it yours](make-it-yours.md) | Every file names your AWS account, domain, event name and region. | The settings files on the next page are copied from these files. |
-| [Settings and secrets](config.md) | Three settings files with your event's details, and your passwords stored in AWS Secrets Manager. | The deploy reads both, and it fails on the first missing value. |
+| [Get the code](clone.md) | A folder such as `~/wh/wh-2027`, copied from `wh-base`, and the event's own repository on GitHub. | There is nothing to fill in until the files are on your computer. |
+| [Your settings](make-it-yours.md) | `utils/eks/terraform.tfvars.json` filled in, and git told to keep it on your computer. | Every later command works out its names from this file. |
+| [Secrets](config.md) | The event's passwords stored in AWS Secrets Manager. | The deploy reads them, and it stops at the first missing one. |
 
-You're done with this section when the check at the bottom of [Settings and secrets](config.md#check-it-worked) counts every secret and confirms that git ignores the settings files. Nothing so far costs money, and section 5 is where billing starts.
+You're done with this section when the check at the bottom of [Secrets](config.md#check-it-worked) lists all nine secrets. Apart from the secret itself, at US$0.40 a month, nothing so far costs money, and section 5 is where billing starts.
 
 **Next:** [Get the code](clone.md).

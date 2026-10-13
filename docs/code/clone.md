@@ -1,53 +1,42 @@
 # Get the code
 
-You need two folders next to each other, and you get each one by downloading a copy of a repository, which is called **cloning** it.
+`wh-base` is the club's starting point for every event. It holds the infrastructure code and three template challenges, and it names no particular event, so you start by downloading a copy of it, which is called **cloning**, into a folder named after your event.
 
-```
-~/wh/
-├── wh-2026/   the challenges and all the infrastructure code
-└── CTFd/      the scoreboard program, which the deploy turns into a container image
-```
-
-The two folders have to sit side by side, because the Makefile looks for CTFd at `../../CTFd`, counting from `wh-2026/utils`.
-
-1. Clone the club's repository:
+1. Clone `wh-base` into a new folder, replacing `wh-2027` with your event's name:
     ```bash
     mkdir -p ~/wh && cd ~/wh
-    gh repo clone Whitehat-Society/wh-2026
+    gh repo clone Whitehat-Society/wh-base wh-2027
     ```
-2. Clone CTFd version 3.8.5, since the deploy relies on features that were added in version 3.8:
+2. Give the event its own repository on GitHub. Challenge writers send their challenges there, and your settings and changes stay out of `wh-base`, which the next event starts from. Creating a repository under `Whitehat-Society` needs permission from an owner of the GitHub organisation, so ask the infra lead first if the last command fails.
     ```bash
-    git clone --branch 3.8.5 --depth 1 https://github.com/CTFd/CTFd.git
+    cd ~/wh/wh-2027
+    git remote rename origin base
+    gh repo create Whitehat-Society/wh-2027 --private --source . --remote origin --push
     ```
-3. Add the plugin that posts first solves to Discord. A **plugin** is an add-on that CTFd loads from its `plugins` folder.
-    ```bash
-    git clone --depth 1 https://github.com/sigpwny/ctfd-discord-webhook-plugin.git \
-      CTFd/CTFd/plugins/ctfd-discord-webhook-plugin
-    ```
-
-!!! warning "Confirm the plugin with the previous infra lead"
-    WH-2026 built CTFd from a folder on one person's computer, and that folder was never uploaded, so this page rebuilds it from public sources. The plugin above reads the Discord settings that the deploy provides, but ask the previous infra lead whether it is the same plugin they used. If they still have their `CTFd` folder, ask them to upload it to the club's GitHub.
+    A **remote** is git's name for a copy of the repository on GitHub. After these commands, `origin` is the event's repository, where you push your work, and `base` is `wh-base`, where you can fetch fixes later with `git pull base main`.
 
 ## Check it worked
 
 ```bash
-ls ~/wh
-ls ~/wh/wh-2026/utils/Makefile ~/wh/CTFd/Dockerfile ~/wh/CTFd/CTFd/plugins/ctfd-discord-webhook-plugin/__init__.py
+cd ~/wh/wh-2027
+ls
+git remote -v
 ```
 
-The first command prints `CTFd  wh-2026`, and the second prints the three paths without any `No such file or directory` message.
+`ls` prints `README.md  misc  pwn  utils  web`, and `git remote -v` lists `origin` pointing at your event's repository and `base` pointing at `wh-base`.
 
-## What's in wh-2026
+## What's in the folder
 
-| Folder | Contents |
+| Path | What it is |
 |---|---|
-| `web/`, `pwn/`, `crypto/`, `forensics/`, `osint/`, `misc/` | One folder per challenge, each with a `challenge.yml` that holds the challenge's name, description, flag and type. |
-| `utils/Makefile` | Every deploy command. You run `make <target>` from inside `utils/`. |
-| `utils/eks/` | The Terraform files for the network, the cluster, the helper programs, the alarms and the backup bucket. |
-| `utils/ctfd/` | The Pulumi program for CTFd, its database and its cache. |
+| `web/`, `pwn/`, `misc/`, and later `crypto/`, `forensics/`, `osint/` | One folder per challenge. `web/example-web`, `pwn/example-tcp` and `misc/example-text` are the templates, one of each kind. |
+| `utils/Makefile` | Every deploy command. You run `make <target>` from inside `utils/`, and `make` on its own lists them. |
+| `utils/eks/` | The Terraform files for the network, the cluster, the helper programs, the alarms and the buckets. `terraform.tfvars.json` here is the one settings file you edit. |
+| `utils/settings.py` | Works out every other name, such as the cluster's and the buckets', from that settings file. |
+| `utils/config.ini` | Which folders hold challenges, and how many copies of each challenge run. |
+| `utils/ctfd/` | The Pulumi program for CTFd, its database and its cache. `image/` holds the recipe for the CTFd image, and the two `*-cronjob.yaml` files are the backup and health-check jobs. |
 | `utils/web-shared/`, `utils/shared-tcp/` | The Pulumi programs for the web and pwn challenges. |
-| `utils/builder/builder.py` | The script that builds and uploads the challenge images and then deploys them. |
-| `utils/secrets.py` | The script that reads and writes the secrets in Secrets Manager. |
-| `docs/ops/` | The original, more technical runbooks that this guide is based on. |
+| `utils/builder/builder.py` | The script that builds and uploads the challenge images, deploys them and loads them into CTFd. |
+| `utils/secrets.py` | The script that reads and writes the passwords in Secrets Manager. |
 
-**Next:** [Make it yours](make-it-yours.md).
+**Next:** [Your settings](make-it-yours.md).

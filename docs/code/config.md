@@ -1,116 +1,59 @@
-# Settings and secrets
+# Secrets
 
-The tools read your event's details from three settings files and its passwords from AWS Secrets Manager, and this page fills in all four. The settings files contain no passwords, and git ignores them, so they never leave your computer.
+The event's passwords and tokens live in one **secret** in AWS Secrets Manager, named `<event>/config`, rather than in any file. Every teammate and every program reads the same values from there, and nothing secret is ever on GitHub.
 
 <figure class="diagram">
 --8<-- "diagrams/settings.svg"
-<figcaption>The three files stay on your computer. The secret lives in AWS, so every teammate and every program reads the same passwords.</figcaption>
+<figcaption>The settings files stay on your computer, and every name the tools use is worked out from them. The secret lives in AWS, so every teammate and every program reads the same passwords.</figcaption>
 </figure>
 
-Every command on this page runs in the `~/wh/wh-2026/utils` folder.
+## Create and fill the secret
 
-## 1. Cluster settings
-
-1. Copy the example file:
-    ```bash
-    cd ~/wh/wh-2026/utils
-    cp eks/terraform.tfvars.json.example eks/terraform.tfvars.json
-    ```
-2. Open the file with `nano eks/terraform.tfvars.json` and fill in each field between the quotes:
-
-    | Field | What to enter |
-    |---|---|
-    | `event_name` | Your event name, for example `wh-2027`. |
-    | `aws_region` | [Make it yours](make-it-yours.md) has already filled this in. |
-    | `domain_name` | Your domain, for example `example-ctf.com`. The system only creates DNS records under this name. |
-    | `hosted_zone_id` | The ID starting with `Z` from [Domain name](../accounts/domain.md#check-it-worked). |
-    | `acme_email` | An email address, which Let's Encrypt writes to if a certificate is about to expire. |
-    | `alarm_notification_emails` | The addresses that should receive alarm emails, for example `["you@example.com"]`. |
-    | `node_min_size`, `node_desired_size`, `node_max_size` | `2`, `3` and `6`, which are the fewest, the usual and the most rented computers. They are split over three availability zones with at least one in each, so in practice the fewest is 3. This is enough for about 100 teams. |
-    | `pulumi_state_bucket` | `<event>-pulumi-state`, for example `wh-2027-pulumi-state`. |
-    | `scenarios_ecr_repo_name` | `<event>-scenarios`. Only the optional [chall-manager](../reference/chall-manager.md) uses it, but the field is still required. |
-
-    Leave `k8s_version` as it is. Leave `node_instance_type` as `t3.medium` too, unless your account is a [Free-plan project](../accounts/aws.md#which-kind-of-account-you-have), in which case use `c7i-flex.large`. Save with Ctrl+O and Enter, and quit with Ctrl+X.
-
-## 2. Image registry settings
-
-This one-line command writes the file for you, using the event name you entered in step 1:
+One command creates the secret, generates the passwords and asks you for the four values that only you know:
 
 ```bash
-printf 'repo_name = "%s"\n' "$(jq -r .event_name eks/terraform.tfvars.json)" > ecr/terraform.tfvars
+cd ~/wh/wh-2027/utils
+make secrets
 ```
 
-## 3. config.ini
+It generates these five, once, and never changes them afterwards:
 
-1. Copy the example file, which [Make it yours](make-it-yours.md) has already filled with your values:
-    ```bash
-    cp config.ini.example config.ini
-    ```
-2. Clear the chall-manager address, which belongs to WH-2026's deleted system. The main deploy doesn't use chall-manager, so the field stays empty.
-    ```bash
-    perl -pi -e 's/^api_endpoint = .*/api_endpoint = /' config.ini
-    ```
-3. Print the settings and read them through:
-    ```bash
-    grep -v '^#' config.ini
-    ```
-    Under `[CTFD]`, `url` should be `https://ctf.<your-domain>`, and under `[CHALL_MANAGER]`, `domain` should be `challenges.<your-domain>`.
+| Secret | What it is for |
+|---|---|
+| `admin_password` | The scoreboard's admin login. Read it with `python3 secrets.py get admin_password` when you need it. |
+| `ctfd_admin_token` | The token that scripts use to log in to CTFd. |
+| `db_password` | The database's password. |
+| `pulumi_passphrase` | The passphrase that locks Pulumi's records. |
+| `secret_key` | The key CTFd uses to sign login sessions. |
 
-## 4. Secrets
+Then it asks for these four, one at a time. Type or paste each value and press Enter:
 
-The deploy expects the secret to exist and to be filled in before it starts, so you create it now, and Terraform takes it over during the deploy.
+| Question | What to enter |
+|---|---|
+| `admin_email` | The scoreboard admin's email address, such as the club's email. |
+| `admin_name` | The admin's username, such as `admin`. |
+| `discord_webhook_url` | The first-solve webhook address from [Discord and GitHub](../accounts/discord-github.md). |
+| `discord_alert_webhook_url` | The alerts webhook address from the same page. |
 
-1. Create an empty secret:
-    ```bash
-    EVENT=$(jq -r .event_name eks/terraform.tfvars.json)
-    aws secretsmanager create-secret --name "$EVENT/config" --secret-string '{}'
-    ```
-2. Generate random passwords. The commands print five lines, so keep the window open, because you'll paste these values in the next step.
-    ```bash
-    echo "db_password       $(openssl rand -hex 24)"
-    echo "admin_password    $(openssl rand -base64 18)"
-    echo "secret_key        $(openssl rand -hex 32)"
-    echo "pulumi_passphrase $(openssl rand -hex 32)"
-    echo "ctfd_admin_token  ctfd_$(openssl rand -hex 32)"
-    ```
-3. Store all the secrets. The script asks for each value in turn, and nothing appears on screen while you paste, which is normal.
-    ```bash
-    python3 secrets.py bootstrap
-    ```
-
-    The questions come in the order shown in this table:
-
-    | Question | What to enter |
-    |---|---|
-    | `admin_email`, `admin_name` | The scoreboard's admin login, for example the club email and `admin`. |
-    | `admin_password` | The generated value. |
-    | `ctfd_admin_token`, `ctfd_api_key` | The generated `ctfd_…` value, in both fields. Scripts use it to log in to CTFd. |
-    | `db_password` | The generated value, which becomes the database password. |
-    | `discord_webhook_url`, `discord_alert_webhook_url` | The two webhook addresses from [Discord and GitHub](../accounts/discord-github.md). |
-    | `docker_hub_user`, `docker_hub_pass` | These are optional. A Docker Hub login raises the limit on image downloads, but you can press Enter to skip them. |
-    | `pulumi_passphrase` | The generated value, which Pulumi uses to lock its records. |
-    | `secret_key` | The generated value, which CTFd uses to sign login sessions. |
-
-    At the end, type `y` to save everything.
+Running `make secrets` again is safe. It keeps every value that is already set, so pressing Enter at a question leaves that value unchanged, and typing a new value replaces it.
 
 !!! danger "Never lose or change `pulumi_passphrase`"
-    Pulumi needs the passphrase to read its own records, and without it nobody can update or delete what Pulumi built. Secrets Manager keeps it safe for you, but don't change it while the system is running.
+    Pulumi needs the passphrase to read its own records, and without it nobody can update or delete what Pulumi built. Secrets Manager keeps it safe for you, so don't change it while the system is running.
 
 ## Check it worked
 
 ```bash
-python3 secrets.py list | wc -l
-git check-ignore config.ini eks/terraform.tfvars.json ecr/terraform.tfvars
+python3 secrets.py list
 ```
 
-The first command prints `12`, or `10` if you skipped Docker Hub, which is one line for each secret. The second prints all three file names, which confirms that git will never upload them.
+It prints nine names, from `admin_email` to `secret_key`. If `make secrets` ended with `Still empty:` and a list of names, those values are missing, and running `make secrets` again lets you fill them in.
 
 ## If it fails
 
 | Message | Fix |
 |---|---|
-| `ResourceExistsException` from `create-secret` | The secret already exists, so go on to step 3. |
-| `... scheduled for deletion` | A teardown less than 7 days ago deleted the secret. Bring it back with `aws secretsmanager restore-secret --secret-id "$EVENT/config"`. |
-| `ResourceNotFoundException` from `secrets.py` | The scripts are looking for a different secret name, so redo [Make it yours](make-it-yours.md). |
+| `AccessDeniedException` | Your terminal is signed in as a user without permission, or not signed in at all, so [sign in again](../accounts/cli-login.md#signing-in-again). |
+| `Restored <event>/config, which a teardown had scheduled for deletion.` | This isn't an error. A teardown in the last 7 days deleted the secret, and the command brought it back with its old values. |
+| `fill in … first (they still say CHANGE-ME)` | The settings file isn't finished, so go back to [Your settings](make-it-yours.md). |
 
 **Next:** [Deploy overview](../deploy/index.md).

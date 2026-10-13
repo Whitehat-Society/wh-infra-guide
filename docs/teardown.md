@@ -18,41 +18,13 @@ When you finish this page, the only charges left are for the few things that sta
 
 1. **Sign in again**, even if you're still signed in, so that your login lasts for the whole teardown. [Signing in again](accounts/cli-login.md#signing-in-again) shows how.
 2. **Keep the final backup** by following [Keep a copy after the event](operate/backups.md#keep-a-copy-after-the-event).
-3. **Set the variables Pulumi needs:**
-    --8<-- "pulumi-env.md"
-4. **Delete the challenges and CTFd.** Each stack takes about a minute.
+3. **Collect anything you need from the logs**, as described in [Collect the results](operate/results.md), because the next step deletes them.
+4. **Delete everything.** The command asks you to type the event's name before it starts, and it takes about 25 minutes.
     ```bash
-    for s in shared-tcp web-shared ctfd; do
-      pulumi -C "$s" stack select "$EVENT" && pulumi -C "$s" destroy --yes
-    done
+    cd ~/wh/wh-2027/utils
+    make destroy
     ```
-    Each one ends with `Resources:` and the number of resources deleted.
-5. **Wait for the challenges' load balancers to disappear**, which takes about 2 minutes.
-    ```bash
-    aws elbv2 describe-load-balancers --query 'LoadBalancers[].LoadBalancerName' --output text
-    ```
-    Repeat the command until only two names are left, `<event>-tcp` and one starting with `k8s-ingressn`. Terraform deletes those two in the next step.
-6. **Delete the cluster and everything else Terraform made.** This takes about 20 minutes.
-    ```bash
-    terraform -chdir=eks apply -var-file=terraform.tfvars.json -auto-approve
-    terraform -chdir=eks destroy -var-file=terraform.tfvars.json
-    ```
-    The first command makes Terraform's records match the current code, in case the code has changed since the deploy. The second asks for confirmation, so type `yes`. Lines like `module.vpc.aws_vpc.this[0]: Still destroying...` can continue for 10 minutes, and you shouldn't interrupt them.
-7. **Delete the challenge image registry:**
-    ```bash
-    terraform -chdir=ecr destroy -var-file=terraform.tfvars
-    ```
-    Type `yes` when Terraform asks.
-
-8. **Delete the logs.** The cluster's monitoring add-ons created log groups that Terraform doesn't know about, and those groups never expire. Collect anything you need from them first, as described in [Collect the results](operate/results.md), and then run:
-    ```bash
-    EVENT=$(jq -r .event_name eks/terraform.tfvars.json)
-    for g in $(aws logs describe-log-groups --query 'logGroups[].logGroupName' --output text); do
-      case "$g" in /aws/containerinsights/$EVENT-eks/*|/aws/lambda/$EVENT-*|/aws/service-events/*|/aws/application-signals/*)
-        aws logs delete-log-group --log-group-name "$g" && echo "deleted $g";; esac
-    done
-    ```
-    It prints one `deleted` line for each log group, usually 9 to 11 in all.
+    It runs the three steps in the diagram above. First it deletes the challenges and CTFd with Pulumi, deletes any DNS records the cluster made that are still there, so that they can't block next year's event, and waits for the load balancers to go. Then Terraform deletes the cluster, the network, the buckets and both image registries, and lines like `module.vpc.aws_vpc.this[0]: Still destroying...` can continue for 10 minutes, so don't interrupt them. Last, it deletes the log groups and prints one `deleted` line for each, usually 9 to 11 in all. It ends with `Done.`
 
 ## Check the bill has stopped
 
@@ -94,9 +66,8 @@ On macOS, replace `date -d '-3 days' +%F` with `date -v-3d +%F`. After teardown 
 
 | Message | Fix |
 |---|---|
-| Pulumi mentions the `passphrase` | This terminal doesn't have the Pulumi variables, so redo step 3. |
-| `DependencyViolation` while deleting the network | A load balancer made by the cluster still exists. Run the check in step 5 again, delete any leftovers with `aws elbv2 delete-load-balancer --load-balancer-arn <arn>`, and then run step 6 again. |
+| `DependencyViolation` while deleting the network | A load balancer made by the cluster still exists. List them with `aws elbv2 describe-load-balancers --query 'LoadBalancers[].[LoadBalancerName,LoadBalancerArn]' --output text`, delete each leftover with `aws elbv2 delete-load-balancer --load-balancer-arn <arn>`, and then run `make destroy` again. |
 | `module.vpc.aws_vpc.this[0]: Still destroying...` for more than 12 minutes | A security group the load balancer controller made, named `k8s-traffic-…`, is still in the network. In a second terminal, list the network's groups with `aws ec2 describe-security-groups --filters Name=vpc-id,Values=<the vpc-… id from the line> --query 'SecurityGroups[].[GroupId,GroupName]' --output text`, and delete each one except `default` with `aws ec2 delete-security-group --group-id <sg-…>`. The deletion then finishes within a minute. |
-| `ExpiredTokenException` or `Your session has expired` in the middle of a step | Your login has ended. Sign in again and run the same command again, and Terraform and Pulumi will continue with whatever is left. |
-| The deletion was interrupted, and the cluster still exists | Follow *Recovery: EKS cluster orphaned from Terraform state* in `docs/ops/deploy-live-infra.md` in the wh-2026 repository. |
+| `ExpiredTokenException` or `Your session has expired` | Your login has ended. Sign in again and run `make destroy` again, and Terraform and Pulumi will continue with whatever is left. |
+| The deletion was interrupted, and the cluster still exists | Run `make destroy` again. Terraform keeps its records in `utils/eks/terraform.tfstate` on the computer that deployed, so run it on that computer. |
 | All checks are empty, but charges continue | In the AWS console, open **Billing and Cost Management → Bills**, which lists each charge by service and region. |

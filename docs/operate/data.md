@@ -27,11 +27,12 @@ Every kind of data has **one source**, which is the place where you change it. E
 | Copy | Kept until | Clear or refresh it with |
 |---|---|---|
 | Docker build cache, which holds image layers from earlier builds | Until you delete it | `docker builder prune -f` forces a full rebuild. You only need it when a build reuses a layer it shouldn't, for example a `RUN git clone` or `RUN apt-get install` that ought to fetch something newer. |
-| ECR sign-in for Docker (`~/.docker/config.json`) | 12 hours | Repeat step 1 of [The challenges](../deploy/challenges.md). |
+| ECR sign-in for Docker (`~/.docker/config.json`) | 12 hours | Nothing, because `make build-images` and `make deploy-ctfd` sign in again on every run. |
 | AWS sign-in (`~/.aws/`) | 8 to 12 hours | [Sign in again](../accounts/cli-login.md). |
 | Cluster address (`~/.kube/config`) | Until you rebuild the cluster | `make kubeconfig`. After a rebuild, the old address points at nothing. |
-| Terraform state (`utils/eks/terraform.tfstate` and `utils/ecr/terraform.tfstate`) | Forever, but **only on this computer** | Never delete it. Copy both files to the club's shared drive after every deploy, because without them nobody else can update or delete the system. |
+| Terraform state (`utils/eks/terraform.tfstate`) | Forever, but **only on this computer** | Never delete it. Copy it to the club's shared drive after every deploy, because without it nobody else can update or delete the system. |
 | `challenge.yml` lines written by the build (`connection_info:`) | Until the next build | Nothing, since the build rewrites them. Commit them, or discard them with `git checkout -- '*/*/challenge.yml'`. |
+| ctfcli's settings (`.ctf/config`), with the CTFd address and admin token | Until the next build | Nothing, since `make build-images` writes it again on every run. Git ignores it. |
 | DNS answers | Up to 15 minutes for "doesn't exist", and 60 seconds for an address | `ipconfig /flushdns` on Windows. Chrome keeps its own copy as well, which you clear by opening `chrome://net-internals/#dns` and clicking **Clear host cache**. |
 
 ### In the AWS account
@@ -42,7 +43,7 @@ Every kind of data has **one source**, which is the place where you change it. E
 | Pulumi state and settings (S3 bucket `<event>-pulumi-state`) | Forever | Pulumi updates it on every run. If a run was interrupted, see `the stack is currently locked` in [Troubleshooting](../reference/troubleshooting.md#pulumi-and-terraform). |
 | Secrets Manager | 7 days after you delete it | `make deploy-eks` brings it back if you deploy again within the 7 days. |
 | Database backups (S3 bucket `<event>-ctfd-backups`) | 30 days | Old backups expire by themselves. A backup holds only the database and not the uploads disk. |
-| Route 53 records | Until shortly after the Ingress or Service is deleted, when ExternalDNS removes the record | Nothing, although players' DNS caches still hold the old answer for up to 60 seconds. |
+| Route 53 records | Until shortly after the Ingress or Service is deleted, when ExternalDNS removes the record. If the cluster goes first, they stay forever and block the same names for the next event's cluster. | Nothing while the cluster runs, although players' DNS caches still hold the old answer for up to 60 seconds. `make destroy` deletes the cluster's records, and `make dns-clean OWNER=<old-event>-eks` deletes an earlier cluster's. |
 | CloudWatch Container Insights logs | Forever, because the cluster creates them and Terraform doesn't know about them | Delete them after the event, as described in [Delete everything](../teardown.md). |
 | Let's Encrypt certificates | 90 days | Let's Encrypt issues at most 5 identical certificates a week, so rebuilding the cluster from nothing 5 times in one week leaves the sixth build without `https` for days. |
 
@@ -68,21 +69,13 @@ To check, compare the image that the pods run with the newest one in ECR:
 ```bash
 NAME=<name>; NS=challenges-web     # challenges-tcp for a pwn challenge
 kubectl get deploy "$NAME" -n "$NS" -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-aws ecr describe-images --repository-name "$(jq -r .event_name eks/terraform.tfvars.json)" \
+aws ecr describe-images --repository-name "$(python3 settings.py event)" \
   --image-ids imageTag="$NAME" --query 'imageDetails[0].imageDigest' --output text
 ```
 
 If the first line ends in `@sha256:…` and matches the second line, the pods are running the newest image. `make build-images` pins each image this way, so a changed image always reaches the pods and an unchanged one doesn't restart them.
 
-If the first line ends in `:<name>` instead, your copy of `builder.py` is an older one that doesn't pin images. In that case, make the computers download the image again:
-
-```bash
-kubectl patch deploy "$NAME" -n "$NS" -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"$NAME\",\"imagePullPolicy\":\"Always\"}]}}}}"
-kubectl rollout restart deploy "$NAME" -n "$NS"
-kubectl rollout status deploy "$NAME" -n "$NS"
-```
-
-The next `make build-images` undoes this patch, so either repeat it after every build or update `builder.py`.
+CTFd is pinned the same way, by `make deploy-ctfd`. `kubectl get deploy ctfd -n ctfd -o jsonpath='{.spec.template.spec.containers[0].image}'` shows the copy CTFd runs, and it changes only when the image in `utils/ctfd/image/` does.
 
 ## Clear CTFd's cache
 

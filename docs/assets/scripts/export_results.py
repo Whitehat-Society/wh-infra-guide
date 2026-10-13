@@ -1,6 +1,6 @@
 import csv, json, os, pathlib, subprocess, requests
 
-url = open(os.path.expanduser("~/wh/wh-2026/.ctf/config")).read().split("url = ")[1].split()[0]
+url = open(os.path.expanduser("~/wh/wh-2027/.ctf/config")).read().split("url = ")[1].split()[0]
 token = subprocess.check_output(["python3", "secrets.py", "get", "ctfd_admin_token"], text=True).strip()
 s = requests.Session()
 s.headers.update({"Authorization": f"Token {token}", "Content-Type": "application/json"})

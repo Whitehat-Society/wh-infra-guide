@@ -1,8 +1,8 @@
 site_name: WH Infra Guide
 site_description: Build and run the Whitehacks CTF infrastructure from a blank PC.
 site_url: https://lampardnk.github.io/wh-infra-guide/
-repo_url: https://github.com/Whitehat-Society/wh-2026
-repo_name: Whitehat-Society/wh-2026
+repo_url: https://github.com/Whitehat-Society/wh-base
+repo_name: Whitehat-Society/wh-base
 edit_uri: https://github.com/lampardnk/wh-infra-guide/edit/main/docs/
 
 theme:
@@ -76,8 +76,8 @@ nav:
   - 4 · Code and settings:
       - Overview: code/index.md
       - Get the code: code/clone.md
-      - Make it yours: code/make-it-yours.md
-      - Settings and secrets: code/config.md
+      - Your settings: code/make-it-yours.md
+      - Secrets: code/config.md
   - 5 · Deploy:
       - Overview: deploy/index.md
       - 1. The cluster: deploy/eks.md

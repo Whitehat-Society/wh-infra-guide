@@ -20,7 +20,7 @@ Signing up, protecting the root user, creating your everyday login and creating 
 | [Sign in from the terminal](cli-login.md) | `aws` commands that act as your everyday login. | The remaining pages use the terminal. |
 | [Budget alert](budget.md) | An email when spending passes half your monthly limit. | It has to exist before anything starts costing money. |
 | [Domain name](domain.md) | A Route 53 hosted zone that answers for your domain. | Section 4 needs the hosted zone's ID, and DNS changes take hours to spread, so start early. |
-| [Discord and GitHub](discord-github.md) | Two webhook addresses, and access to the `wh-2026` repository. | Section 4 stores the webhooks as secrets and downloads the code. |
+| [Discord and GitHub](discord-github.md) | Two webhook addresses, and access to the `wh-base` repository. | Section 4 stores the webhooks as secrets and downloads the code. |
 
 You're done with this section when `aws sts get-caller-identity` prints your account and `dig +short NS <your-domain>` prints four Route 53 name servers.
 

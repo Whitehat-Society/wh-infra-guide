@@ -6,7 +6,7 @@ groups:
   - {x: 370, y: 10, w: 400, h: 480, label: "AWS account", style: aws}
   - {x: 800, y: 10, w: 410, h: 480, label: "Cluster", style: cluster}
 nodes:
-  - {id: repo, x: 30, y: 50, w: 290, title: "wh-2026 folder", sub: "challenge.yml, settings files", glyph: DIR, cat: you}
+  - {id: repo, x: 30, y: 50, w: 290, title: "Event folder", sub: "challenge.yml, settings files", glyph: DIR, cat: you}
   - {id: dcache, x: 30, y: 140, w: 290, title: "Docker build cache", sub: "image layers", glyph: IMG, cat: tool}
   - {id: logins, x: 30, y: 230, w: 290, title: "Sign-ins", sub: "AWS, Docker to ECR, kubeconfig", glyph: KEY, cat: sec}
   - {id: tfstate, x: 30, y: 320, w: 290, title: "Terraform state", sub: "only on this computer", glyph: TF, cat: tool}

@@ -1,6 +1,6 @@
 # 4 · The scoreboard
 
-With Kubernetes running, the club can put the first program that players see onto the cluster. That program is **CTFd**, the free scoreboard software where players register, read the challenges, submit flags and follow the rankings. The club runs its own copy of CTFd, kept in a separate repository called `CTFd`, with a few changes of its own.
+With Kubernetes running, the club can put the first program that players see onto the cluster. That program is **CTFd**, the free scoreboard software where players register, read the challenges, submit flags and follow the rankings. The club runs the official CTFd release with one addition, a plugin that announces each challenge's first solve in Discord.
 
 ## What the scoreboard is made of
 
@@ -42,14 +42,16 @@ Kubernetes doesn't take a list of programs. It takes a set of **objects**, each 
 
 ## How it is written down: Pulumi
 
-These objects are created by **Pulumi**, a tool that does the same job as Terraform, except that its description is a program written in the Go language. The scoreboard's program is `utils/ctfd/main.go`. This excerpt creates the Ingress that sends `ctf.<your-domain>` to CTFd:
+These objects are created by **Pulumi**, a tool that does the same job as Terraform, except that its description is a program written in the Go language. The scoreboard's program is `utils/ctfd/main.go`. These excerpts read the domain from Pulumi's settings, which `make deploy-ctfd` fills in from your settings file, and create the Ingress that sends `ctf.<your-domain>` to CTFd:
 
 ```go
+ctfHost := "ctf." + cfg.Require("domain")
+
 networkingv1.NewIngress(ctx, "ingress", &networkingv1.IngressArgs{
     Spec: networkingv1.IngressSpecArgs{
         Rules: networkingv1.IngressRuleArray{
             networkingv1.IngressRuleArgs{
-                Host: pulumi.String("ctf.example-ctf.com"),
+                Host: pulumi.String(ctfHost),
                 ...
 ```
 
@@ -61,7 +63,7 @@ Like Terraform, Pulumi keeps a record of what it built, which it stores in an S3
 
 | Kind | What you touch |
 |---|---|
-| Files in the repository | `utils/ctfd/main.go` describes the three programs and their objects. The CTFd program itself, with its Dockerfile, is in the separate `CTFd` repository. |
+| Files in the repository | `utils/ctfd/main.go` describes the three programs and their objects. `utils/ctfd/image/Dockerfile` is the recipe for the CTFd image, which starts from the official `ctfd/ctfd` image and adds the Discord plugin. |
 | Commands | `make deploy-ctfd` builds the CTFd image, uploads it to ECR and runs Pulumi. `kubectl get pods -n ctfd` shows the three pods. |
 | Web dashboards | CTFd's own setup page, where you name the event and create the admin login, and its admin panel, where you change settings and show or hide challenges during the event. |
 

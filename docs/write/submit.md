@@ -33,7 +33,7 @@ If the command fails with `yaml.scanner.ScannerError` or `yaml.parser.ParserErro
     git commit -m "chal(<category>): add <folder>"
     git push -u origin chal/<category>-<folder>
     ```
-2. Open a pull request on GitHub. The repository's checks run the validator on every challenge, so wait for them to pass. They don't build your Dockerfile, only `filelocker`'s, so your own test is the only one that happens before the deploy.
+2. Open a pull request on GitHub, and wait for the repository's checks to pass. They run the validator on every challenge, build every Dockerfile, and check that each image runs as a normal user rather than `root`. They don't run your solve script, so your own test is still the only proof that the challenge can be solved.
 3. Tell the infra team the challenge's name and type in the tech and infra channel.
 
 The infra team then deploys it with the steps in [Add a challenge](../operate/change.md#add-a-challenge).

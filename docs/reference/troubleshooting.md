@@ -31,13 +31,14 @@ Find the group that matches what you were doing, and then the line that matches 
 | Terraform: `No valid credential sources found` | You signed in with `aws login` instead of `aws sso login`, and Terraform can't read that kind of login. | Use the Identity Center profile from [Sign in from the terminal](../accounts/cli-login.md), or add a profile that hands Terraform the CLI's keys with `credential_process = aws configure export-credentials --profile <yours> --format process`. |
 | Python scripts: `Missing Dependency: Using the login credential provider requires an additional dependency` | This has the same cause as the line above, but in `secrets.py` and `builder.py`. | Run `pip install "botocore[crt]"`. |
 | `explicit deny in a service control policy` | Your account is a Free-plan project that only allows one region. | Use that region everywhere, as described in [Which kind of account you have](../accounts/aws.md#which-kind-of-account-you-have). |
-| `Unable to connect to the server` from `kubectl` | `kubectl` doesn't know the cluster's address, or the cluster has been deleted. | Run `cd ~/wh/wh-2026/utils && make kubeconfig`. |
+| `Unable to connect to the server` from `kubectl` | `kubectl` doesn't know the cluster's address, or the cluster has been deleted. | Run `cd ~/wh/wh-2027/utils && make kubeconfig`. |
 
 ### Names and addresses
 
 | Message or symptom | Cause | Fix |
 |---|---|---|
 | A name doesn't resolve, and `dig` prints nothing | ExternalDNS hasn't created the record yet, or your domain doesn't point at Route 53. | Read `kubectl logs -n external-dns -l app.kubernetes.io/name=external-dns --tail=30`, and check `dig +short NS <your-domain>`. |
+| A name doesn't resolve, but the ExternalDNS log only says `All records are already up to date` | The record exists but belongs to an earlier event's cluster, so ExternalDNS leaves it alone, and it still points at that cluster's deleted load balancer. | Run `python3 dns_records.py check` in `utils/`, and remove the old records with the `make dns-clean OWNER=<old-event>-eks` command it prints. Then wait 15 minutes, because resolvers remember the earlier "doesn't exist" answer. |
 | The browser says `ERR_NAME_NOT_RESOLVED`, but `dig` or Google's DNS finds the name | Your computer or router remembered "doesn't exist" from before the record was created. | Wait up to 15 minutes and try again. On Windows, running `ipconfig /flushdns` in PowerShell clears your computer's copy. |
 | Still `ERR_NAME_NOT_RESOLVED` or `Non-existent domain` after 15 minutes, and `nslookup <your-domain>` fails for the domain itself | Your internet provider blocks the whole domain, which happens with free domain services. | For Chrome only, open **Settings → Privacy and security → Security → Use secure DNS** and choose **Google (Public DNS)**. To fix the whole computer, terminal tools included, open Windows **Settings → Network & internet → Wi-Fi →** your network **→ Hardware properties → DNS server assignment → Edit → Manual**, set IPv4 to `8.8.8.8` and `1.1.1.1`, and set IPv6 to `2001:4860:4860::8888` and `2606:4700:4700::1111`. On a phone hotspot the block usually doesn't apply. |
 | Chrome opens the CTF, but a terminal tool fails with `NameResolutionError` or `Name or service not known` | Chrome's secure DNS setting skips your router, but the terminal still uses it. | Change the computer's DNS as described in the line above. |
@@ -50,22 +51,17 @@ Find the group that matches what you were doing, and then the line that matches 
 
 | Message or symptom | Cause | Fix |
 |---|---|---|
-| `Required plugins are not installed` | Terraform for the image registry was never prepared on this computer. | Run `terraform -chdir=ecr init`, and then `make build-images`. |
-| `No such file or directory: 'oras'` | The `oras` tool isn't installed. | Install it as described in [Install the tools](../setup/pc.md#2-install-the-other-programs). |
-| `Challenge name must be alphanumeric with hyphens only` | Your `builder.py` is an older copy that only accepts names like `xoph-dark-embers`. | Update `utils/builder/builder.py` from the repository's `main` branch, which accepts any name. |
 | `creating failed` or `updating failed` for a `Deployment`, after Pulumi waits 10 minutes | One challenge's pods never became ready, so Pulumi stopped, and the builder skipped every step after it, including loading CTFd. | `kubectl get pods -n challenges-web; kubectl get pods -n challenges-tcp` shows the broken challenge. Fix it using the lines below, and then run `make build-images` again. |
 | A pod shows `StartError` or `RunContainerError`, and `kubectl describe pod` says `executable file not found` | The Dockerfile starts a program that its final image doesn't contain, often `socat`. | Fix the Dockerfile, following [Rules for the Dockerfile](../write/server.md#rules-for-the-dockerfile). |
 | After a rebuild, the challenge still behaves like the old version | Kubernetes is running the image it downloaded before. | See [Old code still running](../operate/data.md#old-code-still-running). |
 | A challenge disappeared from the cluster after `make build-images` | Its image failed to build, so the builder left it out, and Pulumi deleted what it no longer saw. | Scroll up in the output to the challenge's `Error` line, fix the problem, and run `make build-images` again. |
-| `filelocker` fails with `go install github.com/air-verse/air@latest` | `filelocker` needs the optional chall-manager, and its Dockerfile downloads a tool that no longer builds. | This is expected. Leave the challenge hidden, or see the [chall-manager appendix](chall-manager.md). |
-| The build ends with `NameResolutionError` or `JSONDecodeError` from `ctf` | The images and pods are deployed, but ctfcli couldn't reach CTFd. | Fix the cause, which is usually in [Names and addresses](#names-and-addresses) or an unfinished [CTFd setup](../deploy/ctfd.md). Then run `cd ~/wh/wh-2026 && ctf challenge install && cd utils && make build-images` so that the addresses are filled in. `ctf challenge install` ends with `Install failed for:` and a list of the challenges that were already loaded, which is expected. |
+| The build ends with `NameResolutionError` or `JSONDecodeError` from `ctf` | The images and pods are deployed, but ctfcli couldn't reach CTFd. | Fix the cause, which is usually in [Names and addresses](#names-and-addresses) or an unfinished [CTFd setup](../deploy/ctfd.md), and then run `make build-images` again, which loads the challenges and fills in their addresses. |
 | A challenge shows twice in CTFd | Its `name:` was changed after it was loaded. | See [Rename a challenge](../operate/change.md#rename-a-challenge). |
 
 ### CTFd
 
 | Message or symptom | Cause | Fix |
 |---|---|---|
-| `missing configuration value 'backup_irsa_arn'` | Your copy of `utils/Makefile` is older than the fix that passes this setting to Pulumi. | Set the [Pulumi variables](#pulumi-variables), run `pulumi -C ctfd config set backup_irsa_arn "$(terraform -chdir=eks output -raw ctfd_backup_irsa_arn)"` once, and then run `make deploy-ctfd` again. |
 | Scores, challenges or settings look out of date after a restore, or after a change made directly in the database | CTFd's cache in Redis still holds the old copies. | [Clear CTFd's cache](../operate/data.md#clear-ctfds-cache). |
 | Players are logged out after you cleared the cache | Logins are kept in the same cache. | This is expected, and players simply log in again. |
 
@@ -74,10 +70,9 @@ Find the group that matches what you were doing, and then the line that matches 
 | Message or symptom | Cause | Fix |
 |---|---|---|
 | Pulumi: `the stack is currently locked` | An earlier Pulumi run was interrupted and left a lock behind. | Set the [Pulumi variables](#pulumi-variables), and then run `pulumi -C <folder> cancel --yes`. |
-| Pulumi: `incorrect passphrase` | The passphrase is wrong, or a settings file from WH-2026 is still present. | Delete any `Pulumi.wh-2026.yaml`, and never change the passphrase of a running system. |
+| Pulumi: `incorrect passphrase` | The `pulumi_passphrase` secret was changed after Pulumi first used it. | Put the old value back with `python3 secrets.py set pulumi_passphrase <old value>`, and never change the passphrase of a running system. |
 | Terraform: `Error acquiring the state lock` | Another Terraform run is in progress, or one crashed and left a lock behind. | Make sure nobody else is deploying, and then run `terraform -chdir=eks force-unlock <LOCK_ID>` with the ID from the message. |
-| Terraform: `secret ... scheduled for deletion` | A teardown less than 7 days ago deleted the secret. | `make deploy-eks` normally restores it by itself. If yours doesn't, its `Makefile` is an older copy, so run `aws secretsmanager restore-secret --secret-id "$EVENT/config"` and then `make deploy-eks` again. |
-| `make deploy-eks`: `failed calling webhook "mservice.elbv2.k8s.aws"` for `cert_manager` or `amazon-cloudwatch-observability` | Your `eks/*.tf` files are older copies that start those parts before the load balancer controller is ready. | Run `make deploy-eks` again. If that stops with `cannot re-use a name that is still in use`, run `make kubeconfig` and `kubectl delete secret -n cert-manager sh.helm.release.v1.cert-manager.v1`, and then `make deploy-eks` once more. |
+| Terraform: `secret ... scheduled for deletion` | A teardown less than 7 days ago deleted the secret. | Run `make secrets`, which restores it with its old values, and then `make deploy-eks` again. |
 
 ### Docker
 
@@ -101,4 +96,4 @@ When you post in the tech and infra channel, include these four things, which ar
 3. The first line of the error, pasted as text rather than as a screenshot.
 4. If the cluster is involved, the output of `kubectl get pods -A | grep -v Running`.
 
-The original runbooks, which have more technical detail, are in the wh-2026 repository under `docs/ops/`.
+The original runbooks from WH-2026, which have more technical detail, are in the `Whitehat-Society/wh-2026` repository under `docs/ops/`. Their commands use WH-2026's names and older copies of the tools, so read them for background rather than running them.

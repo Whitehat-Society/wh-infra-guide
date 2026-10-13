@@ -7,7 +7,7 @@ The scoreboard lists the challenges, but many challenges also need a server of t
 | Kind | What players do | What runs on the cluster |
 |---|---|---|
 | **text** | Read the description and download files, as in crypto, forensics, OSINT and most misc challenges. | Nothing. The challenge lives entirely inside CTFd. |
-| **shared-web** | Open a website such as `https://xssive-login.challenges.<your-domain>` in the browser. | Pods behind NGINX, which share the one web load balancer. |
+| **shared-web** | Open a website such as `https://example-web.challenges.<your-domain>` in the browser. | Pods behind NGINX, which share the one web load balancer. |
 | **shared-tcp** | Connect from the terminal with a command such as `nc <address> 7331`. | Pods behind a load balancer of their own. |
 
 "Shared" means that every player uses the same running copies of the challenge, so a player who crashes the server crashes it for everyone until Kubernetes restarts it. [Known weak spots](../operate/risks.md) explains what that means during an event.
@@ -25,19 +25,19 @@ NGINX can tell web challenges apart because a browser always sends the name it i
 
 ## How it is written down
 
-Each challenge is one folder in the repository, inside its category's folder, such as `web/xssive-login/` or `pwn/loop/`. The challenge's author writes the folder, and the deploy only reads it.
+Each challenge is one folder in the repository, inside its category's folder, such as `web/example-web/` or `pwn/example-tcp/`. The challenge's author writes the folder, and the deploy only reads it.
 
 ```
-web/xssive-login/
+web/example-web/
 ├── challenge.yml      the name, text, points, flag and type
 ├── Dockerfile         the recipe for the server's image
 └── src/               the server's code
 ```
 
-`challenge.yml` is a short text file. These lines from `web/xssive-login/challenge.yml` show the parts that matter to the deploy:
+`challenge.yml` is a short text file. These lines from `web/example-web/challenge.yml` show the parts that matter to the deploy:
 
 ```yaml
-name: "xssive-login"
+name: "example-web"
 category: Web
 value: 1000
 challenge_type: shared-web
@@ -59,7 +59,7 @@ A program called `builder.py` turns the folders into running challenges. It read
 
 | Kind | What you touch |
 |---|---|
-| Files in the repository | One folder per challenge, such as `web/xssive-login/`. `utils/web-shared/main.go` and `utils/shared-tcp/main.go` are the Pulumi programs that turn the folders into pods, and `utils/builder/builder.py` runs everything. |
+| Files in the repository | One folder per challenge, such as `web/example-web/`. `utils/web-shared/main.go` and `utils/shared-tcp/main.go` are the Pulumi programs that turn the folders into pods, and `utils/builder/builder.py` runs everything. |
 | Commands | `make build-images` builds, deploys and loads every challenge in one go. `kubectl get pods -n challenges-web` and `kubectl get pods -n challenges-tcp` show the running servers. |
 | Web dashboards | CTFd's admin panel, where you show the challenges to players when the event starts. |
 

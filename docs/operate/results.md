@@ -20,7 +20,7 @@ Do these steps in order, as soon as the CTF ends.
 2. **Take a final backup** and download it, as described in [Keep a copy after the event](backups.md#keep-a-copy-after-the-event).
 3. **Export the results as spreadsheets.** This script saves six CSV files to `~/wh/results/`, and they open in Excel or Google Sheets.
     ```bash
-    cd ~/wh/wh-2026/utils
+    cd ~/wh/wh-2027/utils
     curl -sSLo export_results.py https://lampardnk.github.io/wh-infra-guide/assets/scripts/export_results.py
     python3 export_results.py
     ```
@@ -50,7 +50,7 @@ These statistics show how much load the system carried, which helps when sizing 
 === "Requests and errors per challenge"
 
     ```bash
-    EVENT=$(jq -r .event_name ~/wh/wh-2026/utils/eks/terraform.tfvars.json)
+    EVENT=$(jq -r .event_name ~/wh/wh-2027/utils/eks/terraform.tfvars.json)
     ID=$(aws logs start-query --log-group-name "/aws/containerinsights/$EVENT-eks/application" \
       --start-time $(( $(date +%s) - 3 * 86400 )) --end-time $(date +%s) \
       --query-string 'filter kubernetes.container_name = "controller" | parse log /" (?<status>\d{3}) \d+ .*\[(?<upstream>[^\]]+)\] \[/ | filter ispresent(upstream) | stats count(*) as requests, sum(status >= 500) as errors by upstream | sort requests desc | limit 50' \

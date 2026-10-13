@@ -19,7 +19,7 @@ You can tell that the system didn't recover if CTFd still doesn't load after 10 
 The fix is to add a computer to that zone's group by hand. First find the zone of the stuck pod's disk and the names of the groups:
 
 ```bash
-cd ~/wh/wh-2026/utils
+cd ~/wh/wh-2027/utils
 EVENT=$(jq -r .event_name eks/terraform.tfvars.json)
 kubectl get pv -o custom-columns='CLAIM:.spec.claimRef.name,ZONE:.spec.nodeAffinity.required.nodeSelectorTerms[0].matchExpressions[0].values[0]'
 aws eks list-nodegroups --cluster-name "$EVENT-eks" --output text

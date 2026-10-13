@@ -10,7 +10,7 @@ During the event, keep three things open on your screen. Together they tell you 
     `watch` reruns a command on a timer. The top part lists every pod that isn't running normally, so it should show only its header, and the bottom part lists the nodes, which should all be `Ready`. On macOS, install `watch` first with `brew install watch`. Press Ctrl+C when you want to stop it.
 3. **The CloudWatch dashboard**, which is a page of graphs showing memory, processor use and the number of nodes. Print its address with the commands below and open it in a browser.
     ```bash
-    EVENT=$(jq -r .event_name ~/wh/wh-2026/utils/eks/terraform.tfvars.json)
+    EVENT=$(jq -r .event_name ~/wh/wh-2027/utils/eks/terraform.tfvars.json)
     R=$(aws configure get region)
     echo "https://$R.console.aws.amazon.com/cloudwatch/home?region=$R#dashboards/dashboard/$EVENT-eks-ops"
     ```

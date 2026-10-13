@@ -54,7 +54,7 @@ The guide uses about a dozen command-line programs, and this page installs all o
 === "macOS"
 
     ```bash
-    brew install git make jq netcat awscli hashicorp/tap/terraform kubectl pulumi/tap/pulumi go oras python@3.12
+    brew install git make jq netcat awscli hashicorp/tap/terraform kubectl pulumi/tap/pulumi go python@3.12
     ```
 
 === "Linux"
@@ -103,13 +103,6 @@ The guide uses about a dozen command-line programs, and this page installs all o
     curl -fsSL https://get.pulumi.com | sh
     ```
 
-    **oras** (`make build-images` uses it to sign in to the image registry)
-    ```bash
-    ORV=$(curl -sSL https://api.github.com/repos/oras-project/oras/releases/latest | jq -r .tag_name | tr -d v)
-    curl -sSL "https://github.com/oras-project/oras/releases/download/v${ORV}/oras_${ORV}_linux_$(dpkg --print-architecture).tar.gz" \
-      | sudo tar -xz -C /usr/local/bin oras
-    ```
-
     When you've run every box, close the terminal and open a new one, so that the new window picks up the programs you just installed.
 
 ## 3. Install the Python programs
@@ -139,10 +132,10 @@ git config --global user.email "you@example.com"
 Paste this whole box into the terminal. It prints one line for each program:
 
 ```bash
-for t in git aws terraform kubectl pulumi go oras docker python3 ctf make jq nc curl dig; do
+for t in git aws terraform kubectl pulumi go docker python3 ctf make jq nc curl dig; do
   printf '%-10s ' "$t"; command -v "$t" >/dev/null || { echo MISSING; continue; }
   case $t in
-    go|oras) "$t" version 2>&1 | head -1 ;; kubectl) kubectl version --client 2>&1 | head -1 ;;
+    go) "$t" version 2>&1 | head -1 ;; kubectl) kubectl version --client 2>&1 | head -1 ;;
     nc|make|dig) echo ok ;; ctf) ctf version 2>/dev/null || echo ok ;;
     *) "$t" --version 2>&1 | head -1 ;;
   esac

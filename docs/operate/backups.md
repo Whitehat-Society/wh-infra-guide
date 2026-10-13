@@ -12,7 +12,7 @@ The CTFd database holds every team, solve and score. It is the only part of the 
 Take an extra backup before any risky change, and another one right after the event ends:
 
 ```bash
-cd ~/wh/wh-2026/utils
+cd ~/wh/wh-2027/utils
 make backup-ctfd
 kubectl get jobs -n ctfd -w
 ```

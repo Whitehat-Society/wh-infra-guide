@@ -10,6 +10,8 @@ A CTF ("capture the flag") is a security competition in which teams solve challe
 
 The other categories, such as crypto, forensics, OSINT and misc, are usually just a description, a file and a flag. Those challenges live entirely inside CTFd and need nothing else.
 
+Everything starts from `wh-base`, the club's starting repository on GitHub. It holds all the code and three template challenges, one of each kind, so by the end of section 5 you have a working, event-ready site that shows the templates. Your writers' challenges then go in next to them.
+
 ## How the guide is organised
 
 The first time you read the guide, work through the sections in order, because each one relies on the ones before it. Later you can use the sidebar to jump straight to the page you need. The button with three lines at the top left hides the sidebar when you want more room.
@@ -19,7 +21,7 @@ The first time you read the guide, work through the sections in order, because e
   <div class="layer l-node"><b>1 · How the system works</b><span>Plain-language explanations of every part. Read this before you touch anything</span></div>
   <div class="layer l-node"><b>2 · Your computer</b><span>Open a terminal, learn the few commands you need, install the tools</span></div>
   <div class="layer l-node"><b>3 · Accounts</b><span>Amazon Web Services, a spending alert, a domain name, Discord and GitHub</span></div>
-  <div class="layer l-node"><b>4 · Code and settings</b><span>Download the club's code and fill in your own details</span></div>
+  <div class="layer l-node"><b>4 · Code and settings</b><span>Copy <code>wh-base</code> and fill in your event's details</span></div>
   <div class="layer l-node"><b>5 · Deploy</b><span>Build the system, one part at a time, checking each part works</span></div>
   <div class="layer l-man"><b>6 · Run the event</b><span>What to watch on event day and what to do when something breaks</span><span class="pill p-warn">event day</span></div>
   <div class="layer l-none"><b>7 · Tear down</b><span>Delete everything so the club stops paying</span><span class="pill p-crit">always do this</span></div>

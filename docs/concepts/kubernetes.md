@@ -8,7 +8,7 @@ The programs are written in different languages, and each one needs its own set 
 
 ## Kubernetes
 
-**Kubernetes** is the manager. You describe what should be running, for example "one copy of `xssive-login`", and Kubernetes starts it on a computer with room to spare, keeps watching it, and replaces it if it stops.
+**Kubernetes** is the manager. You describe what should be running, for example "one copy of `example-web`", and Kubernetes starts it on a computer with room to spare, keeps watching it, and replaces it if it stops.
 
 | Term | What it is |
 |---|---|
@@ -34,7 +34,7 @@ Browsers fetch pages with **HTTP**. **HTTPS** is HTTP sent inside an encrypted c
 | What grows | How it grows | Limit |
 |---|---|---|
 | **Nodes** | Automatically. When a pod can't start because every node is full, the Cluster Autoscaler rents another node. | 6 nodes |
-| **Pods** | By hand. Each program's number of copies is a fixed number in the code, so you change the number and redeploy, as described in [Adding capacity](../operate/scaling.md). | none |
+| **Pods** | By hand. Each program's number of copies is a fixed number, set in `utils/config.ini` for the challenges, so you change the number and redeploy, as described in [Adding capacity](../operate/scaling.md). | none |
 
 A busy pod doesn't make the cluster grow. The Cluster Autoscaler only adds a node when a pod can't start at all.
 

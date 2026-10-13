@@ -10,24 +10,23 @@ At WH-2026, chall-manager ran for one challenge, `filelocker`, and no player use
 
 ## What it adds
 
-| Part | Where it comes from |
+`wh-base` leaves chall-manager out, to keep the system small. Everything it needs is in the `Whitehat-Society/wh-2026` repository, from the event that tried it, and has to be copied across.
+
+| Part | Where it is in wh-2026 |
 |---|---|
 | The chall-manager program, and a "janitor" that deletes expired copies, both in the namespace `chall-manager` | The Pulumi program in `utils/chall-manager/`, deployed with `make deploy-chall-manager` |
 | A *scenario* for each challenge, which is a small Pulumi program that creates one team's copy along with its Service and Ingress | The challenge's own folder, for example `web/filelocker/src/scenario/` |
-| A registry for scenarios | The ECR registry `<event>-scenarios`, which `make deploy-eks` already creates |
-| The button in CTFd | The `ctfd-chall-manager` plugin, added to `CTFd/CTFd/plugins/` |
+| A registry for scenarios, the permissions chall-manager needs, an empty load balancer for pwn copies, and an alarm | `aws_ecr_repository.scenarios` and `aws_lb.tcp_challenges` in `utils/eks/main.tf`, `chall_manager_irsa` in `utils/eks/iam.tf`, and `chall_manager_pod_down` in `utils/eks/observability.tf` |
+| The `chall-manager` branch of the builder, which uploads scenarios | `build_push_scenario` in `utils/builder/builder.py` |
+| The button in CTFd | The `ctfd-chall-manager` plugin, added to the CTFd image |
 | Two more tools on your computer | `oras`, which uploads scenarios, and `chall-manager-cli`, which talks to chall-manager |
 
 ## How to set it up
 
-Set it up after you have finished [Deploy](../deploy/index.md). The steps live in the wh-2026 repository, and you follow them in this order:
+Set it up after you have finished [Deploy](../deploy/index.md), and only if someone on the team can read Terraform and Go, because the parts above have to be merged into `wh-base`'s files by hand. Then follow the steps in the wh-2026 repository in this order:
 
 1. In `docs/ops/deploy-live-infra.md`, work from **Step 2**, which deploys chall-manager, to **Step 5**, which checks that two teams get separate copies.
 2. In `docs/ops/event-runbook.md`, run **Phase E**, which is a test with 30 teams at once using `make load-test TEAMS=30`.
-3. Switch the chall-manager alarm back on, since [1. The cluster](../deploy/eks.md) switched it off:
-    ```bash
-    aws cloudwatch enable-alarm-actions --alarm-names "$EVENT-chall-manager-pod-down"
-    ```
 
 ## Problems found at WH-2026
 

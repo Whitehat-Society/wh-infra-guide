@@ -17,7 +17,7 @@ When you finish, your challenge appears in CTFd with its text, files and points,
 
 ## How a challenge gets deployed
 
-Each challenge is one folder in the `wh-2026` repository, placed inside its category's folder such as `web/` or `crypto/`. A file in that folder named `challenge.yml` describes the challenge, including its name, text, points, flag and type. The deploy tools read this file and nothing else, so anything they need has to be in it.
+Each challenge is one folder in the event's repository, such as `wh-2027`, placed inside its category's folder such as `web/` or `crypto/`. The infra team creates that repository as a copy of `wh-base`, so ask them for its name and for access to it. A file in that folder named `challenge.yml` describes the challenge, including its name, text, points, flag and type. The deploy tools read this file and nothing else, so anything they need has to be in it.
 
 <figure class="diagram">
 --8<-- "diagrams/write-flow.svg"
@@ -35,6 +35,24 @@ The `challenge_type` field in `challenge.yml` decides how the challenge is deplo
 | `shared-tcp` | Players connect to a program with `nc`, as in most pwn challenges | A command such as `nc <address> 1337` |
 
 "Shared" means that all players use the same running copies. A player who breaks the server breaks it for everyone until it restarts, so design the challenge to survive that, as [Shared by every player](server.md#shared-by-every-player) explains.
+
+## Start from a template
+
+The repository comes with one working template challenge of each type, and copying the one that matches yours is the quickest way to get the layout right. Each template's `README.md` explains how it works and how to test it.
+
+| Type | Template folder | What it is |
+|---|---|---|
+| `text` | `misc/example-text/` | A file encrypted with XOR, and a solve script. |
+| `shared-web` | `web/example-web/` | A small Flask site that hides its flag behind `robots.txt`. |
+| `shared-tcp` | `pwn/example-tcp/` | A C program with a buffer overflow, served with `socat`. |
+
+For example, to start a web challenge called `lost-cookie`, copy the template and then change every field in the copy's `challenge.yml`:
+
+```bash
+cp -r web/example-web web/lost-cookie
+```
+
+Delete the templates from the event's repository before the CTF starts, or leave them with `state: hidden`, so that players never see them.
 
 ## Folder layout
 

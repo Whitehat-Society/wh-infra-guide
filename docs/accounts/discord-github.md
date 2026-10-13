@@ -33,10 +33,10 @@ The command prints nothing, and "webhook test" appears in the channel under the 
 
 ## GitHub
 
-**GitHub** is the website that stores the club's code, and **Git** is the program that downloads the code and records changes to it. The code lives in a private repository, which is a project folder on GitHub, called `Whitehat-Society/wh-2026`.
+**GitHub** is the website that stores the club's code, and **Git** is the program that downloads the code and records changes to it. The code lives in a private repository, which is a project folder on GitHub, called `Whitehat-Society/wh-base`. It holds everything an event needs, and each event starts as a copy of it.
 
 1. Create a GitHub account at <https://github.com/signup> if you don't have one.
-2. Send your GitHub username to the current infra lead and ask for access to `Whitehat-Society/wh-2026`.
+2. Send your GitHub username to the current infra lead and ask for access to `Whitehat-Society/wh-base`.
 3. Accept the invitation, either from the email or from <https://github.com/Whitehat-Society>.
 4. Install GitHub's command-line tool, `gh`, and sign in with it, which lets `git` download private code:
     ```bash
@@ -52,9 +52,9 @@ The command prints nothing, and "webhook test" appears in the channel under the 
 **Check it worked:**
 
 ```bash
-gh repo view Whitehat-Society/wh-2026 --json name -q .name
+gh repo view Whitehat-Society/wh-base --json name -q .name
 ```
 
-The output should be `wh-2026`.
+The output should be `wh-base`.
 
 **Next:** [Code and settings: overview](../code/index.md).

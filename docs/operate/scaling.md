@@ -9,7 +9,7 @@ When players report slow challenges, the fix is usually more copies of a program
   <div class="layer l-auto"><b>DNS and load balancers</b><span>AWS adds capacity to these by itself, so there is nothing to set</span><span class="pill p-ok">automatic</span></div>
   <div class="layer l-auto"><b>Rented computers (nodes): 3 to 6</b><span>One or two in each of three zones. A computer is added when a new pod can't fit, and returned after 10 quiet minutes</span><span class="pill p-ok">automatic</span></div>
   <div class="layer l-man"><b>NGINX: 2 copies</b><span>Change the number in <code>utils/eks/helm.tf</code> and run Terraform</span><span class="pill p-warn">you change it</span></div>
-  <div class="layer l-man"><b>Web challenges: 1 copy each</b><span>Change the number in <code>builder.py</code> and run <code>make build-images</code></span><span class="pill p-warn">you change it</span></div>
+  <div class="layer l-man"><b>Web challenges: 1 copy each</b><span>Change <code>shared_web_replicas</code> in <code>config.ini</code> and run <code>make build-images</code></span><span class="pill p-warn">you change it</span></div>
   <div class="layer l-man"><b>Pwn challenges: 3 copies each</b><span>Change <code>shared_tcp_replicas</code> in <code>config.ini</code> and run <code>make build-images</code></span><span class="pill p-warn">you change it</span></div>
   <div class="layer l-none"><b>CTFd, MariaDB, Redis: 1 copy each</b><span>Each keeps its data on a disk that only one copy can use, so you can give them more memory but not more copies</span><span class="pill p-crit">can't add copies</span></div>
 </div>
@@ -23,22 +23,22 @@ Busy pods on their own never trigger a new computer, because a computer is only 
 
 === "More web challenge copies"
 
-    1. Open `utils/builder/builder.py`. In the part of `build_challenges` that handles `shared-web`, change `'replicas': 1,` to `'replicas': 2,`.
+    1. In `utils/config.ini`, under `[CHALLENGES]`, set `shared_web_replicas` to `2`.
     2. Deploy the change:
         ```bash
-        cd ~/wh/wh-2026/utils && make build-images
+        cd ~/wh/wh-2027/utils && make build-images
         ```
     3. Check that `kubectl get pods -n challenges-web` now shows two pods for each challenge.
 
     !!! warning "Some web challenges break with two copies"
-        Each copy keeps its own logins and its own data, so a player can be logged in on one copy and logged out on the other. Read [Many players on one challenge](risks.md#many-players-on-one-challenge) before you add copies of `xssive-login`, `inspectpost` or `pokemon-portal`.
+        Each copy keeps its own logins and its own data, so a player can be logged in on one copy and logged out on the other. Read [Many players on one challenge](risks.md#many-players-on-one-challenge) before you add copies, and check each challenge's README, where its writer says whether it can run as several copies. The setting applies to every web challenge at once.
 
 === "More pwn challenge copies"
 
-    1. In `utils/config.ini`, under `[CHALL_MANAGER]`, set `shared_tcp_replicas` to the number of copies you want, for example `5`.
+    1. In `utils/config.ini`, under `[CHALLENGES]`, set `shared_tcp_replicas` to the number of copies you want, for example `5`.
     2. Deploy the change:
         ```bash
-        cd ~/wh/wh-2026/utils && make build-images
+        cd ~/wh/wh-2027/utils && make build-images
         ```
     3. Check that `kubectl get pods -n challenges-tcp` shows the new number of pods for each challenge.
 
@@ -49,7 +49,7 @@ Busy pods on their own never trigger a new computer, because a computer is only 
     1. In `utils/eks/helm.tf`, find `replicaCount` in the `ingress-nginx` section and raise it.
     2. Apply the change, and type `yes` when Terraform asks:
         ```bash
-        cd ~/wh/wh-2026/utils && terraform -chdir=eks apply -var-file=terraform.tfvars.json
+        cd ~/wh/wh-2027/utils && terraform -chdir=eks apply -var-file=terraform.tfvars.json
         ```
 
 === "More computers, right now"
@@ -57,8 +57,8 @@ Busy pods on their own never trigger a new computer, because a computer is only 
     The cluster adds computers by itself, but each one takes 2 to 5 minutes to join. Before a rush you can predict, such as the start of the event, add them in advance:
 
     ```bash
-    cd ~/wh/wh-2026/utils
-    EVENT=$(jq -r .event_name eks/terraform.tfvars.json)
+    cd ~/wh/wh-2027/utils
+    EVENT=$(python3 settings.py event)
     for NG in $(aws eks list-nodegroups --cluster-name "$EVENT-eks" --query 'nodegroups[]' --output text); do
       aws eks update-nodegroup-config --cluster-name "$EVENT-eks" --nodegroup-name "$NG" \
         --scaling-config minSize=2,maxSize=2,desiredSize=2 --query 'update.status' --output text

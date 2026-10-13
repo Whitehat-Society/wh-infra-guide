@@ -10,7 +10,7 @@ nodes:
   - {id: dock, x: 30, y: 273, w: 380, title: "docker", sub: "build and upload images", glyph: DKR, cat: tool}
   - {id: py, x: 30, y: 349, w: 380, title: "python3, ctfcli", sub: "run builder.py, load challenges", glyph: PY, cat: tool}
   - {id: misc, x: 30, y: 425, w: 380, title: "make, jq, nc, curl, dig", sub: "small helpers used by the commands", glyph: SH, cat: tool}
-  - {id: gh, x: 620, y: 45, w: 480, title: "GitHub", sub: "Whitehat-Society/wh-2026", glyph: GIT, cat: ext}
+  - {id: gh, x: 620, y: 45, w: 480, title: "GitHub", sub: "wh-base and the event repository", glyph: GIT, cat: ext}
   - {id: acct, x: 620, y: 121, w: 480, title: "The AWS account", sub: "network, cluster, buckets, secret", glyph: AWS, cat: net}
   - {id: clu, x: 620, y: 197, w: 480, title: "The Kubernetes cluster", sub: "pods, Services, logs", glyph: K8S, cat: k8s}
   - {id: ecr, x: 620, y: 273, w: 480, title: "ECR registry", sub: "challenge and CTFd images", glyph: ECR, cat: compute}

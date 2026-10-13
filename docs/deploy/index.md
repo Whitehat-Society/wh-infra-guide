@@ -6,7 +6,7 @@ By the end of this section, the CTF is live. Players can open `ctf.<your-domain>
 
 ## The order
 
-The stages build the chain from [What we're building](../concepts/big-picture.md#the-chain-of-parts) from the bottom up, because each part runs on the one beneath it. You check that each stage works before you start the next, so that a problem shows up on the page that caused it. Every command runs in the `~/wh/wh-2026/utils` folder.
+The stages build the chain from [What we're building](../concepts/big-picture.md#the-chain-of-parts) from the bottom up, because each part runs on the one beneath it. You check that each stage works before you start the next, so that a problem shows up on the page that caused it. Every command runs in the `~/wh/wh-2027/utils` folder.
 
 !!! warning "Billing starts on the next page"
     From the first command on the next page, AWS charges about US$0.45 an hour until you [delete everything](../teardown.md), so check that your [budget alert](../accounts/budget.md) exists before you start.
