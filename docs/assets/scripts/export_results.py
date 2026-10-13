@@ -1,7 +1,13 @@
-import csv, json, os, pathlib, subprocess, requests
+import configparser, csv, json, pathlib, requests
 
-url = open(os.path.expanduser("~/wh/wh-2027/.ctf/config")).read().split("url = ")[1].split()[0]
-token = subprocess.check_output(["python3", "secrets.py", "get", "ctfd_admin_token"], text=True).strip()
+# make build-images writes .ctf/config, with CTFd's address and the admin token, in the event folder.
+here = pathlib.Path.cwd()
+found = next((d / ".ctf" / "config" for d in [here, *here.parents] if (d / ".ctf" / "config").exists()), None)
+if not found:
+    raise SystemExit("No .ctf/config here or above. Run this inside the event folder, after make build-images.")
+config = configparser.ConfigParser()
+config.read(found)
+url, token = config["config"]["url"].rstrip("/"), config["config"]["access_token"]
 s = requests.Session()
 s.headers.update({"Authorization": f"Token {token}", "Content-Type": "application/json"})
 out = pathlib.Path.home() / "wh" / "results"
@@ -10,7 +16,9 @@ out.mkdir(parents=True, exist_ok=True)
 def fetch(path):
     rows, page = [], 1
     while page:
-        r = s.get(f"{url}/api/v1/{path}", params={"page": page, "per_page": 100, "view": "admin"}).json()
+        r = s.get(f"{url}/api/v1/{path}", params={"page": page, "per_page": 100, "view": "admin"}, timeout=30)
+        r.raise_for_status()
+        r = r.json()
         data = r["data"]
         rows += data if isinstance(data, list) else [data]
         page = r.get("meta", {}).get("pagination", {}).get("next")

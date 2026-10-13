@@ -33,7 +33,7 @@ All the commands start in `~/wh/wh-2027/utils`. They assume that you are signed 
     ```bash
     make build-images
     ```
-    The command rebuilds every challenge, but Docker reuses its cache for the ones you didn't change, and Pulumi only restarts the challenges whose image changed, so expect it to take about 3 minutes. Each challenge that is already in CTFd prints a red `Found already existing challenge with the same name … Perhaps you meant sync instead of install?`, which is expected and harmless.
+    The command rebuilds every challenge, but Docker reuses its cache for the ones you didn't change, and Pulumi only restarts the challenges whose image changed, so expect it to take about 3 minutes. The last line counts your challenge as `already there`, because the builder adds only new challenges to CTFd. A change to its text, flags or files still needs `ctf challenge sync`, as in [Fix text, a flag, a hint or a file](#fix-text-a-flag-a-hint-or-a-file).
 3. Watch your challenge's pods being replaced:
     ```bash
     kubectl get pods -n challenges-web     # challenges-tcp for pwn

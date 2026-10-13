@@ -125,7 +125,7 @@ CTFd finds an existing challenge by its name, so **renaming a challenge after it
 
 For `shared-web` and `shared-tcp` challenges, the name also becomes the challenge's address. Capitals become lowercase, and every run of characters other than letters and digits becomes a single hyphen. `Xoph, Dark Embers` therefore becomes `xoph-dark-embers`, and players open `https://xoph-dark-embers.challenges.<domain>`. Two names that give the same address, such as `Base64 Converter` and `base64-converter`, clash with each other.
 
-Keep the name under 50 characters.
+For these two types, the address must start with a letter and be under 50 characters, so `1337 Login` and `!!!` are refused by `make validate`.
 
 ### Flags
 

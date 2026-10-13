@@ -38,11 +38,11 @@ The health check tests every web and pwn challenge every 5 minutes, and it posts
     make deploy-healthcheck-cronjob
     ```
     It ends with `Healthcheck CronJob deployed (every 5 min).` If you see a line starting with `WARNING: no load balancer hostname yet`, a pwn load balancer is still starting, so wait 3 minutes and run the command again.
-2. Run the check once and read its results:
+2. Run the check once:
     ```bash
     make run-healthcheck
-    sleep 60; kubectl logs -n ctfd -l job-name --tail=30 --prefix | grep -i -e pass -e fail
     ```
+    It waits up to 2 minutes for the check to start, prints each challenge's result as it goes, and ends with `=== Results: 2 passed, 0 failed ===`, with your own numbers.
 
 **Check it worked:** every web and pwn challenge shows `PASS`, and nothing appears in the alerts channel.
 

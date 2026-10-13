@@ -32,7 +32,7 @@ When a run seems stuck, the cause is almost always the situation in the last row
     The builder logs Docker in to ECR, builds and uploads each image, runs Pulumi for the pwn and then the web challenges, loads every challenge into CTFd, and finally fills in each challenge's address.
 3. While it runs, watch for these lines, which mean that each step has finished:
     - `[challenges] Pulumi deploy complete.`
-    - `Done: 3 challenge(s) loaded, 1 web and 1 pwn deployed.`, with your own numbers once you add challenges
+    - `Done: 3 added to CTFd, 0 already there, 1 web and 1 pwn deployed`, with your own numbers once you add challenges. A later run counts the same challenges as `already there`, because the builder only adds challenges that CTFd doesn't have yet.
 
 ## Check it worked
 
