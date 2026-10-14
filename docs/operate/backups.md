@@ -47,9 +47,9 @@ Restoring a backup replaces the whole database with the backup's contents.
 
 **Check it worked:** the counts it printed look right, and the scoreboard shows the scores as they were when the backup was taken.
 
-If the command fails, read the stage named in its error. An import or database-check failure leaves CTFd stopped; a failure while stopping or resuming it may leave a different state. Check with `kubectl get deploy ctfd -n ctfd` and `kubectl get cronjob ctfd-backup -n ctfd`. Fix the error and run the restore again. The original replica count and backup suspension setting are saved in the cluster's `ctfd-restore-state` ConfigMap, so retries restore the original settings. Keep this ConfigMap until recovery succeeds. A download or archive-check failure happens before any cluster changes.
+If the command fails, read the stage named in its error. An import or database-check failure leaves CTFd stopped; a failure while stopping or resuming it may leave a different state. Check with `kubectl get deploy ctfd -n ctfd` and `kubectl get cronjob ctfd-backup -n ctfd`. Fix the error and run the restore again. The original replica count and backup suspension setting are saved in the cluster's `ctfd-restore-state` ConfigMap, so retries restore the original settings. Keep this ConfigMap until recovery succeeds. If you instead put CTFd and the backups back by hand, delete it with `kubectl delete configmap ctfd-restore-state -n ctfd`, or the next restore reuses its old settings. A download or archive-check failure happens before any cluster changes.
 
-The restore waits for both scheduled and manual backup jobs to finish. Do not start another manual backup during a restore.
+The restore waits for both scheduled and manual backup jobs to finish. Do not start another manual backup during a restore. If a backup job is still running after 10 minutes, the restore stops before CTFd does and names the job, which you can inspect with `kubectl describe job <name> -n ctfd`.
 
 ## Keep a copy after the event
 
