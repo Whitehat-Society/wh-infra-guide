@@ -2,7 +2,7 @@
 
 Step-by-step guide for new tech & infra members: build and run the Whitehacks CTF infrastructure from a blank PC with no AWS account.
 
-Live site: https://lampardnk.github.io/wh-infra-guide/
+Live site: https://whitehat-society.github.io/wh-infra-guide/
 
 ## Edit locally
 
