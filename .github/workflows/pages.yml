@@ -19,9 +19,29 @@ jobs:
         with:
           fetch-depth: 0   # gitleaks scans every commit in the push
       - run: scripts/scan.sh
-      - uses: gitleaks/gitleaks-action@v2
+      - name: Scan changed commits with Gitleaks
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_BEFORE: ${{ github.event.before }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          version=8.30.1
+          archive="gitleaks_${version}_linux_x64.tar.gz"
+          url="https://github.com/gitleaks/gitleaks/releases/download/v${version}/${archive}"
+          curl -fsSL "$url" -o "/tmp/${archive}"
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  /tmp/${archive}" | sha256sum --check
+          tar -xzf "/tmp/${archive}" -C /tmp gitleaks
+
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            log_opts="${PR_BASE_SHA}..${HEAD_SHA}"
+          elif [[ "$EVENT_NAME" == "push" && "$EVENT_BEFORE" =~ ^[0-9a-f]{40}$ && "$EVENT_BEFORE" != "0000000000000000000000000000000000000000" ]]; then
+            log_opts="${EVENT_BEFORE}..${HEAD_SHA}"
+          else
+            log_opts="--all"
+          fi
+          /tmp/gitleaks git --redact --verbose --log-opts="$log_opts" .
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
